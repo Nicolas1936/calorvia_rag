@@ -23,12 +23,11 @@ class Settings(BaseSettings):
     llm_parallel_requests: int = 3
 
     # folder paths
-    corpus_folder: Path = Path('./data/hopital')
-    processed_documents_folder: Path = Path('./data/hopital_export')
-    models_folder: Path = Path('/home/nicolas/models/rag')
+    corpus_folder: Path = Path('./data/corpus/calorvia')
+    processed_documents_folder: Path = Path('./data/calorvia_export')
     sql_statement_folder: Path = Path('./sql_queries')
-    eval_dataset_path: Path = Path('./data/hopital_eval.json')
-    documents_metadata_path: Path = Path('./data/hopital_documents.json')
+    eval_dataset_path: Path = Path('./data/calorvia_eval.json')
+    models_folder: Path
 
     # Converter Settings
     ocr_device: str = 'cpu'
@@ -45,4 +44,4 @@ def load_runner_settings(config_path):
         return tomllib.load(f)
 
 settings = Settings()
-runner_settings = load_runner_settings(settings.runner_config_path)
+#runner_settings = load_runner_settings(settings.runner_config_path)
