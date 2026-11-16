@@ -1,0 +1,4347 @@
+[
+  {
+    "id": "Q001",
+    "type": "factual",
+    "thread": null,
+    "question": "Quels sont les horaires de l'équipe de nuit de Gand ?",
+    "answer": "De 22 h 00 à 6 h 00, du lundi au jeudi, avec 45 minutes de pause.",
+    "evidence": [
+      {
+        "document": "02_RH/Politiques/Reglement de travail - extrait horaires.pdf",
+        "snippets": [
+          "Gand, équipe de nuit",
+          "22 h 00 - 6 h 00 (du lundi au jeudi)"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q002",
+    "type": "decision_history",
+    "thread": "cfo",
+    "question": "Qui dirigeait la direction financière en avril et en mai 2026 ?",
+    "answer": "Sarah Vandamme, directrice financière ad interim à partir du 1er avril 2026 (nommée par le conseil du 17 février).",
+    "evidence": [
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2026-02-17.pdf",
+        "snippets": [
+          "directrice financière ad interim à partir du 1er avril 2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "02_RH/Organigrammes/Organigramme direction 2026-04.png",
+        "snippets": [
+          "Sarah Vandamme",
+          "a.i."
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "09_Communication/Intranet/Organisation direction financiere a partir du 1er avril.html",
+        "snippets": [
+          "Sarah Vandamme assure l'intérim de la direction financière"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q003",
+    "type": "multilingual",
+    "thread": "budget",
+    "question": "Quel chiffre d'affaires et quel EBITDA Calorvia a-t-elle annoncés pour 2025 ?",
+    "answer": "148,2 M€ de chiffre d'affaires et 12,1 M€ d'EBITDA (8,1 % du chiffre d'affaires).",
+    "evidence": [
+      {
+        "document": "09_Communication/Communiques_presse/2026-03-19 PR 2025 results.docx",
+        "snippets": [
+          "Calorvia SA today reported revenue of EUR 148.2 million for 2025"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2026-01-20.pdf",
+        "snippets": [
+          "Le chiffre d'affaires 2025 s'élève à 148 200 k€"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q004",
+    "type": "meeting_detail",
+    "thread": "general",
+    "question": "Quel taux d'absentéisme a été présenté au CODIR du 12 janvier 2026 ?",
+    "answer": "6,3 %, pour un objectif inférieur à 5 %.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-01-12 CODIR PV.docx",
+        "snippets": [
+          "Taux d'absentéisme",
+          "6,3 %"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q005",
+    "type": "factual",
+    "thread": null,
+    "question": "Quel est le budget mensuel de leasing d'une voiture de société pour un membre du comité de direction ?",
+    "answer": "1 150 € par mois, hors carburant ; depuis 2026, toute nouvelle commande porte sur un véhicule 100 % électrique.",
+    "evidence": [
+      {
+        "document": "02_RH/Politiques/Politique voitures de societe 2025.docx",
+        "snippets": [
+          "Comité de direction",
+          "1 150 €"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q006",
+    "type": "action_tracking",
+    "thread": "cyber",
+    "question": "Combien de personnes ont suivi la campagne de sensibilisation à l'hameçonnage ?",
+    "answer": "186 personnes, formées entre le 9 et le 27 mars 2026.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-03-30 CODIR PV.docx",
+        "snippets": [
+          "Campagne terminée : 186 personnes formées."
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "07_IT/Securite/Rapport trimestriel cybersecurite 2026-04-10.docx",
+        "snippets": [
+          "186 personnes formées entre le 9 et le 27 mars"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q007",
+    "type": "out_of_corpus",
+    "thread": null,
+    "question": "À quelle date se tiendra l'assemblée générale de 2027 ?",
+    "answer": "Information absente du corpus.",
+    "evidence": [],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q008",
+    "type": "decision_current",
+    "thread": "recall",
+    "question": "Où en est le rappel préventif des pompes à chaleur Aéris 12 ?",
+    "answer": "La campagne est clôturée depuis le 31 mars 2026 : 211 unités sur 214 ont été réparées et 3 sont introuvables (installateur en cessation d'activité). Valtek prend en charge 65 % du coût.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-03-02 CODIR PV.docx",
+        "snippets": [
+          "211 unités sur 214 ont été réparées"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-03-30 CODIR PV.docx",
+        "snippets": [
+          "La campagne de rappel est clôturée au 31 mars comme prévu"
+        ],
+        "grade": 2,
+        "fact": 1
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-03-02 CODIR PV.docx",
+        "snippets": [
+          "La campagne de rappel de l'Aéris 12 sera clôturée le 31 mars 2026."
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-01-26 CODIR PV.docx",
+        "snippets": [
+          "168 interventions réalisées sur 214"
+        ]
+      }
+    ],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q009",
+    "type": "meeting_detail",
+    "thread": "general",
+    "question": "À combien s'élevaient les prises de commandes présentées au CODIR du 13 octobre 2025 ?",
+    "answer": "3 099 k€ pour la semaine 41.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-10-13.docx",
+        "snippets": [
+          "Prises de commandes",
+          "3 099 k€"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q010",
+    "type": "scan_ocr",
+    "thread": "l4",
+    "question": "Quel montant Linetech a-t-il facturé à la commande de la ligne L4 ?",
+    "answer": "351 000 EUR, soit un acompte de 30 % sur la commande du 28/01/2026 (facture LT-26-0057, autoliquidation).",
+    "evidence": [
+      {
+        "document": "01_Finance/Comptabilite/Factures_fournisseurs/2026-02-02 Linetech LT-26-0057.jpg",
+        "snippets": [
+          "351 000"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q011",
+    "type": "factual",
+    "thread": null,
+    "question": "Quel EPI est obligatoire pour manipuler des tôles à Seneffe ?",
+    "answer": "Des gants anti-coupure de niveau F (et des lunettes de protection en tôlerie).",
+    "evidence": [
+      {
+        "document": "03_Production/Procedures/Consignes EPI usine Seneffe.pdf",
+        "snippets": [
+          "Gants anti-coupure de niveau F"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "02_RH/Notes_de_service/2026-03-20 NS-2026-04 Port des gants anti-coupure en tôlerie.docx",
+        "snippets": [
+          "gants anti-coupure de niveau F"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q012",
+    "type": "out_of_corpus",
+    "thread": null,
+    "question": "Quel est le salaire de Thomas Lambert ?",
+    "answer": "Information absente du corpus.",
+    "evidence": [],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q013",
+    "type": "factual",
+    "thread": "erp",
+    "question": "Quelles pénalités de retard le contrat d'intégration de l'ERP prévoit-il ?",
+    "answer": "0,5 % du prix par semaine de retard imputable à l'intégrateur, plafonnées à 10 % du prix.",
+    "evidence": [
+      {
+        "document": "08_Juridique/Contrats/Contrat integration ERP Integra Conseil.pdf",
+        "snippets": [
+          "une pénalité de 0,5 % du prix par semaine de retard est due, plafonnée à 10 % du prix"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q014",
+    "type": "image_only",
+    "thread": "l4",
+    "question": "Combien de jours d'arrêt de la ligne L3 sont prévus pour raccorder la ligne L4 ?",
+    "answer": "2 jours (atelier risques du 5 novembre 2025).",
+    "evidence": [
+      {
+        "document": "03_Production/Seneffe/Ligne_L4/Photo tableau risques L4 2025-11-05.jpg",
+        "snippets": [
+          "Arrêt L3",
+          "2 jours"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q015",
+    "type": "decision_reason",
+    "thread": "erp",
+    "question": "Pourquoi le site de Gand est-il passé sur le nouvel ERP deux semaines après les autres sites ?",
+    "answer": "Parce que l'interface avec le WMS de Gand présentait encore deux anomalies non bloquantes, que l'équipe projet a préféré corriger avant le démarrage du site (corrigées le 10 juin).",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-05-18 CODIR PV.docx",
+        "snippets": [
+          "L'interface avec le WMS de Gand présente encore deux anomalies non bloquantes"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/Annexes/2026-05-18 Annexe - Go no-go Atlas.pptx",
+        "snippets": [
+          "Démarrage de Gand le 15 juin 2026, après correction de l'interface WMS."
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q016",
+    "type": "multi_doc",
+    "thread": "l4",
+    "question": "Quel montant d'aide la Région wallonne a-t-elle accordé pour la ligne L4, et quel pourcentage de l'investissement cela représente-t-il ?",
+    "answer": "375 000 €, soit 30 % de l'enveloppe de 1 250 000 €.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-01-26 CODIR PV.docx",
+        "snippets": [
+          "La Région wallonne accorde une aide à l'investissement de 30 %, soit 375 000 €"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "09_Communication/Communiques_presse/2026-01-29 CP Ligne L4 Seneffe.docx",
+        "snippets": [
+          "bénéficie d'une aide de la Région wallonne de 375 000 euros"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q017",
+    "type": "excel_lookup",
+    "thread": "herstal",
+    "question": "Combien de personnes travaillaient à l'entrepôt de Herstal fin mai 2026 ?",
+    "answer": "6 ETP.",
+    "evidence": [
+      {
+        "document": "01_Finance/Reporting_mensuel/Reporting 2026-05.xlsx",
+        "snippets": [
+          "Herstal",
+          "6"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-06-01 CODIR PV.docx",
+        "snippets": [
+          "avec 6 personnes"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q018",
+    "type": "action_tracking",
+    "thread": "erp",
+    "question": "Qui devait préparer le plan de bascule de l'ERP et quand ce plan a-t-il été validé ?",
+    "answer": "Kevin Mertens (action A-26-012, échéance au 15/05/2026). Le plan a été validé au CODIR du 11 mai 2026.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-05-04 CODIR PV.docx",
+        "snippets": [
+          "A-26-012",
+          "Kevin Mertens",
+          "15/05/2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-05-11 CODIR PV.docx",
+        "snippets": [
+          "A-26-012",
+          "Plan de bascule validé."
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q019",
+    "type": "meeting_detail",
+    "thread": "recall",
+    "question": "Quel taux de rebut de Seneffe a été présenté au CODIR du 8 décembre 2025 ?",
+    "answer": "2,6 %, pour un objectif inférieur à 1,5 % (défaut des vannes de l'Aéris 12).",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-12-08.docx",
+        "snippets": [
+          "Taux de rebut Seneffe",
+          "2,6 %"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q020",
+    "type": "multi_doc",
+    "thread": "accident",
+    "question": "Quelle est la capacité nominale du chariot impliqué dans l'accident de Gand, et de quelle année date-t-il ?",
+    "answer": "C'est le chariot n° 9 (Lyftec LE-20) : capacité nominale de 2000 kg, construit en 2016.",
+    "evidence": [
+      {
+        "document": "03_Production/Gent/Veiligheid/Incidentrapport 2025-11-12 heftruck gang 7.pdf",
+        "snippets": [
+          "nr. 9 (Lyftec LE-20)"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "03_Production/Gent/Fotos_installaties/IMG_20251122_Heftruck_nr_9.jpg",
+        "snippets": [
+          "2000 kg",
+          "2016"
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "difficile",
+    "notes": "Rapport en néerlandais + photo de la plaque signalétique."
+  },
+  {
+    "id": "Q021",
+    "type": "factual",
+    "thread": null,
+    "question": "À quelle pression et pendant combien de temps se fait le test d'étanchéité des Aéris ?",
+    "answer": "Sous 42 bar d'azote pendant 15 minutes ; la chute de pression ne doit pas dépasser 0,2 bar.",
+    "evidence": [
+      {
+        "document": "03_Production/Procedures/MO-SEN-12 Test d'etancheite Aeris.pdf",
+        "snippets": [
+          "Mettre le circuit sous pression d'azote à 42 bar."
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "03_Production/Procedures/MO-SEN-12 Test d'etancheite Aeris.pdf",
+        "snippets": [
+          "Attendre 15 minutes : la chute de pression ne doit pas dépasser 0,2 bar."
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q022",
+    "type": "excel_lookup",
+    "thread": "accident",
+    "question": "Combien d'heures et quel budget le plan de formation 2026 prévoit-il pour le recyclage des caristes ?",
+    "answer": "160 heures pour un budget de 9 600 €, au premier trimestre, à Gand.",
+    "evidence": [
+      {
+        "document": "02_RH/Formation/Plan de formation 2026.xlsx",
+        "snippets": [
+          "Conduite de chariots élévateurs (recyclage)",
+          "160",
+          "9600"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q023",
+    "type": "board_resolution",
+    "thread": "l4",
+    "question": "Quel montant le conseil d'administration a-t-il approuvé pour la phase 1 de la ligne L4 ?",
+    "answer": "1 250 000 €. Le procès-verbal du 18 novembre 2025 indique 1,2 M€ par erreur ; il a été corrigé lors de l'approbation du PV au conseil du 16 décembre 2025.",
+    "evidence": [
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2025-12-16 signé.pdf",
+        "snippets": [
+          "1 250 000",
+          "non de 1,2"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-11-17_v2.docx",
+        "snippets": [
+          "L'enveloppe révisée de 1 250 000 € pour la phase 1 de la ligne L4 est soumise au CA du 18 novembre."
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2025-11-18 signé.pdf",
+        "snippets": [
+          "investissement de 1,2"
+        ]
+      },
+      {
+        "document": "00_Direction/Conseil_administration/Projets_PV/Projet PV CA 2025-11-18.docx",
+        "snippets": [
+          "l'investissement de 1,2 M€ pour la phase 1 de la ligne L4"
+        ]
+      }
+    ],
+    "difficulty": "difficile",
+    "notes": "Piège : l'erreur figure dans le PV signé (scanné) de novembre et est corrigée dans le PV suivant."
+  },
+  {
+    "id": "Q024",
+    "type": "multilingual",
+    "thread": null,
+    "question": "Combien coûte le contrat de maintenance des chariots élévateurs de Gand, et quel est le délai d'intervention en cas de panne ?",
+    "answer": "18 400 € HT par an (pièces non comprises) ; le technicien intervient dans les 8 heures ouvrées.",
+    "evidence": [
+      {
+        "document": "08_Juridique/Contrats/Onderhoudscontract heftrucks LiftService.pdf",
+        "snippets": [
+          "18 400 euro excl. btw per jaar"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "08_Juridique/Contrats/Onderhoudscontract heftrucks LiftService.pdf",
+        "snippets": [
+          "binnen 8 werkuren"
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q025",
+    "type": "decision_current",
+    "thread": "erp",
+    "question": "À quelle date le nouvel ERP a-t-il été mis en production ?",
+    "answer": "Le 1er juin 2026 à Namur, Seneffe et Lille, et le 15 juin 2026 à Gand. La date initiale du 1er avril 2026 avait été reportée en février.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-06-01 CODIR PV.docx",
+        "snippets": [
+          "Le nouvel ERP est en production depuis ce matin à Namur, Seneffe et Lille"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2026-06-16.pdf",
+        "snippets": [
+          "L'ERP Praxio est en production depuis le 1er juin 2026 (Namur, Seneffe, Lille)"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-06-15 CODIR PV.docx",
+        "snippets": [
+          "Le site de Gand est passé sur le nouvel ERP ce matin"
+        ],
+        "grade": 2,
+        "fact": 1
+      },
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2026-06-16.pdf",
+        "snippets": [
+          "et depuis le 15 juin 2026 à Gand"
+        ],
+        "grade": 2,
+        "fact": 1
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-05-18 CODIR PV.docx",
+        "snippets": [
+          "Go pour la mise en production de l'ERP Praxio le 1er juin 2026 à Namur, Seneffe et Lille ; le site de Gand démarrera le 15 juin 2026."
+        ],
+        "grade": 1,
+        "fact": null
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-02-09 CODIR PV.docx",
+        "snippets": [
+          "La mise en production de l'ERP Praxio est reportée du 1er avril au 1er juin 2026. Le surcoût de 45 000 € (jours supplémentaires d'Intégra Conseil) est soumis au conseil."
+        ],
+        "grade": 1,
+        "fact": null
+      }
+    ],
+    "traps": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-12-01.docx",
+        "snippets": [
+          "La mise en production du nouvel ERP Praxio est fixée au 1er avril 2026."
+        ]
+      }
+    ],
+    "difficulty": "moyen",
+    "notes": "Trois dates successives dans le corpus : 1er avril, 1er juin, 15 juin (Gand)."
+  },
+  {
+    "id": "Q026",
+    "type": "board_resolution",
+    "thread": "herstal",
+    "question": "Quelles sont les conditions du bail de l'entrepôt de Herstal approuvé par le conseil ?",
+    "answer": "Bail commercial de 9 ans pour 4 200 m², résiliable à l'expiration de chaque triennat, loyer de 23,50 € par m² et par an (98 700 € par an, indexé), plus 140 000 € de rayonnages hors budget.",
+    "evidence": [
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2026-02-17.pdf",
+        "snippets": [
+          "23,50 € par m² et par an, soit 98 700 € par an"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "08_Juridique/Contrats/Bail commercial entrepot Herstal.pdf",
+        "snippets": [
+          "soit 23,50 € par m²"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [
+      {
+        "document": "00_Direction/Conseil_administration/Projets_PV/Projet PV CA 2026-02-17 v1.docx",
+        "snippets": [
+          "22,80 € par m²"
+        ]
+      }
+    ],
+    "difficulty": "difficile",
+    "notes": "Piège : le projet de PV mentionne 22,80 €/m²."
+  },
+  {
+    "id": "Q027",
+    "type": "board_resolution",
+    "thread": "cfo",
+    "question": "Quand le conseil a-t-il nommé la nouvelle directrice financière et à partir de quelle date prend-elle ses fonctions ?",
+    "answer": "Le conseil du 19 mai 2026 a nommé Isabelle Gérard, à partir du 15 juin 2026.",
+    "evidence": [
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2026-05-19.pdf",
+        "snippets": [
+          "nomme Isabelle Gérard au poste de directrice financière à partir du 15 juin 2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "02_RH/Notes_de_service/2026-05-20 NS-2026-09 Nomination de la directrice financière.docx",
+        "snippets": [
+          "Elle prendra ses fonctions le 15 juin 2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [
+      {
+        "document": "00_Direction/Conseil_administration/Projets_PV/Projet PV CA 2026-05-19.docx",
+        "snippets": [
+          "à partir du 1er juillet 2026"
+        ]
+      }
+    ],
+    "difficulty": "moyen",
+    "notes": "Piège : le projet de PV indique le 1er juillet."
+  },
+  {
+    "id": "Q028",
+    "type": "factual",
+    "thread": "recall",
+    "question": "Quelles modifications la révision C du mode opératoire de brasage des vannes a-t-elle apportées ?",
+    "answer": "Un contrôle visuel à 100 % des brasures de la vanne et un essai destructif (coupe) tous les 50 brasages, à la suite du rappel de l'Aéris 12.",
+    "evidence": [
+      {
+        "document": "03_Production/Procedures/MO-SEN-07 Brasage des vannes 4 voies rev C.pdf",
+        "snippets": [
+          "Ajout d'un contrôle visuel à 100 % des brasures de la vanne"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "03_Production/Procedures/MO-SEN-07 Brasage des vannes 4 voies rev C.pdf",
+        "snippets": [
+          "Ajout d'un essai destructif (coupe) sur une vanne tous les 50 brasages."
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q029",
+    "type": "decision_current",
+    "thread": "cyber",
+    "question": "Quelle était l'échéance de la double authentification (MFA) pour les terminaux partagés des ateliers ?",
+    "answer": "Le 15 mars 2026 (l'échéance générale du 28 février a été reportée pour ces seuls terminaux). Les terminaux sont équipés d'une authentification par badge depuis le 13 mars 2026.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-02-23 CODIR PV.docx",
+        "snippets": [
+          "L'échéance de la MFA est reportée au 15 mars 2026 pour les seuls terminaux partagés des ateliers ; l'échéance du 28 février est maintenue pour tous les autres comptes."
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "07_IT/Securite/Procedure MFA v2.docx",
+        "snippets": [
+          "l'échéance est reportée au 15 mars 2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-03-16 CODIR PV.docx",
+        "snippets": [
+          "équipés de l'authentification par badge depuis le 13 mars"
+        ],
+        "grade": 1,
+        "fact": null
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q030",
+    "type": "multi_doc",
+    "thread": "recall",
+    "question": "Combien de vannes du lot V-2544 ont été reçues à Seneffe, et combien restaient en stock lors du confinement ?",
+    "answer": "600 vannes reçues le 19 novembre 2025 ; 386 pièces restantes ont été bloquées lors du confinement.",
+    "evidence": [
+      {
+        "document": "06_Achats/Bons_de_livraison/2025-11-19 BL Valtek.jpg",
+        "snippets": [
+          "600 pcs"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "04_Qualite/Rappel_Aeris12/Rapport 8D Aeris 12 vanne 4 voies.pdf",
+        "snippets": [
+          "Blocage du stock de vannes du lot V-2544 (386 pièces restantes)"
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "difficile",
+    "notes": null
+  },
+  {
+    "id": "Q031",
+    "type": "multi_doc",
+    "thread": "herstal",
+    "question": "Combien de personnes travaillent à Herstal et d'où viennent-elles ?",
+    "answer": "Six personnes : deux transférées du site de Gand et quatre recrutées.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-06-01 CODIR PV.docx",
+        "snippets": [
+          "2 transférées de Gand et 4 recrutées"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "03_Production/Gent/Veiligheid/Comite PBW/Verslag Comite PBW Gent 2026-04-16.docx",
+        "snippets": [
+          "Twee medewerkers worden in mei overgeplaatst"
+        ],
+        "grade": 1,
+        "fact": null
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q032",
+    "type": "factual",
+    "thread": null,
+    "question": "Quel fluide frigorigène utilise l'Aéris Pro 16 ?",
+    "answer": "Le propane R290 (1,3 kg).",
+    "evidence": [
+      {
+        "document": "05_Commercial/Fiches_produits/Aéris_Pro_16_FR.pdf",
+        "snippets": [
+          "R290 (1,3 kg)"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "05_Commercial/Fiches_produits/Aéris_Pro_16_EN.pdf",
+        "snippets": [
+          "R290 (1,3 kg)"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q033",
+    "type": "meeting_detail",
+    "thread": "general",
+    "question": "Qui était excusé au CODIR du 4 mai 2026 ?",
+    "answer": "Thomas Lambert, directeur des opérations.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-05-04 CODIR PV.docx",
+        "snippets": [
+          "Excusé(e)s : Thomas Lambert"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q034",
+    "type": "image_only",
+    "thread": null,
+    "question": "Quel est le débit de la liaison réseau entre Namur et Gand ?",
+    "answer": "500 Mbit/s (fibre).",
+    "evidence": [
+      {
+        "document": "07_IT/Architecture/Schema reseau inter-sites.png",
+        "snippets": [
+          "500 Mbit/s"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q035",
+    "type": "excel_lookup",
+    "thread": "sales",
+    "question": "Quel chiffre d'affaires la Flandre a-t-elle réalisé en octobre 2025 ?",
+    "answer": "4 568 k€.",
+    "evidence": [
+      {
+        "document": "01_Finance/Reporting_mensuel/Reporting 2025-10.xlsx",
+        "snippets": [
+          "Flandre",
+          "4568"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q036",
+    "type": "image_only",
+    "thread": null,
+    "question": "Quelle dépendance fournisseur le SWOT du séminaire CODIR cite-t-il comme faiblesse ?",
+    "answer": "La dépendance à Kompra pour les compresseurs.",
+    "evidence": [
+      {
+        "document": "00_Direction/Strategie/Photo tableau SWOT seminaire 2025-08-26.jpg",
+        "snippets": [
+          "Kompra"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q037",
+    "type": "action_tracking",
+    "thread": "cyber",
+    "question": "Quelles actions le CODIR extraordinaire du 14 janvier 2026 a-t-il lancées, et qui en était responsable ?",
+    "answer": "Trois actions : déployer la MFA sur tous les comptes (A-26-003, Kevin Mertens, 28/02/2026), formaliser la procédure de changement de coordonnées bancaires (A-26-004, Laurent Dewit, 30/01/2026) et organiser la campagne de sensibilisation à l'hameçonnage (A-26-005, Kevin Mertens, 31/03/2026).",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-01-14 CODIR extraordinaire PV.docx",
+        "snippets": [
+          "A-26-003",
+          "Kevin Mertens"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-01-14 CODIR extraordinaire PV.docx",
+        "snippets": [
+          "A-26-004",
+          "Laurent Dewit"
+        ],
+        "grade": 2,
+        "fact": 1
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-01-14 CODIR extraordinaire PV.docx",
+        "snippets": [
+          "A-26-005",
+          "Organiser la campagne de sensibilisation"
+        ],
+        "grade": 2,
+        "fact": 2
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q038",
+    "type": "scan_ocr",
+    "thread": "cyber",
+    "question": "Quel IBAN figure sur la facture TM-2026-0042 de Tôlerie Mosane ?",
+    "answer": "BE47 0689 4412 7380 (BIC GKCCBEBB).",
+    "evidence": [
+      {
+        "document": "01_Finance/Comptabilite/Factures_fournisseurs/2026-01-08 Tolerie Mosane TM-2026-0042.jpg",
+        "snippets": [
+          "BE47 0689 4412 7380"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q039",
+    "type": "action_tracking",
+    "thread": "accident",
+    "question": "Quelle était l'échéance de la configuration des limiteurs de vitesse à 8 km/h et quand a-t-elle été réalisée ?",
+    "answer": "Échéance au 28/11/2025 (action A-25-014, Pieter De Smet). Les limiteurs ont été configurés le 21 novembre 2025.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-11-17_v2.docx",
+        "snippets": [
+          "A-25-014",
+          "28/11/2025"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-11-24.docx",
+        "snippets": [
+          "Les limiteurs de vitesse sont configurés à 8 km/h sur tous les chariots depuis le 21 novembre"
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q040",
+    "type": "decision_reason",
+    "thread": "recall",
+    "question": "Quelle est la cause des fuites sur les pompes à chaleur Aéris 12 ?",
+    "answer": "Un brasage défectueux de la vanne quatre voies sur le lot V-2544 du fournisseur Valtek : un four de brasage du fournisseur a fonctionné 6 jours à une température trop basse.",
+    "evidence": [
+      {
+        "document": "04_Qualite/Rappel_Aeris12/Rapport 8D Aeris 12 vanne 4 voies.pdf",
+        "snippets": [
+          "un four de brasage du fournisseur a fonctionné 6 jours avec une température trop basse"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-12-08.docx",
+        "snippets": [
+          "un brasage défectueux sur le lot de vannes V-2544"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "04_Qualite/Non_conformites/NC-2025-047.docx",
+        "snippets": [
+          "Brasage défectueux sur le lot de vannes V-2544 livré par Valtek"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q041",
+    "type": "image_only",
+    "thread": "herstal",
+    "question": "Combien d'allées de rayonnages compte l'entrepôt de Herstal ?",
+    "answer": "8 allées (A à H), sur 5 niveaux.",
+    "evidence": [
+      {
+        "document": "03_Production/Plans/Plan entrepot Herstal - rayonnages.png",
+        "snippets": [
+          "8 allées"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q042",
+    "type": "scan_ocr",
+    "thread": null,
+    "question": "Combien de palettes manquaient à la livraison de Kompra du 3 mars 2026 ?",
+    "answer": "Une palette sur huit (20 compresseurs), ce qui a donné lieu à la non-conformité NC-2026-011.",
+    "evidence": [
+      {
+        "document": "06_Achats/Bons_de_livraison/2026-03-03 BL Kompra.jpg",
+        "snippets": [
+          "7 palettes sur 8"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "04_Qualite/Non_conformites/NC-2026-011.docx",
+        "snippets": [
+          "1 palette (20 compresseurs)"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q043",
+    "type": "version_trap",
+    "thread": "budget",
+    "question": "Quel budget de maintenance lourde et de renouvellement d'outillages est prévu pour 2026 ?",
+    "answer": "280 k€ dans le budget approuvé. Les versions 1 et 2 (y compris le fichier « Budget 2026 v2 FINAL ») prévoyaient 300 k€.",
+    "evidence": [
+      {
+        "document": "01_Finance/Budget_2026/Budget 2026 - version approuvee CA 16-12-2025.xlsx",
+        "snippets": [
+          "Maintenance lourde et renouvellement d'outillages",
+          "280"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-11-24.docx",
+        "snippets": [
+          "réduit l'enveloppe de maintenance lourde de 300 à 280 k€"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [
+      {
+        "document": "99_Archives/Doublons/Budget 2026 v2 FINAL.xlsx",
+        "snippets": [
+          "Maintenance lourde et renouvellement d'outillages",
+          "300"
+        ]
+      },
+      {
+        "document": "01_Finance/Budget_2026/Budget 2026 v2.xlsx",
+        "snippets": [
+          "Maintenance lourde et renouvellement d'outillages",
+          "300"
+        ]
+      },
+      {
+        "document": "01_Finance/Budget_2026/Budget 2026 v1.xlsx",
+        "snippets": [
+          "Maintenance lourde et renouvellement d'outillages",
+          "300"
+        ]
+      }
+    ],
+    "difficulty": "difficile",
+    "notes": "Piège : le fichier « Budget 2026 v2 FINAL.xlsx » contient la version 2."
+  },
+  {
+    "id": "Q044",
+    "type": "factual",
+    "thread": "herstal",
+    "question": "Combien d'emplacements palettes l'entrepôt de Herstal offre-t-il ?",
+    "answer": "3 960 emplacements palettes.",
+    "evidence": [
+      {
+        "document": "03_Production/Plans/Plan entrepot Herstal - rayonnages.png",
+        "snippets": [
+          "3 960 emplacements palettes"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "01_Finance/Investissements/Demande capex CAPEX-2026-005 - Rayonnages de l'entrepôt de Herstal.docx",
+        "snippets": [
+          "3 960 emplacements palettes"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q045",
+    "type": "image_in_document",
+    "thread": "telework",
+    "question": "Quel pourcentage des répondants à l'enquête télétravail souhaitait le mardi comme jour de présence commun ?",
+    "answer": "46 % (jeudi : 31 %).",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/Annexes/2026-04-13 Annexe - Resultats enquete teletravail.pdf",
+        "snippets": [
+          "Mardi",
+          "46"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "difficile",
+    "notes": "Graphique intégré dans un PDF."
+  },
+  {
+    "id": "Q046",
+    "type": "factual",
+    "thread": "erp",
+    "question": "Combien coûte la maintenance de niveau 3 de l'ERP après l'hypercare ?",
+    "answer": "38 000 € HT par an (Intégra Conseil).",
+    "evidence": [
+      {
+        "document": "08_Juridique/Contrats/Contrat integration ERP Integra Conseil.pdf",
+        "snippets": [
+          "38 000 € HT par an"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q047",
+    "type": "action_tracking",
+    "thread": "cyber",
+    "question": "Qui était responsable du déploiement de la MFA sur tous les comptes, avec quelle échéance, et quand l'action a-t-elle été clôturée ?",
+    "answer": "Kevin Mertens (action A-26-003), échéance au 28/02/2026. Elle a été clôturée au CODIR du 2 mars 2026 : les comptes de bureau sont protégés depuis le 27 février.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-01-14 CODIR extraordinaire PV.docx",
+        "snippets": [
+          "A-26-003",
+          "Déployer la MFA sur tous les comptes",
+          "Kevin Mertens",
+          "28/02/2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-03-02 CODIR PV.docx",
+        "snippets": [
+          "A-26-003",
+          "Clôturée. Comptes de bureau protégés le 27 février."
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q048",
+    "type": "decision_current",
+    "thread": "telework",
+    "question": "Quel est le montant de l'indemnité de télétravail ?",
+    "answer": "40 € par mois depuis la version 3 de la politique (1er mai 2026). La version 2 prévoyait 20 € par mois.",
+    "evidence": [
+      {
+        "document": "02_RH/Politiques/Politique teletravail v3 (2026).docx",
+        "snippets": [
+          "indemnité forfaitaire de bureau de 40 € par mois"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "02_RH/Politiques/Politique teletravail v3 (2026).pdf",
+        "snippets": [
+          "indemnité forfaitaire de bureau de 40 € par mois"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [
+      {
+        "document": "02_RH/Politiques/Politique teletravail v2 (2023).pdf",
+        "snippets": [
+          "indemnité forfaitaire de 20 € par mois"
+        ]
+      }
+    ],
+    "difficulty": "facile",
+    "notes": "Piège de version : 20 € dans la version 2."
+  },
+  {
+    "id": "Q049",
+    "type": "board_resolution",
+    "thread": "l4",
+    "question": "À quelle condition le conseil a-t-il approuvé l'investissement dans la ligne L4 ?",
+    "answer": "La commande ne pouvait être passée qu'après la décision de la Région wallonne sur l'aide à l'investissement, et au plus tard le 31 janvier 2026.",
+    "evidence": [
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2025-11-18 signé.pdf",
+        "snippets": [
+          "31 janvier 2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-01-26 CODIR PV.docx",
+        "snippets": [
+          "La condition fixée par le conseil est remplie"
+        ],
+        "grade": 1,
+        "fact": null
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q050",
+    "type": "factual",
+    "thread": "recall",
+    "question": "Combien Calorvia paie-t-elle un installateur pour une intervention du rappel de l'Aéris 12 ?",
+    "answer": "240 € HT par intervention, déplacement compris (vannes de remplacement livrées gratuitement).",
+    "evidence": [
+      {
+        "document": "04_Qualite/Rappel_Aeris12/Lettre rappel installateurs 2025-12-11.pdf",
+        "snippets": [
+          "Chaque intervention vous sera rémunérée 240 € HT"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "04_Qualite/Rappel_Aeris12/Terugroepbrief installateurs 2025-12-11.pdf",
+        "snippets": [
+          "240 euro excl. btw"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q051",
+    "type": "board_resolution",
+    "thread": "general",
+    "question": "Quel mandat l'assemblée générale du 9 juin 2026 a-t-elle renouvelé ?",
+    "answer": "Le mandat d'administratrice indépendante de Martine Claessens, pour quatre ans, jusqu'à l'assemblée générale de 2030.",
+    "evidence": [
+      {
+        "document": "00_Direction/Conseil_administration/AG/PV AGO 2026-06-09.pdf",
+        "snippets": [
+          "renouvelle le mandat d'administratrice indépendante de Martine Claessens"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q052",
+    "type": "decision_history",
+    "thread": "l4",
+    "question": "Lors de la commande de la ligne L4 en janvier 2026, quand la mise en service était-elle prévue ?",
+    "answer": "À la mi-juin 2026, avec une livraison en semaine 18 (fin avril).",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-01-26 CODIR PV.docx",
+        "snippets": [
+          "La livraison est prévue en semaine 18 (fin avril) et la mise en service à la mi-juin"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q053",
+    "type": "action_tracking",
+    "thread": "recall",
+    "question": "Qui suivait l'avancement des interventions du rappel Aéris 12, et comment l'action s'est-elle terminée ?",
+    "answer": "Anne Vercammen (action A-25-020, échéance au 31/03/2026). Elle a été clôturée au CODIR du 30 mars 2026 : 211 unités réparées et 3 introuvables.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-12-08.docx",
+        "snippets": [
+          "A-25-020",
+          "Anne Vercammen",
+          "31/03/2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-03-30 CODIR PV.docx",
+        "snippets": [
+          "Campagne clôturée : 211 unités réparées, 3 introuvables."
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q054",
+    "type": "decision_current",
+    "thread": "herstal",
+    "question": "Depuis quand l'entrepôt de Herstal est-il opérationnel ?",
+    "answer": "Depuis le 18 mai 2026. L'entrée dans les lieux était prévue le 1er mai, mais la livraison des rayonnages a pris deux semaines de retard.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-05-18 CODIR PV.docx",
+        "snippets": [
+          "L'entrepôt de Herstal est opérationnel depuis ce matin"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2026-05-19.pdf",
+        "snippets": [
+          "L'entrepôt de Herstal est opérationnel depuis le 18 mai 2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "09_Communication/Communiques_presse/2026-05-18 CP Entrepot Herstal.docx",
+        "snippets": [
+          "a mis en service le 18 mai 2026 un entrepôt de 4 200 m²"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-04-27 CODIR PV.docx",
+        "snippets": [
+          "L'entrée dans l'entrepôt de Herstal est reportée du 1er mai au 18 mai 2026"
+        ],
+        "grade": 1,
+        "fact": null
+      }
+    ],
+    "traps": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-03-09 CODIR PV.docx",
+        "snippets": [
+          "l'entrée dans les lieux est prévue le 1er mai"
+        ]
+      }
+    ],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q055",
+    "type": "decision_history",
+    "thread": "price",
+    "question": "Quelle hausse tarifaire la direction commerciale avait-elle proposée en premier pour 2026 ?",
+    "answer": "Une hausse uniforme de 4 % au 1er janvier 2026 (CODIR du 29 septembre 2025), remplacée le 6 octobre par une hausse différenciée (3,5 % standard, 5 % premium).",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-09-29.docx",
+        "snippets": [
+          "hausse générale des prix catalogue de 4 %"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "05_Commercial/Tarifs/Tarif 2026 - projet v1.xlsx",
+        "snippets": [
+          "hausse uniforme de 4 %"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/Annexes/2025-10-06 Annexe - Simulation hausse tarifaire.xlsx",
+        "snippets": [
+          "A : hausse uniforme"
+        ],
+        "grade": 1,
+        "fact": null
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q056",
+    "type": "image_only",
+    "thread": "cfo",
+    "question": "À qui le service des achats est-il rattaché depuis avril 2026 ?",
+    "answer": "À Thomas Lambert, directeur des opérations. En septembre 2025, les achats dépendaient encore du directeur financier.",
+    "evidence": [
+      {
+        "document": "02_RH/Organigrammes/Organigramme direction 2026-04.png",
+        "snippets": [
+          "Céline Moreau",
+          "Thomas Lambert"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "02_RH/Organigrammes/Organigramme direction 2026-06.png",
+        "snippets": [
+          "Céline Moreau",
+          "Thomas Lambert"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [
+      {
+        "document": "02_RH/Organigrammes/Organigramme direction 2025-09.png",
+        "snippets": [
+          "Céline Moreau",
+          "Laurent Dewit"
+        ]
+      }
+    ],
+    "difficulty": "difficile",
+    "notes": "Information uniquement dans les organigrammes (images)."
+  },
+  {
+    "id": "Q057",
+    "type": "scan_ocr",
+    "thread": null,
+    "question": "Quel montant l'assurance responsabilité civile couvre-t-elle pour les dommages corporels ?",
+    "answer": "10 000 000 € par sinistre (police RC-88.214.507, année 2026).",
+    "evidence": [
+      {
+        "document": "08_Juridique/Assurances/Attestation assurance RC 2026.pdf",
+        "snippets": [
+          "10 000 000"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q058",
+    "type": "decision_reason",
+    "thread": "l4",
+    "question": "Pourquoi la livraison de la ligne L4 a-t-elle été retardée ?",
+    "answer": "À cause d'une pénurie de composants pour l'armoire de commande chez Linetech (trois semaines de retard).",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-04-27 CODIR PV.docx",
+        "snippets": [
+          "pénurie de composants pour l'armoire de commande"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q059",
+    "type": "image_only",
+    "thread": "production",
+    "question": "Quel est le numéro de série de la presse plieuse de Seneffe ?",
+    "answer": "BRV-19-04417 (Brevik Machines PB-135/3100, 2019).",
+    "evidence": [
+      {
+        "document": "03_Production/Seneffe/Photos_equipements/IMG_20260311_Presse_plieuse.jpg",
+        "snippets": [
+          "BRV-19-04417"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q060",
+    "type": "multi_doc",
+    "thread": "cyber",
+    "question": "Lors de la tentative de fraude du 13 janvier 2026, quel IBAN l'attaquant voulait-il imposer et quel est l'IBAN légitime du fournisseur ?",
+    "answer": "L'attaquant demandait le paiement de la facture TM-2026-0042 (48 602,80 €) sur l'IBAN lituanien LT62 3250 0219 7745 1180 ; l'IBAN légitime de Tôlerie Mosane est BE47 0689 4412 7380.",
+    "evidence": [
+      {
+        "document": "07_IT/Securite/Rapport incident securite 2026-01-13.pdf",
+        "snippets": [
+          "LT62 3250 0219 7745 1180"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "01_Finance/Comptabilite/Factures_fournisseurs/2026-01-08 Tolerie Mosane TM-2026-0042.jpg",
+        "snippets": [
+          "BE47 0689 4412 7380"
+        ],
+        "grade": 2,
+        "fact": 1
+      },
+      {
+        "document": "01_Finance/Comptabilite/Factures_fournisseurs/2025-11-14 Tolerie Mosane TM-2025-0391.jpg",
+        "snippets": [
+          "BE47 0689 4412 7380"
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "difficile",
+    "notes": null
+  },
+  {
+    "id": "Q061",
+    "type": "factual",
+    "thread": null,
+    "question": "Quelle est la durée de garantie du compresseur d'une pompe à chaleur Calorvia ?",
+    "answer": "5 ans (2 ans pour les autres pièces), si la mise en service est réalisée par un installateur agréé.",
+    "evidence": [
+      {
+        "document": "05_Commercial/Tarifs/Conditions generales de vente 2026.pdf",
+        "snippets": [
+          "garanties 5 ans sur le compresseur"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "05_Commercial/Fiches_produits/Aéris_6_FR.pdf",
+        "snippets": [
+          "Garantie : 5 ans sur le compresseur"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q062",
+    "type": "multilingual",
+    "thread": "accident",
+    "question": "Quelles causes de l'accident de Gand le rapport d'incident identifie-t-il ?",
+    "answer": "Pas de passage piéton marqué dans les allées, une visibilité réduite aux angles des rayonnages, une vitesse autorisée (12 km/h) trop élevée pour les zones piétonnes et une imprimante d'étiquettes placée de l'autre côté de l'allée.",
+    "evidence": [
+      {
+        "document": "03_Production/Gent/Veiligheid/Incidentrapport 2025-11-12 heftruck gang 7.pdf",
+        "snippets": [
+          "Geen gemarkeerde oversteekplaats voor voetgangers in de gangen."
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q063",
+    "type": "decision_current",
+    "thread": "accident",
+    "question": "Quelle est la vitesse maximale autorisée pour les chariots élévateurs dans les allées de stockage de l'entrepôt de Gand ?",
+    "answer": "6 km/h dans les allées de stockage (10 km/h sur les voies de circulation principales), depuis le 22 janvier 2026. Après l'accident du 12 novembre 2025, elle avait d'abord été limitée à 8 km/h, contre 12 km/h auparavant.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-01-12 CODIR PV.docx",
+        "snippets": [
+          "abaissée de 8 à 6 km/h dans les allées de stockage"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "03_Production/Gent/Veiligheid/Comite PBW/Verslag Comite PBW Gent 2026-01-22.docx",
+        "snippets": [
+          "maximum 6 km/u in de gangen"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "03_Production/Gent/Veiligheid/Affiche snelheid magazijn.jpg",
+        "snippets": [
+          "6 km/u"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "03_Production/Procedures/WI-GNT-09 Dagelijkse controle heftruck.pdf",
+        "snippets": [
+          "maximum 6 km/u in de gangen"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "03_Production/Gent/Veiligheid/Plattegrond magazijn Gent - circulatie 2026-01.png",
+        "snippets": [
+          "6 km/u",
+          "gangen"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-11-17_v2.docx",
+        "snippets": [
+          "Mesures immédiates à Gand : vitesse des chariots limitée à 8 km/h dans tout l'entrepôt, blue spots sur les 14 chariots, marquage des passages piétons dans les allées 1 à 12 et causerie sécurité pour tous les caristes."
+        ]
+      }
+    ],
+    "difficulty": "moyen",
+    "notes": "Piège temporel : 12 km/h (2024), 8 km/h (novembre), 6 km/h (janvier)."
+  },
+  {
+    "id": "Q064",
+    "type": "scan_ocr",
+    "thread": null,
+    "question": "Qu'a noté le réceptionnaire sur le bon de livraison d'Elcora du 12 février 2026 ?",
+    "answer": "« Reçu le 12/02 - 2 cartons abîmés, photos envoyées - R. Dethier ».",
+    "evidence": [
+      {
+        "document": "06_Achats/Bons_de_livraison/2026-02-12 BL Elcora.jpg",
+        "snippets": [
+          "2 cartons abîmés"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "difficile",
+    "notes": "Annotation manuscrite."
+  },
+  {
+    "id": "Q065",
+    "type": "decision_reason",
+    "thread": "erp",
+    "question": "Pourquoi l'éditeur NovaGest a-t-il été écarté de la consultation ERP ?",
+    "answer": "Parce que sa solution ne propose ni interface en néerlandais ni module de gestion d'entrepôt.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-10-13.docx",
+        "snippets": [
+          "NovaGest est écarté car sa solution ne propose ni interface en néerlandais ni module de gestion d'entrepôt"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q066",
+    "type": "decision_history",
+    "thread": "l4",
+    "question": "Quel montant a d'abord été soumis au conseil d'administration pour la ligne L4, et qu'a décidé le conseil d'octobre 2025 ?",
+    "answer": "1 400 000 €. Le conseil du 21 octobre 2025 ne s'est pas prononcé : il a demandé une variante phasée, l'analyse des aides régionales et l'impact sur la trésorerie, et reporté le point au 18 novembre.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-10-20.docx",
+        "snippets": [
+          "L'investissement de 1 400 000 € pour la ligne L4 est soumis au CA du 21 octobre, avec une recommandation en faveur de Linetech Automation BV."
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2025-10-21 signé.pdf",
+        "snippets": [
+          "ne se prononce pas"
+        ],
+        "grade": 2,
+        "fact": 1
+      },
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-10-27.docx",
+        "snippets": [
+          "Le conseil du 21 octobre ne s'est pas prononcé"
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q067",
+    "type": "meeting_detail",
+    "thread": "erp",
+    "question": "Quel taux de service (OTIF) a été présenté au CODIR du 8 juin 2026 ?",
+    "answer": "84,2 % pour la semaine 23, pour un objectif de 95 % (ralentissement lié au démarrage de l'ERP).",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-06-08 CODIR PV.docx",
+        "snippets": [
+          "Taux de service (OTIF)",
+          "84,2 %"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q068",
+    "type": "meeting_detail",
+    "thread": "cyber",
+    "question": "Pourquoi un CODIR extraordinaire s'est-il tenu en janvier 2026, et sous quelle forme ?",
+    "answer": "Le mercredi 14 janvier 2026, en visioconférence (Teams), à la suite de l'incident d'hameçonnage du 13 janvier (compromission d'une boîte aux lettres de la comptabilité et tentative de fraude au changement d'IBAN).",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-01-14 CODIR extraordinaire PV.docx",
+        "snippets": [
+          "visioconférence (Teams)"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-01-14 CODIR extraordinaire PV.docx",
+        "snippets": [
+          "un courriel d'hameçonnage a permis de compromettre la boîte aux lettres"
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q069",
+    "type": "excel_reasoning",
+    "thread": "telework",
+    "question": "Quelle est la satisfaction moyenne calculée à partir des réponses brutes de l'enquête sur le télétravail ?",
+    "answer": "8,1 sur 10 (84 réponses).",
+    "evidence": [
+      {
+        "document": "02_RH/Enquetes/Enquete teletravail - reponses brutes.xlsx",
+        "snippets": [
+          "Satisfaction moyenne",
+          "8.1"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-04-13 CODIR PV.docx",
+        "snippets": [
+          "La satisfaction moyenne est de 8,1 sur 10"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q070",
+    "type": "image_only",
+    "thread": "sales",
+    "question": "Selon le tableau de bord commercial de mars 2026, quel était l'écart du chiffre d'affaires au budget ?",
+    "answer": "+2,5 % (13 600 k€ de chiffre d'affaires).",
+    "evidence": [
+      {
+        "document": "05_Commercial/Tableaux_de_bord/Tableau de bord commercial 2026-03.png",
+        "snippets": [
+          "+2,5"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q071",
+    "type": "image_only",
+    "thread": "erp",
+    "question": "À quelle fréquence les stocks du WMS de Gand sont-ils transmis à l'ERP ?",
+    "answer": "Toutes les 15 minutes, via le bus d'intégration.",
+    "evidence": [
+      {
+        "document": "07_IT/Architecture/Schema applicatif 2026.png",
+        "snippets": [
+          "15 min"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q072",
+    "type": "factual",
+    "thread": null,
+    "question": "Quel est le montant total HT de l'offre DV-2026-0201 ?",
+    "answer": "400 248,00 € HT pour Logis Wallonie Promotion (36 Ventis D450 et 36 Aéris 9, remise de 15 %).",
+    "evidence": [
+      {
+        "document": "05_Commercial/Offres/DV-2026-0201 Logis.pdf",
+        "snippets": [
+          "Total HT",
+          "400 248,00 €"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q073",
+    "type": "decision_current",
+    "thread": "general",
+    "question": "À quel rythme le comité de direction se réunit-il pendant l'été 2026 ?",
+    "answer": "Toutes les deux semaines en juillet et en août 2026 ; la première réunion est prévue le lundi 13 juillet.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-06-29 CODIR PV.docx",
+        "snippets": [
+          "Le CODIR se réunit toutes les deux semaines en juillet et en août 2026."
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-06-29 CODIR PV.docx",
+        "snippets": [
+          "Prochaine réunion le lundi 13 juillet"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q074",
+    "type": "multilingual",
+    "thread": null,
+    "question": "Quel est le délai de livraison contractuel de Kompra ?",
+    "answer": "Six semaines à compter du bon de commande.",
+    "evidence": [
+      {
+        "document": "06_Achats/Fournisseurs/Supply agreement Kompra GmbH 2024-2026.pdf",
+        "snippets": [
+          "Six (6) weeks from the purchase order."
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q075",
+    "type": "decision_history",
+    "thread": "telework",
+    "question": "Combien de jours de télétravail la politique autorisait-elle avant 2026 ?",
+    "answer": "Un jour par semaine au maximum (version 2 de la politique, en vigueur depuis le 1er mars 2023).",
+    "evidence": [
+      {
+        "document": "02_RH/Politiques/Politique teletravail v2 (2023).pdf",
+        "snippets": [
+          "un jour par semaine au maximum"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-10-27.docx",
+        "snippets": [
+          "autorise un jour de télétravail par semaine"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q076",
+    "type": "meeting_detail",
+    "thread": "general",
+    "question": "Combien de non-conformités l'audit de surveillance ISO 9001 de février 2026 a-t-il relevées ?",
+    "answer": "Aucune non-conformité majeure, deux mineures (enregistrements d'étalonnage à Seneffe, suivi des formations des caristes à Gand) et cinq observations. Le certificat est maintenu.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-02-09 CODIR PV.docx",
+        "snippets": [
+          "0 non-conformité majeure, 2 non-conformités mineures"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "04_Qualite/Audits/Rapport audit ISO 9001 surveillance 2026.pdf",
+        "snippets": [
+          "Enregistrements d'étalonnage absents pour deux clés dynamométriques"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q077",
+    "type": "factual",
+    "thread": null,
+    "question": "Quelles sont les conditions de paiement de Calorvia ?",
+    "answer": "30 jours fin de mois ; en cas de retard, intérêt de 8 % l'an et indemnité forfaitaire de 10 % (minimum 75 €).",
+    "evidence": [
+      {
+        "document": "05_Commercial/Tarifs/Conditions generales de vente 2026.pdf",
+        "snippets": [
+          "Les factures sont payables à 30 jours fin de mois"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q078",
+    "type": "excel_reasoning",
+    "thread": "sales",
+    "question": "Quelle région a réalisé le plus gros chiffre d'affaires en octobre 2025 ?",
+    "answer": "Flandre (4 568 k€)  juste devant Wallonie (4 555 k€).",
+    "evidence": [
+      {
+        "document": "01_Finance/Reporting_mensuel/Reporting 2025-10.xlsx",
+        "snippets": [
+          "Flandre",
+          "4568"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "01_Finance/Reporting_mensuel/Reporting 2025-10.xlsx",
+        "snippets": [
+          "Wallonie",
+          "4555"
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": "Les deux premières régions sont très proches."
+  },
+  {
+    "id": "Q079",
+    "type": "meeting_detail",
+    "thread": "general",
+    "question": "Qui a présidé le CODIR du 23 février 2026 ?",
+    "answer": "Thomas Lambert, directeur des opérations, car Hélène Marchal était excusée.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-02-23 CODIR PV.docx",
+        "snippets": [
+          "Présidence : Thomas Lambert"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q080",
+    "type": "version_trap",
+    "thread": null,
+    "question": "Qui dirige le marketing chez Calorvia ?",
+    "answer": "Laura Mertz (organigrammes de 2025 et 2026). L'organigramme de 2024 mentionne encore Lucas Fontana.",
+    "evidence": [
+      {
+        "document": "02_RH/Organigrammes/Organigramme direction 2026-06.png",
+        "snippets": [
+          "Laura Mertz"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "02_RH/Organigrammes/Organigramme direction 2025-09.png",
+        "snippets": [
+          "Laura Mertz"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q081",
+    "type": "decision_current",
+    "thread": "erp",
+    "question": "Quel est le budget total du projet ERP Atlas ?",
+    "answer": "725 000 € : le budget initial de 680 000 € approuvé le 18 novembre 2025, plus un surcoût de 45 000 € approuvé le 17 février 2026 après le report de la mise en production.",
+    "evidence": [
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2026-02-17.pdf",
+        "snippets": [
+          "Le budget total du projet est porté à 725 000 €"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "01_Finance/Investissements/Suivi capex 2026.xlsx",
+        "snippets": [
+          "Remplacement de l'ERP (projet Atlas)",
+          "725"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2025-11-18 signé.pdf",
+        "snippets": [
+          "680 000"
+        ]
+      }
+    ],
+    "difficulty": "moyen",
+    "notes": "Le budget 2026 approuvé indique 680 k€ (avant le surcoût)."
+  },
+  {
+    "id": "Q082",
+    "type": "out_of_corpus",
+    "thread": null,
+    "question": "Quelle entreprise a remporté l'appel d'offres pour l'extension du site de Gand ?",
+    "answer": "Information absente du corpus.",
+    "evidence": [],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q083",
+    "type": "multilingual",
+    "thread": "sales",
+    "question": "Quel est l'objectif de chiffre d'affaires 2026 avec Klimaat Partners ?",
+    "answer": "9,6 millions d'euros, soit +8 % (8,9 millions en 2025).",
+    "evidence": [
+      {
+        "document": "05_Commercial/Comptes_cles/Accountplan Klimaat Partners 2026.docx",
+        "snippets": [
+          "9,6 miljoen euro (+8 %)"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q084",
+    "type": "image_only",
+    "thread": "production",
+    "question": "Quelle est la température maximale du four de brasage de Seneffe ?",
+    "answer": "1120 °C (Thermolux Industrie FBC-1200).",
+    "evidence": [
+      {
+        "document": "03_Production/Seneffe/Photos_equipements/IMG_20260312_Four_de_brasage.jpg",
+        "snippets": [
+          "1120"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q085",
+    "type": "multilingual",
+    "thread": null,
+    "question": "Combien de groupes Ventis peut-on gerber au maximum sur une palette ?",
+    "answer": "Quatre unités par palette (instruction WI-GNT-03).",
+    "evidence": [
+      {
+        "document": "03_Production/Procedures/WI-GNT-03 Inpakken Ventis.pdf",
+        "snippets": [
+          "Maximaal 4 units per pallet stapelen."
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "04_Qualite/Non_conformites/NC-2025-045.docx",
+        "snippets": [
+          "Gerbage de cinq unités au lieu de quatre"
+        ],
+        "grade": 1,
+        "fact": null
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q086",
+    "type": "multilingual",
+    "thread": "recall",
+    "question": "Quelle part des coûts d'un rappel Valtek doit-il supporter selon son contrat ?",
+    "answer": "Une part proportionnelle à sa responsabilité, plafonnée à 250 000 € par événement.",
+    "evidence": [
+      {
+        "document": "06_Achats/Fournisseurs/Supply agreement Valtek Components 2025.pdf",
+        "snippets": [
+          "up to a maximum of EUR 250,000 per event"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": "Contrat en anglais."
+  },
+  {
+    "id": "Q087",
+    "type": "excel_lookup",
+    "thread": "rse",
+    "question": "À combien s'élèvent les émissions totales de gaz à effet de serre de Calorvia en 2025 ?",
+    "answer": "42 020 tonnes équivalent CO2, dont 38 600 t dans le scope 3.",
+    "evidence": [
+      {
+        "document": "10_RSE/Bilan carbone 2025.xlsx",
+        "snippets": [
+          "42020"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "10_RSE/Rapport RSE 2025.pdf",
+        "snippets": [
+          "42 020 tonnes équivalent CO2"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q088",
+    "type": "factual",
+    "thread": "herstal",
+    "question": "Quel est le montant de la garantie bancaire du bail de Herstal ?",
+    "answer": "24 675 €, soit trois mois de loyer.",
+    "evidence": [
+      {
+        "document": "08_Juridique/Contrats/Bail commercial entrepot Herstal.pdf",
+        "snippets": [
+          "soit 24 675 €"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q089",
+    "type": "version_trap",
+    "thread": "price",
+    "question": "Quel est le prix catalogue 2026 de l'Aéris Pro 22 ?",
+    "answer": "18 110 € HT (hausse de 5 %). Le projet de tarif v1 indiquait 17 940 €.",
+    "evidence": [
+      {
+        "document": "05_Commercial/Tarifs/Tarif 2026.xlsx",
+        "snippets": [
+          "Aéris Pro 22",
+          "18110"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "99_Archives/Doublons/Copie de Tarif 2026.xlsx",
+        "snippets": [
+          "Aéris Pro 22",
+          "18110"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [
+      {
+        "document": "05_Commercial/Tarifs/Tarif 2026 - projet v1.xlsx",
+        "snippets": [
+          "Aéris Pro 22",
+          "17940"
+        ]
+      }
+    ],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q090",
+    "type": "out_of_corpus",
+    "thread": null,
+    "question": "Quel est le résultat net du premier semestre 2026 ?",
+    "answer": "Information absente du corpus.",
+    "evidence": [],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q091",
+    "type": "decision_current",
+    "thread": "price",
+    "question": "Quelle hausse des prix catalogue s'applique à la gamme premium en 2026 ?",
+    "answer": "+5 % au 1er janvier 2026 (+3,5 % pour la gamme standard). Distrinergie bénéficie d'une exception à 2 %.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-10-06.docx",
+        "snippets": [
+          "Hausse des prix catalogue au 1er janvier 2026 : +3,5 % pour la gamme standard (Aéris 6, 9 et 12, Ventis D300 et D450) et +5 % pour la gamme premium (Aéris Pro et Ventis D450 Pro)."
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "05_Commercial/Courriers/Courrier hausse tarifaire 2026.pdf",
+        "snippets": [
+          "+5 % sur la gamme premium"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-01-19 CODIR PV.docx",
+        "snippets": [
+          "Exception tarifaire accordée à Distrinergie : hausse de 2 % en 2026 au lieu de 3,5 % et 5 %, contre un engagement de 2400 unités."
+        ],
+        "grade": 1,
+        "fact": null
+      }
+    ],
+    "traps": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-09-29.docx",
+        "snippets": [
+          "hausse générale des prix catalogue de 4 %"
+        ]
+      }
+    ],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q092",
+    "type": "decision_history",
+    "thread": "accident",
+    "question": "Quelle vitesse maximale a été imposée aux chariots de Gand juste après l'accident de novembre 2025, et quelle était la limite avant l'accident ?",
+    "answer": "8 km/h dans tout l'entrepôt (décision du CODIR du 17 novembre 2025, effective le 21 novembre). Avant l'accident, la limite était de 12 km/h.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-11-17_v2.docx",
+        "snippets": [
+          "Mesures immédiates à Gand : vitesse des chariots limitée à 8 km/h dans tout l'entrepôt, blue spots sur les 14 chariots, marquage des passages piétons dans les allées 1 à 12 et causerie sécurité pour tous les caristes."
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "03_Production/Gent/Veiligheid/Incidentrapport 2025-11-12 heftruck gang 7.pdf",
+        "snippets": [
+          "Snelheid van alle heftrucks beperkt tot 8 km/u."
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-11-17_v2.docx",
+        "snippets": [
+          "La vitesse maximale autorisée dans l'entrepôt était jusqu'ici de 12 km/h"
+        ],
+        "grade": 2,
+        "fact": 1
+      },
+      {
+        "document": "99_Archives/2024/PV_CODIR_2024-12-16.docx",
+        "snippets": [
+          "reste fixée à 12 km/h"
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q093",
+    "type": "factual",
+    "thread": "cyber",
+    "question": "Quel était le taux de clic lors de la simulation d'hameçonnage de mai 2026 ?",
+    "answer": "4 % (9 personnes sur 228), contre 14 % en février.",
+    "evidence": [
+      {
+        "document": "07_IT/Securite/Rapport trimestriel cybersecurite 2026-07-03.docx",
+        "snippets": [
+          "Taux de clic : 4 % (9 personnes sur 228)."
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q094",
+    "type": "factual",
+    "thread": null,
+    "question": "Quel profil est demandé pour le poste de technicien de maintenance à Seneffe ?",
+    "answer": "Un bachelier en électromécanique (ou une expérience équivalente), trois ans d'expérience en maintenance industrielle et la connaissance des automates programmables ; astreintes une semaine sur cinq.",
+    "evidence": [
+      {
+        "document": "02_RH/Recrutement/Offres/REC-2025-031 Technicien de maintenance.html",
+        "snippets": [
+          "Bachelier en électromécanique ou expérience équivalente"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q095",
+    "type": "excel_lookup",
+    "thread": "price",
+    "question": "Quel est le prix catalogue 2026 de l'Aéris 9 ?",
+    "answer": "8 750 € HT (8 450 € en 2025  hausse de 3 5 %).",
+    "evidence": [
+      {
+        "document": "05_Commercial/Tarifs/Tarif 2026.xlsx",
+        "snippets": [
+          "Aéris 9",
+          "8750"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "99_Archives/Doublons/Copie de Tarif 2026.xlsx",
+        "snippets": [
+          "Aéris 9",
+          "8750"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [
+      {
+        "document": "05_Commercial/Tarifs/Tarif 2026 - projet v1.xlsx",
+        "snippets": [
+          "Aéris 9",
+          "8790"
+        ]
+      }
+    ],
+    "difficulty": "facile",
+    "notes": "Piège : le projet v1 donne 8790 € (hausse de 4 %)."
+  },
+  {
+    "id": "Q096",
+    "type": "decision_current",
+    "thread": "freeze",
+    "question": "Le gel des recrutements des fonctions support est-il toujours en vigueur ?",
+    "answer": "Non. Décidé par le conseil du 16 décembre 2025 pour le premier trimestre 2026, il a été levé par le conseil du 21 avril 2026 à partir du 1er mai 2026.",
+    "evidence": [
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2026-04-21.pdf",
+        "snippets": [
+          "lève le gel des recrutements des fonctions support à partir du 1er mai 2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "02_RH/Notes_de_service/2026-04-28 NS-2026-06 Fin du gel des recrutements.docx",
+        "snippets": [
+          "a levé le gel des recrutements des fonctions support"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2025-12-16 signé.pdf",
+        "snippets": [
+          "geler les recrutements"
+        ]
+      }
+    ],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q097",
+    "type": "factual",
+    "thread": null,
+    "question": "Quel est le plafond de remboursement d'une nuit d'hôtel en Belgique ?",
+    "answer": "120 € par nuit, petit-déjeuner compris (150 € en France, aux Pays-Bas ou en Allemagne).",
+    "evidence": [
+      {
+        "document": "02_RH/Politiques/Politique frais de deplacement.pdf",
+        "snippets": [
+          "Hôtel en Belgique (par nuit, petit-déjeuner compris)",
+          "120 €"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q098",
+    "type": "image_only",
+    "thread": "recall",
+    "question": "Quel a été le taux de réclamations clients en décembre 2025 ?",
+    "answer": "1,9 % des unités livrées, le pic de la période (objectif : 0,8 %).",
+    "evidence": [
+      {
+        "document": "04_Qualite/Indicateurs/Taux de reclamations 2025-2026.png",
+        "snippets": [
+          "1,9"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q099",
+    "type": "decision_current",
+    "thread": "telework",
+    "question": "Combien de jours de télétravail par semaine sont autorisés chez Calorvia et y a-t-il un jour de présence obligatoire ?",
+    "answer": "Deux jours par semaine au maximum depuis le 1er mai 2026 (politique RH-04 version 3). Le mardi est un jour de présence obligatoire pour toutes les équipes.",
+    "evidence": [
+      {
+        "document": "02_RH/Politiques/Politique teletravail v3 (2026).docx",
+        "snippets": [
+          "2 jours par semaine au maximum",
+          "Le mardi est un jour de présence obligatoire"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "02_RH/Politiques/Politique teletravail v3 (2026).pdf",
+        "snippets": [
+          "2 jours par semaine au maximum",
+          "Le mardi est un jour de présence obligatoire"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-04-13 CODIR PV.docx",
+        "snippets": [
+          "Le télétravail à 2 jours par semaine est généralisé à partir du 1er mai 2026 pour les fonctions éligibles. Le mardi devient un jour de présence obligatoire. Une indemnité de 40 € par mois est versée aux télétravailleurs."
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [
+      {
+        "document": "02_RH/Politiques/Politique teletravail v2 (2023).pdf",
+        "snippets": [
+          "un jour par semaine au maximum"
+        ]
+      }
+    ],
+    "difficulty": "facile",
+    "notes": "La version 2 (2023) autorisait un seul jour."
+  },
+  {
+    "id": "Q100",
+    "type": "decision_history",
+    "thread": "erp",
+    "question": "En décembre 2025, à quelle date la mise en production du nouvel ERP était-elle prévue ?",
+    "answer": "Au 1er avril 2026 (décision du CODIR du 1er décembre 2025). Elle a ensuite été reportée au 1er juin 2026.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-12-01.docx",
+        "snippets": [
+          "La mise en production du nouvel ERP Praxio est fixée au 1er avril 2026."
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "09_Communication/Newsletter/Calorvia Info 2025-12.html",
+        "snippets": [
+          "la mise en production est prévue le 1er avril 2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "07_IT/Projet_Atlas_ERP/Planning/Planning Atlas v1.png",
+        "snippets": [
+          "01/04"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-02-09 CODIR PV.docx",
+        "snippets": [
+          "La mise en production de l'ERP Praxio est reportée du 1er avril au 1er juin 2026. Le surcoût de 45 000 € (jours supplémentaires d'Intégra Conseil) est soumis au conseil."
+        ]
+      }
+    ],
+    "difficulty": "moyen",
+    "notes": "Ne pas répondre avec la date actuelle (1er juin)."
+  },
+  {
+    "id": "Q101",
+    "type": "multi_doc",
+    "thread": "recall",
+    "question": "Quelle part du coût du rappel Valtek a-t-il prise en charge, et est-ce conforme au plafond de son contrat ?",
+    "answer": "65 %, soit 117 000 € sur 180 000 € provisionnés (note de crédit CN-2026-018). C'est inférieur au plafond contractuel de 250 000 € par événement.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-03-02 CODIR PV.docx",
+        "snippets": [
+          "soit 117 000 € sur les 180 000 € provisionnés"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "01_Finance/Comptabilite/Factures_fournisseurs/2026-03-10 Valtek note de credit CN-2026-018.jpg",
+        "snippets": [
+          "117 000"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "06_Achats/Fournisseurs/Supply agreement Valtek Components 2025.pdf",
+        "snippets": [
+          "up to a maximum of EUR 250,000 per event"
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "difficile",
+    "notes": null
+  },
+  {
+    "id": "Q102",
+    "type": "excel_lookup",
+    "thread": "recall",
+    "question": "Combien d'heures d'arrêt la ligne L2 de Seneffe a-t-elle cumulées en décembre 2025 ?",
+    "answer": "41,5 heures (taux de rebut de 3,4 %), à cause du contrôle à 100 % des vannes du lot V-2544.",
+    "evidence": [
+      {
+        "document": "03_Production/Seneffe/Rapports_mensuels/Rapport production Seneffe 2025-12.xlsx",
+        "snippets": [
+          "41.5"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "03_Production/Maintenance/Fiches_intervention/2025-12-10 INT-2025-773 Ligne L2.docx",
+        "snippets": [
+          "41 h 30 cumulées"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q103",
+    "type": "excel_lookup",
+    "thread": "rse",
+    "question": "Quel site consomme le plus d'énergie, et combien ?",
+    "answer": "Seneffe, avec 6 820 MWh en 2025.",
+    "evidence": [
+      {
+        "document": "10_RSE/Consommation energie par site 2025.png",
+        "snippets": [
+          "6 820"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "10_RSE/Bilan carbone 2025.xlsx",
+        "snippets": [
+          "Seneffe",
+          "6820"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q104",
+    "type": "decision_reason",
+    "thread": "erp",
+    "question": "Pourquoi la mise en production de l'ERP a-t-elle été reportée ?",
+    "answer": "Parce que 18 % des fiches articles étaient incomplètes (poids, nomenclatures, codes douaniers) et que l'interface avec le WMS de Gand n'avait pas encore été testée ; maintenir le 1er avril faisait courir un risque sur la facturation et les expéditions.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-02-09 CODIR PV.docx",
+        "snippets": [
+          "18 % des fiches articles sont incomplètes"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "07_IT/Projet_Atlas_ERP/COPIL/COPIL_Atlas_04_20260205.docx",
+        "snippets": [
+          "18 % des fiches articles sont incomplètes"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2026-02-17.pdf",
+        "snippets": [
+          "en raison de la qualité des données articles et de l'interface avec le WMS de Gand"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q105",
+    "type": "board_resolution",
+    "thread": "erp",
+    "question": "À quelle condition le conseil a-t-il approuvé le choix de l'ERP Praxio ?",
+    "answer": "Que le contrat d'intégration avec Intégra Conseil soit conclu au forfait (prix forfaitaire de 410 000 € HT).",
+    "evidence": [
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2025-11-18 signé.pdf",
+        "snippets": [
+          "conclu au forfait"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "08_Juridique/Contrats/Contrat integration ERP Integra Conseil.pdf",
+        "snippets": [
+          "Le prix est forfaitaire"
+        ],
+        "grade": 1,
+        "fact": null
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q106",
+    "type": "action_tracking",
+    "thread": "telework",
+    "question": "Qui devait publier la version 3 de la politique de télétravail, et pour quand ?",
+    "answer": "Nadia Benali (action A-26-011), pour le 24/04/2026. La politique a été publiée sur l'intranet le 24 avril 2026.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-04-13 CODIR PV.docx",
+        "snippets": [
+          "A-26-011",
+          "Nadia Benali",
+          "24/04/2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-04-27 CODIR PV.docx",
+        "snippets": [
+          "publiée sur l'intranet le 24 avril"
+        ],
+        "grade": 1,
+        "fact": null
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q107",
+    "type": "image_only",
+    "thread": null,
+    "question": "Quelle a été la première cause de non-conformité en 2025 ?",
+    "answer": "Les fournisseurs : 19 fiches sur 49.",
+    "evidence": [
+      {
+        "document": "04_Qualite/Indicateurs/Pareto causes non-conformites 2025.png",
+        "snippets": [
+          "Fournisseur",
+          "19"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q108",
+    "type": "decision_current",
+    "thread": "l4",
+    "question": "Quand la ligne d'assemblage L4 de Seneffe sera-t-elle officiellement mise en service ?",
+    "answer": "Le 6 juillet 2026. La mise en service était initialement prévue à la mi-juin, mais la livraison a pris trois semaines de retard.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-06-22 CODIR PV.docx",
+        "snippets": [
+          "La mise en service officielle reste fixée au 6 juillet 2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "03_Production/Seneffe/Ligne_L4/PV presérie L4 2026-06-18.docx",
+        "snippets": [
+          "La mise en service officielle est confirmée au 6 juillet 2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-04-27 CODIR PV.docx",
+        "snippets": [
+          "la mise en service est reportée au 6 juillet 2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-01-26 CODIR PV.docx",
+        "snippets": [
+          "la mise en service à la mi-juin"
+        ]
+      }
+    ],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q109",
+    "type": "decision_reason",
+    "thread": "freeze",
+    "question": "Pourquoi un gel des recrutements a-t-il été décidé fin 2025 ?",
+    "answer": "À cause de la pression sur les marges : à fin novembre 2025, l'EBITDA cumulé n'atteignait que 7,9 % du chiffre d'affaires, contre 9,0 % au budget.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-12-15.docx",
+        "snippets": [
+          "l'EBITDA cumulé atteint 7,9 % du chiffre d'affaires"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2025-12-16 signé.pdf",
+        "snippets": [
+          "pression sur les marges"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q110",
+    "type": "decision_history",
+    "thread": "cyber",
+    "question": "Quel pourcentage des comptes était protégé par la MFA lors du CODIR du 23 février 2026 ?",
+    "answer": "87 % des comptes.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-02-23 CODIR PV.docx",
+        "snippets": [
+          "87 % des comptes sont protégés"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q111",
+    "type": "out_of_corpus",
+    "thread": null,
+    "question": "Combien de pompes à chaleur Aéris 12 ont été vendues au Luxembourg en 2025 ?",
+    "answer": "Information absente du corpus.",
+    "evidence": [],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q112",
+    "type": "multilingual",
+    "thread": null,
+    "question": "Quel était le taux d'absentéisme du site de Gand en mars 2026 ?",
+    "answer": "5,1 % (contre 6,8 % en septembre 2025).",
+    "evidence": [
+      {
+        "document": "03_Production/Gent/Veiligheid/Comite PBW/Verslag Comite PBW Gent 2026-04-16.docx",
+        "snippets": [
+          "Absenteïsme in maart 2026: 5,1 %."
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q113",
+    "type": "excel_reasoning",
+    "thread": null,
+    "question": "Combien d'heures de formation à la sécurité le plan 2026 prévoit-il, sur combien d'heures au total ?",
+    "answer": "620 heures de sécurité sur 1 840 heures.",
+    "evidence": [
+      {
+        "document": "02_RH/Formation/Plan de formation 2026.xlsx",
+        "snippets": [
+          "Heures de formation à la sécurité",
+          "620"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "02_RH/Formation/Plan de formation 2026.xlsx",
+        "snippets": [
+          "1840"
+        ],
+        "grade": 2,
+        "fact": 1
+      },
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-11-17_v2.docx",
+        "snippets": [
+          "1 840 heures prévues, dont 620 heures de sécurité"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q114",
+    "type": "image_only",
+    "thread": null,
+    "question": "Quand l'ouverture du marché néerlandais est-elle prévue dans la feuille de route stratégique ?",
+    "answer": "En 2027 (de mars à décembre 2027).",
+    "evidence": [
+      {
+        "document": "00_Direction/Strategie/Feuille de route 2026-2028.png",
+        "snippets": [
+          "marché néerlandais",
+          "12/2027"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q115",
+    "type": "multilingual",
+    "thread": "accident",
+    "question": "Quel chariot élévateur était impliqué dans l'accident du 12 novembre 2025 à Gand ?",
+    "answer": "Le chariot n° 9, un Lyftec LE-20.",
+    "evidence": [
+      {
+        "document": "03_Production/Gent/Veiligheid/Incidentrapport 2025-11-12 heftruck gang 7.pdf",
+        "snippets": [
+          "nr. 9 (Lyftec LE-20)"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "03_Production/Gent/Veiligheid/Comite PBW/Verslag Comite PBW Gent 2025-11-20.docx",
+        "snippets": [
+          "heftruck nr. 9"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": "Information uniquement dans des documents en néerlandais."
+  },
+  {
+    "id": "Q116",
+    "type": "out_of_corpus",
+    "thread": null,
+    "question": "Quel ERP le bureau de Lille utilisait-il avant 2011 ?",
+    "answer": "Information absente du corpus.",
+    "evidence": [],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q117",
+    "type": "multi_doc",
+    "thread": null,
+    "question": "Le niveau sonore de l'Aéris 9 mesuré par Habitat Confort correspond-il à la fiche technique ?",
+    "answer": "Non : Habitat Confort a mesuré 58 dB(A) à un mètre, alors que la fiche technique annonce 52 dB(A).",
+    "evidence": [
+      {
+        "document": "04_Qualite/Reclamations/Courrier Habitat 2025-09-12.pdf",
+        "snippets": [
+          "58 dB(A)"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "05_Commercial/Fiches_produits/Aéris_9_FR.pdf",
+        "snippets": [
+          "Puissance acoustique",
+          "52 dB(A)"
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "difficile",
+    "notes": "Courrier scanné + fiche produit."
+  },
+  {
+    "id": "Q118",
+    "type": "factual",
+    "thread": null,
+    "question": "Comment joindre le helpdesk informatique ?",
+    "answer": "Au poste 2200, du lundi au vendredi de 7 h 30 à 18 h 00, ou via le portail de tickets.",
+    "evidence": [
+      {
+        "document": "07_IT/Support/FAQ helpdesk.html",
+        "snippets": [
+          "Par téléphone au poste 2200"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "09_Communication/Intranet/Contacts utiles.html",
+        "snippets": [
+          "Helpdesk informatique",
+          "2200"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q119",
+    "type": "scan_ocr",
+    "thread": "recall",
+    "question": "Qui a réceptionné les vannes Valtek du lot V-2544, quand et en quelle quantité ?",
+    "answer": "F. Collin, le 19 novembre 2025 : 600 vannes quatre voies du lot V-2544.",
+    "evidence": [
+      {
+        "document": "06_Achats/Bons_de_livraison/2025-11-19 BL Valtek.jpg",
+        "snippets": [
+          "V-2544",
+          "F. Collin"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "difficile",
+    "notes": null
+  },
+  {
+    "id": "Q120",
+    "type": "excel_lookup",
+    "thread": "erp",
+    "question": "Combien de cas de test portaient sur les éditions de documents lors de la recette 2 de l'ERP, et combien étaient conformes ?",
+    "answer": "36 cas de test, dont 31 conformes (5 non conformes).",
+    "evidence": [
+      {
+        "document": "07_IT/Projet_Atlas_ERP/Documentation/Resultats recette 2.xlsx",
+        "snippets": [
+          "Éditions de documents",
+          "36",
+          "31"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q121",
+    "type": "excel_lookup",
+    "thread": "production",
+    "question": "Quand est prévue la prochaine maintenance préventive du four de brasage de Seneffe ?",
+    "answer": "Le 06/07/2026 (maintenance trimestrielle réalisée en interne).",
+    "evidence": [
+      {
+        "document": "03_Production/Maintenance/Plan maintenance preventive 2026.xlsx",
+        "snippets": [
+          "Four de brasage",
+          "06/07/2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q122",
+    "type": "excel_lookup",
+    "thread": "recall",
+    "question": "Quel score global Valtek a-t-il obtenu dans l'évaluation des fournisseurs 2025 ?",
+    "answer": "60 sur 100 (qualité 41, délais 80, prix 76) : le fournisseur est placé sous surveillance à cause du rappel de l'Aéris 12.",
+    "evidence": [
+      {
+        "document": "06_Achats/Fournisseurs/Evaluation fournisseurs 2025.xlsx",
+        "snippets": [
+          "Valtek Components Ltd",
+          "Sous surveillance (rappel Aéris 12)"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q123",
+    "type": "board_resolution",
+    "thread": "general",
+    "question": "Quel dividende a été versé aux actionnaires au titre de l'exercice 2025 ?",
+    "answer": "Un dividende brut de 0,80 € par action (1 600 000 € pour 2 000 000 d'actions), proposé par le conseil du 17 mars 2026 et approuvé par l'assemblée générale du 9 juin 2026, payable à partir du 1er juillet 2026.",
+    "evidence": [
+      {
+        "document": "00_Direction/Conseil_administration/AG/PV AGO 2026-06-09.pdf",
+        "snippets": [
+          "dividende brut de 0,80 € par action"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2026-03-17.pdf",
+        "snippets": [
+          "un dividende brut de 0,80 € par action"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q124",
+    "type": "excel_lookup",
+    "thread": "budget",
+    "question": "Quel montant le budget 2026 approuvé prévoit-il pour le remplacement de l'ERP ?",
+    "answer": "680 k€ (feuille « Investissements » du budget approuvé). Le surcoût de 45 k€ a été approuvé plus tard, hors budget.",
+    "evidence": [
+      {
+        "document": "01_Finance/Budget_2026/Budget 2026 - version approuvee CA 16-12-2025.xlsx",
+        "snippets": [
+          "Remplacement de l'ERP (projet Atlas)",
+          "680"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q125",
+    "type": "excel_reasoning",
+    "thread": "budget",
+    "question": "Quel mois a le chiffre d'affaires budgété le plus élevé dans le budget 2026 approuvé ?",
+    "answer": "Décembre  avec 17 685 k€.",
+    "evidence": [
+      {
+        "document": "01_Finance/Budget_2026/Budget 2026 - version approuvee CA 16-12-2025.xlsx",
+        "snippets": [
+          "Décembre",
+          "17685"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q126",
+    "type": "excel_reasoning",
+    "thread": "budget",
+    "question": "De combien le chiffre d'affaires budgété pour 2026 a-t-il baissé entre la version 1 du budget et la version approuvée ?",
+    "answer": "De 2 500 k€ : 158 500 k€ dans la version 1, 156 000 k€ dans la version approuvée.",
+    "evidence": [
+      {
+        "document": "01_Finance/Budget_2026/Budget 2026 v1.xlsx",
+        "snippets": [
+          "Total 2026",
+          "158500"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "01_Finance/Budget_2026/Budget 2026 - version approuvee CA 16-12-2025.xlsx",
+        "snippets": [
+          "Total 2026",
+          "156000"
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "difficile",
+    "notes": null
+  },
+  {
+    "id": "Q127",
+    "type": "multi_doc",
+    "thread": "price",
+    "question": "Distrinergie respecte-t-il son engagement de volume à fin mai 2026 ?",
+    "answer": "Oui : 1 230 unités achetées à fin mai, alors que le plan de compte prévoit 1 180 unités cumulées pour la revue du 15 juillet 2026 (engagement annuel de 2 400 unités).",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-06-22 CODIR PV.docx",
+        "snippets": [
+          "Distrinergie est en ligne avec son engagement : 1 230 unités achetées à fin mai"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "05_Commercial/Comptes_cles/Plan de compte Distrinergie 2026.docx",
+        "snippets": [
+          "15 juillet 2026",
+          "1 180 unités"
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "difficile",
+    "notes": null
+  },
+  {
+    "id": "Q128",
+    "type": "excel_lookup",
+    "thread": "erp",
+    "question": "Quelle note Kerneo a-t-il obtenue pour le critère « Interface FR / NL / EN » de la grille ERP ?",
+    "answer": "7 sur 10 (Praxio 9, Sylvan Suite 6).",
+    "evidence": [
+      {
+        "document": "06_Achats/Appel_offres_ERP/Grille evaluation ERP v3.xlsx",
+        "snippets": [
+          "Interface FR / NL / EN"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/Annexes/2025-11-17 Annexe - Grille evaluation ERP.xlsx",
+        "snippets": [
+          "Interface FR / NL / EN"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q129",
+    "type": "meeting_detail",
+    "thread": "cfo",
+    "question": "Qui a été invité au CODIR du 16 février 2026, et pour quelle raison ?",
+    "answer": "Sarah Vandamme, responsable du contrôle de gestion, pour la passation de la direction financière.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-02-16 CODIR PV.docx",
+        "snippets": [
+          "Sarah Vandamme (responsable du contrôle de gestion, passation de la direction financière)"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q130",
+    "type": "action_tracking",
+    "thread": "general",
+    "question": "Quelles actions étaient en retard lors du CODIR du 2 février 2026 ?",
+    "answer": "A-25-019 « Ouvrir une réclamation financière auprès de Valtek » (responsable : Laurent Dewit, échéance au 19/12/2025); A-26-006 « Signer l'avenant tarifaire avec Distrinergie » (responsable : Pierre-Yves Collard, échéance au 30/01/2026).",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-02-02 CODIR PV.docx",
+        "snippets": [
+          "A-25-019",
+          "En retard"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-02-02 CODIR PV.docx",
+        "snippets": [
+          "A-26-006",
+          "En retard"
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "difficile",
+    "notes": "Le statut se lit dans le tableau de suivi des actions."
+  },
+  {
+    "id": "Q131",
+    "type": "decision_reason",
+    "thread": "herstal",
+    "question": "Pourquoi le CODIR a-t-il préféré louer un entrepôt à Herstal plutôt qu'agrandir le site de Gand ?",
+    "answer": "L'extension de Gand (2 800 m², 2,1 M€) demandait un permis de 12 à 18 mois et le recours à un prestataire 3PL coûtait environ 310 000 € par an ; l'entrepôt de Herstal (4 200 m²) était disponible au 1er mai pour 98 700 € par an.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-02-02 CODIR PV.docx",
+        "snippets": [
+          "demande un permis dont l'obtention prendrait 12 à 18 mois"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/Annexes/2026-02-02 Annexe - Etude logistique entrepot.pptx",
+        "snippets": [
+          "12 à 18 mois (permis)"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-02-02 CODIR PV.docx",
+        "snippets": [
+          "Le CODIR recommande la location de l'entrepôt de Herstal (4200 m²) et soumet le bail au CA du 17 février."
+        ],
+        "grade": 1,
+        "fact": null
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q132",
+    "type": "decision_current",
+    "thread": "erp",
+    "question": "Qui assure le support de l'ERP Praxio depuis la fin de l'hypercare ?",
+    "answer": "L'équipe informatique interne depuis le 1er juillet 2026 (niveau 2, poste 2200), avec Intégra Conseil en niveau 3 ; les utilisateurs clés assurent le niveau 1.",
+    "evidence": [
+      {
+        "document": "07_IT/Support/README.md",
+        "snippets": [
+          "le support de l'ERP Praxio est assuré par l'équipe informatique interne"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-06-29 CODIR PV.docx",
+        "snippets": [
+          "Le support passe à l'équipe informatique interne"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "07_IT/Projet_Atlas_ERP/COPIL/COPIL_Atlas_14_20260625.docx",
+        "snippets": [
+          "Transfert du support à l'équipe informatique interne au 1er juillet"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q133",
+    "type": "decision_current",
+    "thread": "cfo",
+    "question": "Qui est le directeur ou la directrice financière de Calorvia fin juin 2026 ?",
+    "answer": "Isabelle Gérard, directrice financière depuis le 15 juin 2026. Elle succède à Laurent Dewit (parti le 31 mars 2026), après l'intérim de Sarah Vandamme.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-06-15 CODIR PV.docx",
+        "snippets": [
+          "Isabelle Gérard prend ses fonctions de directrice financière ce jour"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2026-06-16.pdf",
+        "snippets": [
+          "Isabelle Gérard, directrice financière depuis le 15 juin 2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "02_RH/Organigrammes/Organigramme direction 2026-06.png",
+        "snippets": [
+          "Isabelle Gérard"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2026-05-19.pdf",
+        "snippets": [
+          "nomme Isabelle Gérard au poste de directrice financière"
+        ],
+        "grade": 1,
+        "fact": null
+      }
+    ],
+    "traps": [
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2026-02-17.pdf",
+        "snippets": [
+          "directrice financière ad interim"
+        ]
+      }
+    ],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q134",
+    "type": "decision_reason",
+    "thread": "l4",
+    "question": "Quels arguments ont justifié le projet de quatrième ligne d'assemblage à Seneffe ?",
+    "answer": "Les lignes L1 à L3 étaient utilisées à 92 %, les ventes d'Aéris Pro avaient progressé de 18 % et les délais de livraison dépassaient cinq semaines.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-09-15.docx",
+        "snippets": [
+          "92 %",
+          "Les ventes de la gamme Aéris Pro ont progressé de 18 %"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/Strategie/Photo tableau SWOT seminaire 2025-08-26.jpg",
+        "snippets": [
+          "Seneffe saturée (92 %)"
+        ],
+        "grade": 1,
+        "fact": null
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q135",
+    "type": "image_only",
+    "thread": null,
+    "question": "Où se trouve le point de rassemblement en cas d'évacuation de l'usine de Seneffe ?",
+    "answer": "Au parking P2, côté rue de la Forge.",
+    "evidence": [
+      {
+        "document": "03_Production/Plans/Plan implantation usine Seneffe 2026-02.png",
+        "snippets": [
+          "rassemblement",
+          "parking P2"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": "La page intranet renvoie au plan sans donner l'information."
+  },
+  {
+    "id": "Q136",
+    "type": "version_trap",
+    "thread": "cyber",
+    "question": "Comment les opérateurs s'authentifient-ils sur les terminaux partagés des ateliers ?",
+    "answer": "Avec leur badge d'accès présenté au lecteur du terminal, puis un code PIN à quatre chiffres (procédure IT-12 version 2).",
+    "evidence": [
+      {
+        "document": "07_IT/Securite/Procedure MFA v2.docx",
+        "snippets": [
+          "en présentant leur badge d'accès devant le lecteur installé sur le terminal"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": "La version 1 ne traite pas les terminaux partagés."
+  },
+  {
+    "id": "Q137",
+    "type": "excel_lookup",
+    "thread": "l4",
+    "question": "Combien a-t-on déjà payé sur la ligne L4 au 30 juin 2026 ?",
+    "answer": "702 k€ réalisés, pour 1 170 k€ engagés et un budget de 1 250 k€.",
+    "evidence": [
+      {
+        "document": "01_Finance/Investissements/Suivi capex 2026.xlsx",
+        "snippets": [
+          "Ligne d'assemblage L4 (Seneffe)",
+          "702"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q138",
+    "type": "decision_history",
+    "thread": "recall",
+    "question": "Combien d'interventions du rappel de l'Aéris 12 avaient été réalisées au 26 janvier 2026 ?",
+    "answer": "168 sur 214, soit 78 %.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-01-26 CODIR PV.docx",
+        "snippets": [
+          "168 interventions réalisées sur 214, soit 78 %"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q139",
+    "type": "image_only",
+    "thread": "erp",
+    "question": "Dans le premier planning du projet Atlas, quand la bascule était-elle prévue ?",
+    "answer": "Du 28 au 31 mars 2026, pour un démarrage le 1er avril 2026.",
+    "evidence": [
+      {
+        "document": "07_IT/Projet_Atlas_ERP/Planning/Planning Atlas v1.png",
+        "snippets": [
+          "28/03",
+          "31/03"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "difficile",
+    "notes": null
+  },
+  {
+    "id": "Q140",
+    "type": "version_trap",
+    "thread": "accident",
+    "question": "Quel jour a eu lieu l'accident de chariot élévateur à Gand ?",
+    "answer": "Le mercredi 12 novembre 2025, vers 14 h 20. La première version du PV du CODIR du 17 novembre indiquait par erreur le jeudi 13 novembre.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-11-17_v2.docx",
+        "snippets": [
+          "Le mercredi 12 novembre, vers 14 h 20"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "03_Production/Gent/Veiligheid/Incidentrapport 2025-11-12 heftruck gang 7.pdf",
+        "snippets": [
+          "woensdag 12 november 2025, 14.20 uur"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2025-11-18 signé.pdf",
+        "snippets": [
+          "survenu le 12 novembre"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-11-17.docx",
+        "snippets": [
+          "Le jeudi 13 novembre"
+        ]
+      }
+    ],
+    "difficulty": "moyen",
+    "notes": "Piège : PV_CODIR_2025-11-17.docx (v1) donne le 13 novembre."
+  },
+  {
+    "id": "Q141",
+    "type": "action_tracking",
+    "thread": "accident",
+    "question": "Qui devait réaliser le marquage au sol des passages piétons à Gand, et quand le marquage a-t-il été terminé ?",
+    "answer": "Pieter De Smet (action A-25-016, échéance au 16/01/2026). Le marquage a été terminé le 15 janvier 2026.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-11-17_v2.docx",
+        "snippets": [
+          "A-25-016",
+          "Pieter De Smet",
+          "16/01/2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-01-19 CODIR PV.docx",
+        "snippets": [
+          "Le marquage des passages piétons est terminé depuis le 15 janvier"
+        ],
+        "grade": 2,
+        "fact": 1
+      },
+      {
+        "document": "03_Production/Gent/Veiligheid/Actieplan veiligheid magazijn Gent.docx",
+        "snippets": [
+          "Klaar op 15/01/2026"
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q142",
+    "type": "action_tracking",
+    "thread": "erp",
+    "question": "À quoi correspond l'action A-26-008 et qui en était responsable ?",
+    "answer": "« Mettre en œuvre le plan de nettoyage des données articles » (projet ERP), confiée à Kevin Mertens avec une échéance au 13/03/2026. Le nettoyage a été terminé le 12 mars.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-02-09 CODIR PV.docx",
+        "snippets": [
+          "A-26-008",
+          "Mettre en œuvre le plan de nettoyage des données articles",
+          "Kevin Mertens"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-03-16 CODIR PV.docx",
+        "snippets": [
+          "A-26-008",
+          "Nettoyage terminé le 12 mars."
+        ],
+        "grade": 1,
+        "fact": null
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": "Question par numéro d'action : favorise la recherche lexicale."
+  },
+  {
+    "id": "Q143",
+    "type": "decision_current",
+    "thread": "l4",
+    "question": "Quelle est la capacité de production actuelle de la ligne L4 ?",
+    "answer": "38 unités par jour jusqu'en septembre 2026, puis 45 unités par jour (objectif nominal).",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-06-22 CODIR PV.docx",
+        "snippets": [
+          "unités par jour jusqu'en septembre"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "03_Production/Seneffe/Ligne_L4/PV presérie L4 2026-06-18.docx",
+        "snippets": [
+          "Capacité retenue jusqu'en septembre",
+          "38 unités par jour"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q144",
+    "type": "image_in_document",
+    "thread": "rse",
+    "question": "Combien de tonnes de déchets métalliques Calorvia a-t-elle produites en 2025 ?",
+    "answer": "612 tonnes.",
+    "evidence": [
+      {
+        "document": "10_RSE/Rapport RSE 2025.pdf",
+        "snippets": [
+          "Métaux",
+          "612"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "difficile",
+    "notes": "Graphique intégré dans le rapport RSE (PDF)."
+  },
+  {
+    "id": "Q145",
+    "type": "multilingual",
+    "thread": null,
+    "question": "Quelles mesures sont prévues à Gand en cas de forte chaleur ?",
+    "answer": "À partir de 30 °C : des points d'eau supplémentaires et une pause supplémentaire de 10 minutes par équipe.",
+    "evidence": [
+      {
+        "document": "03_Production/Gent/Veiligheid/Comite PBW/Verslag Comite PBW Gent 2026-06-18.docx",
+        "snippets": [
+          "Hittemaatregelen vanaf 30 °C"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q146",
+    "type": "excel_lookup",
+    "thread": "production",
+    "question": "Combien d'unités la ligne V2 du site de Gand a-t-elle produites en janvier 2026 ?",
+    "answer": "1 403 unités (Ventis D450 et D450 Pro).",
+    "evidence": [
+      {
+        "document": "03_Production/Gent/Maandrapporten/Productierapport Gent 2026-01.xlsx",
+        "snippets": [
+          "Ventis D450 / D450 Pro",
+          "1403"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": "Rapport en néerlandais."
+  },
+  {
+    "id": "Q147",
+    "type": "image_only",
+    "thread": null,
+    "question": "Qui est responsable du service après-vente ?",
+    "answer": "Grégory Pirard, dans l'équipe d'Anne Vercammen (directrice qualité).",
+    "evidence": [
+      {
+        "document": "02_RH/Organigrammes/Organigramme direction 2026-06.png",
+        "snippets": [
+          "Grégory Pirard"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "02_RH/Organigrammes/Organigramme direction 2026-04.png",
+        "snippets": [
+          "Grégory Pirard"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "02_RH/Organigrammes/Organigramme direction 2025-09.png",
+        "snippets": [
+          "Grégory Pirard"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q148",
+    "type": "excel_lookup",
+    "thread": null,
+    "question": "Combien de temps les images de vidéosurveillance sont-elles conservées ?",
+    "answer": "30 jours (registre des traitements RGPD).",
+    "evidence": [
+      {
+        "document": "08_Juridique/RGPD/Registre des traitements.xlsx",
+        "snippets": [
+          "Vidéosurveillance",
+          "30 jours"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q149",
+    "type": "decision_history",
+    "thread": "herstal",
+    "question": "Au moment de la signature du bail de Herstal, quand l'entrée dans les lieux était-elle prévue ?",
+    "answer": "Le 1er mai 2026 (date de prise d'effet du bail). L'entrée effective a eu lieu le 18 mai.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-03-09 CODIR PV.docx",
+        "snippets": [
+          "l'entrée dans les lieux est prévue le 1er mai"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "08_Juridique/Contrats/Bail commercial entrepot Herstal.pdf",
+        "snippets": [
+          "Neuf ans à compter du 1er mai 2026"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q150",
+    "type": "scan_ocr",
+    "thread": "price",
+    "question": "Sous quel volume d'achat Distrinergie perd-il l'avantage tarifaire de 2026 ?",
+    "answer": "Sous 2 160 unités au 31 décembre 2026 (90 % de l'engagement de 2 400 unités) : Calorvia facture alors rétroactivement la différence avec le tarif standard.",
+    "evidence": [
+      {
+        "document": "05_Commercial/Comptes_cles/Avenant tarifaire Distrinergie 2026 signe.pdf",
+        "snippets": [
+          "2 160 unités"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": "Avenant signé scanné."
+  },
+  {
+    "id": "Q151",
+    "type": "action_tracking",
+    "thread": "cfo",
+    "question": "Quel cabinet a été mandaté pour recruter le successeur du directeur financier, et quand ?",
+    "answer": "Altair Executive Search, mandaté le 11 février 2026.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2026/2026-02-16 CODIR PV.docx",
+        "snippets": [
+          "Cabinet Altair Executive Search mandaté le 11 février."
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-02-16 CODIR PV.docx",
+        "snippets": [
+          "Le cabinet Altair Executive Search est mandaté pour le recrutement"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2026-02-17.pdf",
+        "snippets": [
+          "Le cabinet Altair Executive Search est chargé du recrutement"
+        ],
+        "grade": 1,
+        "fact": null
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q152",
+    "type": "action_tracking",
+    "thread": "recall",
+    "question": "Qui devait ouvrir la réclamation financière auprès de Valtek et quel en a été le résultat ?",
+    "answer": "Laurent Dewit, directeur financier (action A-25-019, échéance au 19/12/2025). Valtek a accepté de prendre en charge 65 % du coût du rappel, soit 117 000 € ; l'action a été clôturée le 2 mars 2026.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-12-08.docx",
+        "snippets": [
+          "A-25-019",
+          "Ouvrir une réclamation financière auprès de Valtek",
+          "Laurent Dewit"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-03-02 CODIR PV.docx",
+        "snippets": [
+          "Accord de Valtek : prise en charge de 65 % du coût."
+        ],
+        "grade": 2,
+        "fact": 1
+      },
+      {
+        "document": "00_Direction/CODIR/2026/2026-03-02 CODIR PV.docx",
+        "snippets": [
+          "Valtek accepte de prendre en charge 65 % du coût de la campagne"
+        ],
+        "grade": 2,
+        "fact": 1
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q153",
+    "type": "version_trap",
+    "thread": null,
+    "question": "Quel chiffre d'affaires Calorvia vise-t-elle en 2028 ?",
+    "answer": "185 M€ (plan stratégique 2026-2028 validé en décembre 2025). Le projet de septembre 2025 visait 190 M€.",
+    "evidence": [
+      {
+        "document": "00_Direction/Strategie/Plan strategique 2026-2028.pptx",
+        "snippets": [
+          "Chiffre d'affaires de 185 M€ en 2028."
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "00_Direction/Strategie/Feuille de route 2026-2028.png",
+        "snippets": [
+          "185 M"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [
+      {
+        "document": "00_Direction/Strategie/Plan strategique 2026-2028 v1.pptx",
+        "snippets": [
+          "Chiffre d'affaires de 190 M€ en 2028."
+        ]
+      }
+    ],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q154",
+    "type": "excel_lookup",
+    "thread": null,
+    "question": "Quel salaire mensuel brut médian la grille 2026 prévoit-elle pour la classe C3 ?",
+    "answer": "4 897 € (minimum 4 150 €  maximum 5 644 €).",
+    "evidence": [
+      {
+        "document": "02_RH/Confidentiel/Grille salariale 2026.xlsx",
+        "snippets": [
+          "C3 - Cadre",
+          "4897"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q155",
+    "type": "board_resolution",
+    "thread": "budget",
+    "question": "Quels sont les grands chiffres du budget 2026 approuvé par le conseil ?",
+    "answer": "Chiffre d'affaires de 156 000 k€  EBITDA de 14 820 k€ (9 5 %)  investissements de 2 825 k€ et effectif de 643 ETP à fin 2026 (conseil du 16 décembre 2025).",
+    "evidence": [
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2025-12-16 signé.pdf",
+        "snippets": [
+          "156 000",
+          "14 820"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "01_Finance/Budget_2026/Budget 2026 - version approuvee CA 16-12-2025.xlsx",
+        "snippets": [
+          "Total 2026",
+          "156000",
+          "14820"
+        ],
+        "grade": 2,
+        "fact": 0
+      },
+      {
+        "document": "01_Finance/Budget_2026/Note de presentation budget 2026.pdf",
+        "snippets": [
+          "un EBITDA de 14,8 M€ (9,5 % du chiffre d'affaires)"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": null
+  },
+  {
+    "id": "Q156",
+    "type": "meeting_detail",
+    "thread": "general",
+    "question": "Où s'est tenu le CODIR du 17 novembre 2025 ?",
+    "answer": "À Gand, salle Schelde.",
+    "evidence": [
+      {
+        "document": "00_Direction/CODIR/2025/PV_CODIR_2025-11-17_v2.docx",
+        "snippets": [
+          "Gand, salle Schelde"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "facile",
+    "notes": null
+  },
+  {
+    "id": "Q157",
+    "type": "scan_ocr",
+    "thread": null,
+    "question": "Quelle prime d'assurance le conseil a-t-il approuvée pour 2026 ?",
+    "answer": "212 400 € (renouvellement du programme d'assurances, conseil du 23 septembre 2025).",
+    "evidence": [
+      {
+        "document": "00_Direction/Conseil_administration/PV_signes/PV CA 2025-09-23 signé.pdf",
+        "snippets": [
+          "212 400"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "moyen",
+    "notes": "PV signé scanné, sans couche texte."
+  },
+  {
+    "id": "Q158",
+    "type": "excel_reasoning",
+    "thread": "recall",
+    "question": "Combien d'Aéris 12 du rappel sont restées introuvables, et chez quel installateur ?",
+    "answer": "3 unités, toutes installées par Chauffage Lambert & Fils, qui a cessé ses activités.",
+    "evidence": [
+      {
+        "document": "04_Qualite/Rappel_Aeris12/Liste numeros de serie concernes.xlsx",
+        "snippets": [
+          "Chauffage Lambert & Fils",
+          "Introuvable (installateur en cessation d'activité)"
+        ],
+        "grade": 2,
+        "fact": 0
+      }
+    ],
+    "traps": [],
+    "difficulty": "difficile",
+    "notes": null
+  }
+]
