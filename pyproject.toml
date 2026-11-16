@@ -1,5 +1,5 @@
 [project]
-name = "20-calorvia-rag-1"
+name = "calorvia-rag"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -7,7 +7,10 @@ authors = [
     { name = "Nicolas", email = "blanchard.nicolas@hotmail.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "psycopg>=3.3.9",
+    "pydantic-settings>=2.16.3",
+]
 
 [project.scripts]
 20-calorvia-rag-1 = "20_calorvia_rag_1:main"

@@ -23,10 +23,10 @@ Le notebook `labo_calorvia_pistes.ipynb` donne des pistes, avec du code exécut�
 
 ## Ce que vous recevez
 
-| Fichier | Contenu |
-|---|---|
-| `calorvia_dataset.zip` | `corpus/calorvia/` : les 393 documents ; `corpus/calorvia_eval.json` : le jeu d'évaluation (158 questions) |
-| `labo_calorvia_pistes.ipynb` | Le notebook de pistes : à ranger dans `notebooks/` |
+| Fichier                        | Contenu                                                                                                         |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `calorvia_dataset.zip`       | `corpus/calorvia/` : les 393 documents ; `corpus/calorvia_eval.json` : le jeu d'évaluation (158 questions) |
+| `labo_calorvia_pistes.ipynb` | Le notebook de pistes : à ranger dans `notebooks/`                                                           |
 
 Contrairement à l'hôpital, **aucun fichier ne décrit les documents** : à vous d'extraire les métadonnées (date, type, version, langue) à partir des chemins, des noms de fichiers et du contenu. Cela fait partie du travail.
 
@@ -34,11 +34,11 @@ Contrairement à l'hôpital, **aucun fichier ne décrit les documents** : à vou
 
 Les mêmes que dans le cours, plus un modèle de vision :
 
-| Port | Service | Modèle |
-|---|---|---|
-| 8000 | LLM (llama-server) | celui du cours |
-| 8001 | Embedder (vLLM) | bge-m3, ou le meilleur de l'exercice 3 |
-| 8002 | Reranker (vLLM) | bge-reranker-v2-m3, ou le meilleur de l'exercice 3 |
+| Port | Service                                        | Modèle                                                           |
+| ---- | ---------------------------------------------- | ----------------------------------------------------------------- |
+| 8000 | LLM (llama-server)                             | celui du cours                                                    |
+| 8001 | Embedder (vLLM)                                | bge-m3, ou le meilleur de l'exercice 3                            |
+| 8002 | Reranker (vLLM)                                | bge-reranker-v2-m3, ou le meilleur de l'exercice 3                |
 | 8003 | **VLM** (llama-server avec `--mmproj`) | par exemple Qwen3-VL-8B-Instruct (GGUF et son fichier `mmproj`) |
 
 Le VLM ne sert qu'à l'ETL, pour lire les images une fois. Si la mémoire du GPU ne suffit pas pour tout faire tourner en même temps, arrêtez le LLM pendant cette étape.
@@ -51,45 +51,45 @@ Le VLM ne sert qu'à l'ETL, pour lire les images une fois. Si la mémoire du GPU
 
 Calorvia SA fabrique des pompes à chaleur (gamme Aéris) et des groupes de ventilation (gamme Ventis). Elle compte environ 620 personnes et a réalisé 148,2 M€ de chiffre d'affaires en 2025. Les documents couvrent **septembre 2025 à juin 2026**.
 
-| Site | Rôle | Langue des documents |
-|---|---|---|
-| Namur | Siège : direction, finance, RH, informatique, commercial | français |
-| Seneffe | Usine des pompes à chaleur (lignes L1 à L3, puis L4) | français |
-| Gand | Usine de ventilation et entrepôt | néerlandais |
-| Lille | Bureau commercial France | français |
-| Herstal | Entrepôt ouvert en mai 2026 | français |
+| Site    | Rôle                                                     | Langue des documents |
+| ------- | --------------------------------------------------------- | -------------------- |
+| Namur   | Siège : direction, finance, RH, informatique, commercial | français            |
+| Seneffe | Usine des pompes à chaleur (lignes L1 à L3, puis L4)    | français            |
+| Gand    | Usine de ventilation et entrepôt                         | néerlandais         |
+| Lille   | Bureau commercial France                                  | français            |
+| Herstal | Entrepôt ouvert en mai 2026                              | français            |
 
 Le comité de direction (CODIR), qui se réunit chaque lundi, est composé des membres suivants.
 
-| Personne | Fonction |
-|---|---|
-| Hélène Marchal | Administratrice déléguée (CEO) |
-| Laurent Dewit | Directeur financier, jusqu'au 31 mars 2026 |
-| Sarah Vandamme | Directrice financière ad interim, du 1er avril au 14 juin 2026 |
-| Isabelle Gérard | Directrice financière, depuis le 15 juin 2026 |
-| Thomas Lambert | Directeur des opérations |
-| Nadia Benali | Directrice RH |
-| Pierre-Yves Collard | Directeur commercial |
-| Kevin Mertens | Directeur des SI |
-| Anne Vercammen | Directrice qualité |
-| Pieter De Smet | Directeur du site de Gand |
+| Personne            | Fonction                                                        |
+| ------------------- | --------------------------------------------------------------- |
+| Hélène Marchal    | Administratrice déléguée (CEO)                               |
+| Laurent Dewit       | Directeur financier, jusqu'au 31 mars 2026                      |
+| Sarah Vandamme      | Directrice financière ad interim, du 1er avril au 14 juin 2026 |
+| Isabelle Gérard    | Directrice financière, depuis le 15 juin 2026                  |
+| Thomas Lambert      | Directeur des opérations                                       |
+| Nadia Benali        | Directrice RH                                                   |
+| Pierre-Yves Collard | Directeur commercial                                            |
+| Kevin Mertens       | Directeur des SI                                                |
+| Anne Vercammen      | Directrice qualité                                             |
+| Pieter De Smet      | Directeur du site de Gand                                       |
 
 Le conseil d'administration (CA) se réunit une fois par mois.
 
 ### Les formats
 
-| Format | Fichiers | Comment le lire |
-|---|---|---|
-| DOCX | 156 | Docling |
-| PDF natif | 76 | Docling. Deux PDF contiennent des graphiques dont les valeurs ne sont pas dans le texte |
-| PDF scanné | 9 | **Aucune couche texte** : OCR ou VLM |
-| XLSX | 55 | À lire vous-même (notebook, partie 2) |
-| HTML | 31 | Docling |
-| JPG | 31 | VLM : photos de plaques signalétiques et de tableaux blancs, factures et bons de livraison photographiés |
-| PNG | 23 | VLM : organigrammes, plans, graphiques, plannings, schémas |
-| PPTX | 9 | Docling |
-| CSV | 2 | Docling ou polars |
-| Markdown | 1 | Docling |
+| Format      | Fichiers | Comment le lire                                                                                            |
+| ----------- | -------- | ---------------------------------------------------------------------------------------------------------- |
+| DOCX        | 156      | Docling                                                                                                    |
+| PDF natif   | 76       | Docling. Deux PDF contiennent des graphiques dont les valeurs ne sont pas dans le texte                    |
+| PDF scanné | 9        | **Aucune couche texte** : OCR ou VLM                                                                 |
+| XLSX        | 55       | À lire vous-même (notebook, partie 2)                                                                    |
+| HTML        | 31       | Docling                                                                                                    |
+| JPG         | 31       | VLM : photos de plaques signalétiques et de tableaux blancs, factures et bons de livraison photographiés |
+| PNG         | 23       | VLM : organigrammes, plans, graphiques, plannings, schémas                                                |
+| PPTX        | 9        | Docling                                                                                                    |
+| CSV         | 2        | Docling ou polars                                                                                          |
+| Markdown    | 1        | Docling                                                                                                    |
 
 Répartition par langue : 342 documents en français, 44 en néerlandais (dont 6 images) et 7 en anglais.
 
@@ -113,14 +113,14 @@ calorvia/
 
 ### Les documents qui se suivent
 
-| Série | Nombre | Ce que chaque document contient |
-|---|---|---|
-| PV du CODIR | 41 séances | Présents, indicateurs de la semaine, **tableau de suivi des actions**, points de l'ordre du jour, décisions numérotées (D-26-08), nouvelles actions (A-26-012), tour de table. Chaque PV rappelle des décisions antérieures |
-| PV du CA | 10 séances | Approbation du PV précédent (parfois avec une correction), situation financière, résolutions. Les quatre PV de 2025 sont des **scans signés** |
-| COPIL du projet ERP | 14 | État de chaque chantier, indicateurs, points marquants |
-| Comités de sécurité | 9 à Gand (en néerlandais), 3 à Seneffe | Accidents, absentéisme, suivi des mesures |
-| Reporting mensuel, rapports de production | 9, 9 + 9 | Classeurs Excel à plusieurs onglets |
-| Newsletter | 10 | Reprend les nouvelles du mois |
+| Série                                    | Nombre                                    | Ce que chaque document contient                                                                                                                                                                                                         |
+| ----------------------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PV du CODIR                               | 41 séances                               | Présents, indicateurs de la semaine, **tableau de suivi des actions**, points de l'ordre du jour, décisions numérotées (D-26-08), nouvelles actions (A-26-012), tour de table. Chaque PV rappelle des décisions antérieures |
+| PV du CA                                  | 10 séances                               | Approbation du PV précédent (parfois avec une correction), situation financière, résolutions. Les quatre PV de 2025 sont des **scans signés**                                                                                |
+| COPIL du projet ERP                       | 14                                        | État de chaque chantier, indicateurs, points marquants                                                                                                                                                                                 |
+| Comités de sécurité                    | 9 à Gand (en néerlandais), 3 à Seneffe | Accidents, absentéisme, suivi des mesures                                                                                                                                                                                              |
+| Reporting mensuel, rapports de production | 9, 9 + 9                                  | Classeurs Excel à plusieurs onglets                                                                                                                                                                                                    |
+| Newsletter                                | 10                                        | Reprend les nouvelles du mois                                                                                                                                                                                                           |
 
 Dans le tableau de suivi des actions, une action est « En cours », passe « En retard » si son échéance est dépassée, puis « Clôturée » avec un commentaire. On suit donc une action d'un PV au suivant.
 
@@ -128,18 +128,18 @@ Dans le tableau de suivi des actions, une action est « En cours », passe « En
 
 Dix sujets évoluent au fil des réunions. La bonne réponse dépend donc de la date, et les anciennes valeurs restent dans le corpus.
 
-| Fil (`thread`) | Ce qui change |
-|---|---|
-| `erp` | Choix de l'éditeur, budget, date de mise en production reportée, démarrage en deux temps |
-| `l4` | Montant de la nouvelle ligne de production, report par le CA, aide régionale, retard de livraison |
-| `price` | Hausse tarifaire 2026 proposée, puis décidée autrement, et une exception pour un client |
-| `telework` | Un jour par semaine, puis un pilote à deux jours, puis la généralisation avec de nouvelles règles |
-| `accident` | Vitesse des chariots à Gand, modifiée deux fois après un accident |
-| `recall` | Rappel d'un produit, avancement semaine après semaine, partage des coûts avec le fournisseur |
-| `cyber` | Tentative de fraude, double authentification obligatoire, échéance reportée pour certains postes |
-| `herstal` | Location d'un entrepôt, conditions du bail, date d'ouverture reportée |
-| `freeze` | Gel des recrutements, décidé puis levé |
-| `cfo` | Départ du directeur financier, intérim, nomination d'une successeure |
+| Fil (`thread`) | Ce qui change                                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------------------------- |
+| `erp`          | Choix de l'éditeur, budget, date de mise en production reportée, démarrage en deux temps           |
+| `l4`           | Montant de la nouvelle ligne de production, report par le CA, aide régionale, retard de livraison    |
+| `price`        | Hausse tarifaire 2026 proposée, puis décidée autrement, et une exception pour un client            |
+| `telework`     | Un jour par semaine, puis un pilote à deux jours, puis la généralisation avec de nouvelles règles |
+| `accident`     | Vitesse des chariots à Gand, modifiée deux fois après un accident                                  |
+| `recall`       | Rappel d'un produit, avancement semaine après semaine, partage des coûts avec le fournisseur        |
+| `cyber`        | Tentative de fraude, double authentification obligatoire, échéance reportée pour certains postes   |
+| `herstal`      | Location d'un entrepôt, conditions du bail, date d'ouverture reportée                               |
+| `freeze`       | Gel des recrutements, décidé puis levé                                                             |
+| `cfo`          | Départ du directeur financier, intérim, nomination d'une successeure                                |
 
 Les réponses attendues sont dans le jeu d'évaluation.
 
@@ -149,31 +149,31 @@ Les réponses attendues sont dans le jeu d'évaluation.
 
 Le corpus a été construit pour piéger un RAG naïf. Les voici tous. Les connaître ne suffit pas : votre système doit les déjouer.
 
-| Piège | Où | Ce qui se passe si on tombe dedans |
-|---|---|---|
-| **Décisions qui changent** | Les dix fils ci-dessus | Le RAG répond avec une valeur dépassée (la date initiale de l'ERP, l'ancienne limite de vitesse) |
-| **Rappels des anciennes valeurs** | PV du CODIR (« Pour rappel, la mise en production avait été fixée au 1er avril »), newsletters, PV du CA | Le bon chunk contient aussi la mauvaise valeur ; un chunk ancien ressemble beaucoup à la question |
-| **Erreur corrigée dans le PV suivant** | Le PV du CA du 18/11/2025 (scanné) écrit 1,2 M€ pour la ligne L4 ; le PV du 16/12/2025 corrige le montant en l'approuvant | Seul le PV de décembre donne le bon montant, et il faut lire les deux |
-| **Brouillon contre version signée** | `00_Direction/Conseil_administration/Projets_PV/` : le projet du 18/11 contient la même erreur ; celui du 17/02 indique un autre loyer pour Herstal ; celui du 19/05 une autre date d'entrée en fonction | Le brouillon est un document « propre » (DOCX), plus facile à lire que le PV signé |
-| **Deux versions d'un même PV** | `PV_CODIR_2025-11-17.docx` (version 1 : date de l'accident fausse) et `PV_CODIR_2025-11-17_v2.docx` | Les deux sont presque identiques |
-| **Versions successives** | Budget 2026 v1, v2 et approuvé ; tarif 2026 projet v1 et final ; politique de télétravail v1 (archives), v2 et v3 ; procédure MFA v1 et v2 ; plan stratégique v1 et final ; organigrammes 2024, 2025-09, 2026-04, 2026-06 ; plannings du projet ERP v1, v2, v3 | Le contexte mélange les versions |
-| **Nom de fichier trompeur** | `99_Archives/Doublons/Budget 2026 v2 FINAL.xlsx` contient la version 2, pas le budget approuvé | Le mot « FINAL » attire la recherche lexicale |
-| **Doublons exacts** | `99_Archives/Doublons/` (copies de fichiers), la grille d'évaluation ERP en annexe du CODIR et aux achats, le rapport 8D en annexe et en qualité, la politique de télétravail v3 en DOCX et en PDF | Les mêmes chunks occupent plusieurs places du top k |
-| **Même information dans trois langues** | Les communiqués de presse en français, néerlandais et anglais | Doublons qui ne se ressemblent pas lexicalement |
-| **Archives** | `99_Archives/2024/` : un PV de CODIR de 2024, le tarif 2024, le budget 2025, l'organigramme 2024 | Des valeurs anciennes, parfois encore plausibles |
-| **Néerlandais et anglais** | `03_Production/Gent/`, contrats fournisseurs, fiches produits, communiqués | Question en français, réponse dans une autre langue : la recherche lexicale ne trouve rien |
-| **Scans sans couche texte** | Les 4 PV du CA de 2025, l'avenant Distrinergie, l'attestation d'assurance, deux courriers de clients, `99_Archives/Divers/scan0001.pdf` | Sans OCR, le document est vide ; avec l'OCR de Docling, la qualité dépend du moteur et des langues configurées |
-| **Information seulement dans une image** | Organigrammes (qui dépend de qui), plaques signalétiques (numéros de série), plans (point de rassemblement), tableaux blancs, graphiques, plannings, schémas d'architecture, factures et bons de livraison (avec des annotations manuscrites) | Sans VLM, la réponse est introuvable |
-| **Graphique dans un PDF** | `00_Direction/CODIR/Annexes/2026-04-13 Annexe - Resultats enquete teletravail.pdf`, `10_RSE/Rapport RSE 2025.pdf` | Le texte du PDF ne contient pas les valeurs du graphique |
-| **Excel vu par Docling** | Tous les classeurs | Pourcentages en décimal (`-0.00681316572305923`), titre fusionné recopié dans chaque colonne, nom de l'onglet perdu, unité perdue |
-| **Questions de calcul** | Questions `excel_reasoning` | Comparer ou chercher un maximum sur plusieurs lignes ou fichiers : le LLM se trompe facilement |
-| **Information dans un tableau de suivi** | Le statut d'une action n'existe que dans le tableau « Suivi des actions » d'un PV | Le chunk de tableau doit garder son en-tête et la date de la séance |
-| **Noms de fichiers incohérents** | Voir la section 2 | Une seule expression régulière ne suffit pas pour extraire les dates |
-| **Date du fichier différente de celle du contenu** | Photos `IMG_20260311_...jpg` : date de la photo, pas de la machine | La date du nom de fichier ne veut pas toujours dire la même chose |
-| **Contenu répété** | Pied de page de tous les DOCX et PDF, en-tête et pied de page de l'intranet, rubriques fixes des newsletters, paragraphe « À propos de Calorvia » des communiqués | Des chunks presque identiques, sans information |
-| **Données personnelles** | `02_RH/Confidentiel/Entretiens annuels 2025 - synthese.xlsx` : noms, évaluations, augmentations | Un RAG qui les indexe les révèle à quiconque pose la question |
-| **Fichiers sans intérêt** | Modèles vierges (`00_Direction/Modeles/`), `99_Archives/Divers/` (document vide, `test.xlsx`, `Document1.docx`, un menu de cantine scanné) | Du bruit dans l'index |
-| **Questions hors corpus à la prémisse plausible** | 6 questions `out_of_corpus`, dont une sur un ERP utilisé « avant 2011 » | Le LLM invente une réponse à partir d'un chunk voisin |
+| Piège                                                    | Où                                                                                                                                                                                                                                                                 | Ce qui se passe si on tombe dedans                                                                                                      |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **Décisions qui changent**                         | Les dix fils ci-dessus                                                                                                                                                                                                                                              | Le RAG répond avec une valeur dépassée (la date initiale de l'ERP, l'ancienne limite de vitesse)                                     |
+| **Rappels des anciennes valeurs**                   | PV du CODIR (« Pour rappel, la mise en production avait été fixée au 1er avril »), newsletters, PV du CA                                                                                                                                                       | Le bon chunk contient aussi la mauvaise valeur ; un chunk ancien ressemble beaucoup à la question                                      |
+| **Erreur corrigée dans le PV suivant**             | Le PV du CA du 18/11/2025 (scanné) écrit 1,2 M€ pour la ligne L4 ; le PV du 16/12/2025 corrige le montant en l'approuvant                                                                                                                                        | Seul le PV de décembre donne le bon montant, et il faut lire les deux                                                                  |
+| **Brouillon contre version signée**                | `00_Direction/Conseil_administration/Projets_PV/` : le projet du 18/11 contient la même erreur ; celui du 17/02 indique un autre loyer pour Herstal ; celui du 19/05 une autre date d'entrée en fonction                                                        | Le brouillon est un document « propre » (DOCX), plus facile à lire que le PV signé                                                  |
+| **Deux versions d'un même PV**                     | `PV_CODIR_2025-11-17.docx` (version 1 : date de l'accident fausse) et `PV_CODIR_2025-11-17_v2.docx`                                                                                                                                                             | Les deux sont presque identiques                                                                                                        |
+| **Versions successives**                            | Budget 2026 v1, v2 et approuvé ; tarif 2026 projet v1 et final ; politique de télétravail v1 (archives), v2 et v3 ; procédure MFA v1 et v2 ; plan stratégique v1 et final ; organigrammes 2024, 2025-09, 2026-04, 2026-06 ; plannings du projet ERP v1, v2, v3 | Le contexte mélange les versions                                                                                                       |
+| **Nom de fichier trompeur**                         | `99_Archives/Doublons/Budget 2026 v2 FINAL.xlsx` contient la version 2, pas le budget approuvé                                                                                                                                                                   | Le mot « FINAL » attire la recherche lexicale                                                                                         |
+| **Doublons exacts**                                 | `99_Archives/Doublons/` (copies de fichiers), la grille d'évaluation ERP en annexe du CODIR et aux achats, le rapport 8D en annexe et en qualité, la politique de télétravail v3 en DOCX et en PDF                                                            | Les mêmes chunks occupent plusieurs places du top k                                                                                    |
+| **Même information dans trois langues**            | Les communiqués de presse en français, néerlandais et anglais                                                                                                                                                                                                    | Doublons qui ne se ressemblent pas lexicalement                                                                                         |
+| **Archives**                                        | `99_Archives/2024/` : un PV de CODIR de 2024, le tarif 2024, le budget 2025, l'organigramme 2024                                                                                                                                                                  | Des valeurs anciennes, parfois encore plausibles                                                                                        |
+| **Néerlandais et anglais**                         | `03_Production/Gent/`, contrats fournisseurs, fiches produits, communiqués                                                                                                                                                                                       | Question en français, réponse dans une autre langue : la recherche lexicale ne trouve rien                                            |
+| **Scans sans couche texte**                         | Les 4 PV du CA de 2025, l'avenant Distrinergie, l'attestation d'assurance, deux courriers de clients, `99_Archives/Divers/scan0001.pdf`                                                                                                                           | Sans OCR, le document est vide ; avec l'OCR de Docling, la qualité dépend du moteur et des langues configurées                       |
+| **Information seulement dans une image**            | Organigrammes (qui dépend de qui), plaques signalétiques (numéros de série), plans (point de rassemblement), tableaux blancs, graphiques, plannings, schémas d'architecture, factures et bons de livraison (avec des annotations manuscrites)                  | Sans VLM, la réponse est introuvable                                                                                                   |
+| **Graphique dans un PDF**                           | `00_Direction/CODIR/Annexes/2026-04-13 Annexe - Resultats enquete teletravail.pdf`, `10_RSE/Rapport RSE 2025.pdf`                                                                                                                                               | Le texte du PDF ne contient pas les valeurs du graphique                                                                                |
+| **Excel vu par Docling**                            | Tous les classeurs                                                                                                                                                                                                                                                  | Pourcentages en décimal (`-0.00681316572305923`), titre fusionné recopié dans chaque colonne, nom de l'onglet perdu, unité perdue |
+| **Questions de calcul**                             | Questions `excel_reasoning`                                                                                                                                                                                                                                       | Comparer ou chercher un maximum sur plusieurs lignes ou fichiers : le LLM se trompe facilement                                          |
+| **Information dans un tableau de suivi**            | Le statut d'une action n'existe que dans le tableau « Suivi des actions » d'un PV                                                                                                                                                                                 | Le chunk de tableau doit garder son en-tête et la date de la séance                                                                   |
+| **Noms de fichiers incohérents**                   | Voir la section 2                                                                                                                                                                                                                                                   | Une seule expression régulière ne suffit pas pour extraire les dates                                                                  |
+| **Date du fichier différente de celle du contenu** | Photos `IMG_20260311_...jpg` : date de la photo, pas de la machine                                                                                                                                                                                                | La date du nom de fichier ne veut pas toujours dire la même chose                                                                      |
+| **Contenu répété**                               | Pied de page de tous les DOCX et PDF, en-tête et pied de page de l'intranet, rubriques fixes des newsletters, paragraphe « À propos de Calorvia » des communiqués                                                                                              | Des chunks presque identiques, sans information                                                                                         |
+| **Données personnelles**                           | `02_RH/Confidentiel/Entretiens annuels 2025 - synthese.xlsx` : noms, évaluations, augmentations                                                                                                                                                                  | Un RAG qui les indexe les révèle à quiconque pose la question                                                                        |
+| **Fichiers sans intérêt**                         | Modèles vierges (`00_Direction/Modeles/`), `99_Archives/Divers/` (document vide, `test.xlsx`, `Document1.docx`, un menu de cantine scanné)                                                                                                                | Du bruit dans l'index                                                                                                                   |
+| **Questions hors corpus à la prémisse plausible** | 6 questions `out_of_corpus`, dont une sur un ERP utilisé « avant 2011 »                                                                                                                                                                                        | Le LLM invente une réponse à partir d'un chunk voisin                                                                                 |
 
 ---
 
@@ -210,24 +210,24 @@ Le corpus a été construit pour piéger un RAG naïf. Les voici tous. Les conna
 }
 ```
 
-| Type | Nombre | Ce que la question teste |
-|---|---|---|
-| `decision_current` | 15 | L'état actuel d'une décision qui a changé |
-| `decision_history` | 10 | L'état d'une décision à une date passée (« En décembre 2025, … ») |
-| `decision_reason` | 8 | La raison d'une décision |
-| `action_tracking` | 12 | Responsable, échéance et statut d'une action du CODIR |
-| `meeting_detail` | 10 | Présence, présidence, indicateur d'une séance précise |
-| `board_resolution` | 8 | Résolutions du conseil d'administration |
-| `excel_lookup` | 16 | Une valeur dans un classeur |
-| `excel_reasoning` | 6 | Une comparaison ou un maximum dans un tableau |
-| `image_only` | 15 | Une information présente seulement dans une image |
-| `image_in_document` | 2 | Une valeur lisible seulement dans un graphique d'un PDF |
-| `scan_ocr` | 8 | Un scan ou une photo de document |
-| `multilingual` | 10 | Une réponse dans un document néerlandais ou anglais |
-| `version_trap` | 6 | La bonne version d'un document |
-| `multi_doc` | 8 | Des faits de plusieurs documents à combiner |
-| `factual` | 18 | Un fait simple |
-| `out_of_corpus` | 6 | Pas de réponse dans le corpus : la bonne réponse est un refus |
+| Type                  | Nombre | Ce que la question teste                                                  |
+| --------------------- | ------ | ------------------------------------------------------------------------- |
+| `decision_current`  | 15     | L'état actuel d'une décision qui a changé                              |
+| `decision_history`  | 10     | L'état d'une décision à une date passée (« En décembre 2025, … ») |
+| `decision_reason`   | 8      | La raison d'une décision                                                 |
+| `action_tracking`   | 12     | Responsable, échéance et statut d'une action du CODIR                   |
+| `meeting_detail`    | 10     | Présence, présidence, indicateur d'une séance précise                 |
+| `board_resolution`  | 8      | Résolutions du conseil d'administration                                  |
+| `excel_lookup`      | 16     | Une valeur dans un classeur                                               |
+| `excel_reasoning`   | 6      | Une comparaison ou un maximum dans un tableau                             |
+| `image_only`        | 15     | Une information présente seulement dans une image                        |
+| `image_in_document` | 2      | Une valeur lisible seulement dans un graphique d'un PDF                   |
+| `scan_ocr`          | 8      | Un scan ou une photo de document                                          |
+| `multilingual`      | 10     | Une réponse dans un document néerlandais ou anglais                     |
+| `version_trap`      | 6      | La bonne version d'un document                                            |
+| `multi_doc`         | 8      | Des faits de plusieurs documents à combiner                              |
+| `factual`           | 18     | Un fait simple                                                            |
+| `out_of_corpus`     | 6      | Pas de réponse dans le corpus : la bonne réponse est un refus           |
 
 ### Une réserve de test
 
@@ -311,13 +311,13 @@ git push -u origin main
 
 ### Ce qui va dans Git, et ce qui n'y va pas
 
-| Dans Git | Hors de Git (`.gitignore`) |
-|---|---|
-| Le code (`src/`, `scripts/`), `pyproject.toml`, `uv.lock` | Le corpus et le jeu d'évaluation (`data/`) |
-| Les configurations d'expériences (`experiments/*.toml`) et les prompts (`prompts/`) | `.env` (mots de passe, URL) |
-| `.env.example`, `docker-compose.yml` | L'environnement Python (`.venv/`) |
-| Les notebooks, sans leurs sorties volumineuses | Les conversions Docling, les transcriptions du VLM, les données de Qdrant et de PostgreSQL |
-| `README.md`, `RAPPORT.md`, les exports de résultats (`results/*.csv`) | Les modèles (`~/models`, de toute façon hors du projet) |
+| Dans Git                                                                                 | Hors de Git (`.gitignore`)                                                                |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Le code (`src/`, `scripts/`), `pyproject.toml`, `uv.lock`                        | Le corpus et le jeu d'évaluation (`data/`)                                               |
+| Les configurations d'expériences (`experiments/*.toml`) et les prompts (`prompts/`) | `.env` (mots de passe, URL)                                                               |
+| `.env.example`, `docker-compose.yml`                                                 | L'environnement Python (`.venv/`)                                                         |
+| Les notebooks, sans leurs sorties volumineuses                                           | Les conversions Docling, les transcriptions du VLM, les données de Qdrant et de PostgreSQL |
+| `README.md`, `RAPPORT.md`, les exports de résultats (`results/*.csv`)             | Les modèles (`~/models`, de toute façon hors du projet)                                 |
 
 ```text
 # .gitignore
@@ -352,15 +352,15 @@ git tag -a v0.2-baseline -m "Baseline: text documents only"
 git push origin --tags
 ```
 
-| Tag | Étape |
-|---|---|
+| Tag                 | Étape                                        |
+| ------------------- | --------------------------------------------- |
 | `v0.1-inventaire` | Sections 1 et 2 : inventaire et métadonnées |
-| `v0.2-baseline` | Section 3 : version de référence |
-| `v0.3-langues` | Section 4 |
-| `v0.4-excel` | Section 5 |
-| `v0.5-images` | Section 6 |
-| `v0.6-versions` | Section 7 |
-| `v1.0` | Le rendu |
+| `v0.2-baseline`   | Section 3 : version de référence            |
+| `v0.3-langues`    | Section 4                                     |
+| `v0.4-excel`      | Section 5                                     |
+| `v0.5-images`     | Section 6                                     |
+| `v0.6-versions`   | Section 7                                     |
+| `v1.0`            | Le rendu                                      |
 
 ### Relier chaque expérience à son commit
 
@@ -408,29 +408,29 @@ Tag : `v0.1-inventaire`, à la fin de la section 2.
 
 Aucun fichier ne vous les donne : extrayez-les du chemin, du nom de fichier et du contenu.
 
-| Métadonnée | D'où la tirer |
-|---|---|
-| Département | Le premier dossier (`01_Finance`, `03_Production`…) |
-| Type de document | Le dossier et le nom du fichier (PV de CODIR, PV de CA, COPIL, facture, non-conformité, offre de prix…) |
-| Date | Le nom du fichier, et sinon le contenu (« Séance du lundi 13 octobre 2025 ») |
+| Métadonnée      | D'où la tirer                                                                                                                               |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Département      | Le premier dossier (`01_Finance`, `03_Production`…)                                                                                     |
+| Type de document  | Le dossier et le nom du fichier (PV de CODIR, PV de CA, COPIL, facture, non-conformité, offre de prix…)                                    |
+| Date              | Le nom du fichier, et sinon le contenu (« Séance du lundi 13 octobre 2025 »)                                                              |
 | Version et statut | `v1`, `v2`, `projet`, `Projet PV`, `copie`, `Copie de`, `(1)`, `FINAL`, les dossiers `Archives`, `Doublons`, `Modeles` |
-| Langue | Détectée par chunk (chapitre 05) |
-| Type de source | Texte, tableau, image, scan |
+| Langue            | Détectée par chunk (chapitre 05)                                                                                                           |
+| Type de source    | Texte, tableau, image, scan                                                                                                                  |
 
 Les conventions de nommage ne sont pas homogènes, comme dans une vraie entreprise :
 
-| Série | Exemple |
-|---|---|
-| CODIR 2025 | `PV_CODIR_2025-10-13.docx`, `PV_CODIR_2025-11-17_v2.docx` |
-| CODIR 2026 | `2026-01-12 CODIR PV.docx`, `2026-01-14 CODIR extraordinaire PV.docx` |
-| CA | `PV CA 2025-11-18 signé.pdf`, `Projet PV CA 2026-02-17 v1.docx` |
-| COPIL ERP | `COPIL_Atlas_05_20260205.docx` |
-| Comité de sécurité de Gand | `Verslag Comite PBW Gent 2026-01-22.docx` |
-| Reporting, production | `Reporting 2026-03.xlsx` (un mois, pas un jour), `Productierapport Gent 2026-01.xlsx` |
-| Notes de service | `2026-01-05 NS-2026-01 Gel des recrutements des fonctions support.docx` |
-| Factures, bons de livraison | `2026-01-08 Tolerie Mosane TM-2026-0042.jpg` |
-| Photos | `IMG_20260311_Presse_plieuse.jpg` (date de la photo) |
-| Sans date | `NC-2025-047.docx`, `REC-2026-017 Comptable fournisseurs.html`, `Tarif 2026.xlsx` |
+| Série                        | Exemple                                                                                   |
+| ----------------------------- | ----------------------------------------------------------------------------------------- |
+| CODIR 2025                    | `PV_CODIR_2025-10-13.docx`, `PV_CODIR_2025-11-17_v2.docx`                             |
+| CODIR 2026                    | `2026-01-12 CODIR PV.docx`, `2026-01-14 CODIR extraordinaire PV.docx`                 |
+| CA                            | `PV CA 2025-11-18 signé.pdf`, `Projet PV CA 2026-02-17 v1.docx`                      |
+| COPIL ERP                     | `COPIL_Atlas_05_20260205.docx`                                                          |
+| Comité de sécurité de Gand | `Verslag Comite PBW Gent 2026-01-22.docx`                                               |
+| Reporting, production         | `Reporting 2026-03.xlsx` (un mois, pas un jour), `Productierapport Gent 2026-01.xlsx` |
+| Notes de service              | `2026-01-05 NS-2026-01 Gel des recrutements des fonctions support.docx`                 |
+| Factures, bons de livraison   | `2026-01-08 Tolerie Mosane TM-2026-0042.jpg`                                            |
+| Photos                        | `IMG_20260311_Presse_plieuse.jpg` (date de la photo)                                    |
+| Sans date                     | `NC-2025-047.docx`, `REC-2026-017 Comptable fournisseurs.html`, `Tarif 2026.xlsx`   |
 
 Mettez ces métadonnées dans le payload des chunks, avec un *payload index* pour celles que vous filtrerez. Et, comme la ligne patient de l'hôpital, ajoutez en tête de chaque chunk une **ligne de contexte** : « [PV du CODIR du 13 octobre 2025 · 00_Direction/CODIR/2025] ». Un chunk du tableau de suivi des actions qui ne dit pas de quelle séance il vient est inutilisable.
 
@@ -496,14 +496,14 @@ C'est la partie la plus difficile, et celle qui fait le plus de différence. Il 
 
 Pistes, à combiner et à mesurer une par une :
 
-| Piste | Idée |
-|---|---|
-| Statut dans le registre | Exclure par défaut les brouillons, les doublons et les fichiers de bruit (filtre `must_not` dans Qdrant). Garder les versions anciennes, mais marquées (`valid_from`, `valid_to`, chapitre 05) |
+| Piste                              | Idée                                                                                                                                                                                                                                                  |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Statut dans le registre            | Exclure par défaut les brouillons, les doublons et les fichiers de bruit (filtre `must_not` dans Qdrant). Garder les versions anciennes, mais marquées (`valid_from`, `valid_to`, chapitre 05)                                                 |
 | Date de référence de la question | Un LLM extrait de la question une date de référence (« en décembre 2025 » → 31/12/2025 ; rien → la date la plus récente). Le code applique un filtre `date <= date de référence` (exercice 3, section 6 : le LLM extrait, le code décide) |
-| Ordre chronologique dans le prompt | Envoyer les chunks retenus triés par date, chacun avec sa date |
-| Consignes au LLM | « Si des extraits se contredisent, la décision la plus récente prime. Un projet de PV ne fait pas foi. Un PV approuvé avec une correction prime sur le PV corrigé. Indique la date de la décision. » |
-| Plus de candidats sur un fil | Pour une question sur un fil de décision, prendre plus de chunks avant le reranking, pour avoir tous les épisodes |
-| Données structurées | Extraire les tableaux de décisions et de suivi des actions des PV du CODIR dans PostgreSQL (numéro, texte, responsable, échéance, statut, date de séance) et répondre aux questions `action_tracking` en SQL |
+| Ordre chronologique dans le prompt | Envoyer les chunks retenus triés par date, chacun avec sa date                                                                                                                                                                                        |
+| Consignes au LLM                   | « Si des extraits se contredisent, la décision la plus récente prime. Un projet de PV ne fait pas foi. Un PV approuvé avec une correction prime sur le PV corrigé. Indique la date de la décision. »                                            |
+| Plus de candidats sur un fil       | Pour une question sur un fil de décision, prendre plus de chunks avant le reranking, pour avoir tous les épisodes                                                                                                                                    |
+| Données structurées              | Extraire les tableaux de décisions et de suivi des actions des PV du CODIR dans PostgreSQL (numéro, texte, responsable, échéance, statut, date de séance) et répondre aux questions `action_tracking` en SQL                                   |
 
 À mesurer : `decision_current`, `decision_history`, `board_resolution`, `version_trap`, `action_tracking`, et surtout **le taux de pièges** (`trap_hit`) avant et après.
 
@@ -521,14 +521,14 @@ Tag : `v1.0`.
 
 Si vous avez du temps, choisissez-en une ou plusieurs :
 
-| Piste | Idée | Questions à surveiller |
-|---|---|---|
-| Routage des questions | Un LLM classe la question (texte, calcul, action du CODIR) et choisit le chemin | `excel_reasoning`, `action_tracking` |
-| Parent-child | Chercher avec de petits chunks, envoyer au LLM le point entier de l'ordre du jour | `decision_reason`, `meeting_detail` |
-| Décomposer la question | Une recherche par sous-question pour les questions qui demandent plusieurs faits | `multi_doc` |
-| Contextual retrieval | Un LLM écrit une phrase de contexte pour chaque chunk avant l'embedding | Toutes |
-| Seuil du reranker | « Je ne sais pas » si le meilleur score est trop bas | `out_of_corpus` |
-| Recherche directement sur les images | Le principe de ColPali : chercher sur des embeddings de l'image des pages plutôt que sur leur transcription. À présenter comme une étude, pas à implémenter | `image_only`, `scan_ocr` |
+| Piste                                | Idée                                                                                                                                                             | Questions à surveiller                  |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| Routage des questions                | Un LLM classe la question (texte, calcul, action du CODIR) et choisit le chemin                                                                                   | `excel_reasoning`, `action_tracking` |
+| Parent-child                         | Chercher avec de petits chunks, envoyer au LLM le point entier de l'ordre du jour                                                                                 | `decision_reason`, `meeting_detail`  |
+| Décomposer la question              | Une recherche par sous-question pour les questions qui demandent plusieurs faits                                                                                  | `multi_doc`                            |
+| Contextual retrieval                 | Un LLM écrit une phrase de contexte pour chaque chunk avant l'embedding                                                                                          | Toutes                                   |
+| Seuil du reranker                    | « Je ne sais pas » si le meilleur score est trop bas                                                                                                            | `out_of_corpus`                        |
+| Recherche directement sur les images | Le principe de ColPali : chercher sur des embeddings de l'image des pages plutôt que sur leur transcription. À présenter comme une étude, pas à implémenter | `image_only`, `scan_ocr`             |
 
 ---
 
