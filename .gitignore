@@ -6,7 +6,11 @@ dist/
 wheels/
 *.egg-info
 
+# .gitignore
 .env
-
-# Virtual environments
-.venv
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+data/
+qdrant_storage/
+*.log
