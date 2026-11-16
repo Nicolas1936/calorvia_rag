@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     corpus_folder: Path = Path('./data/corpus/calorvia')
     processed_documents_folder: Path = Path('./data/calorvia_export')
     sql_statement_folder: Path = Path('./sql_queries')
-    eval_dataset_path: Path = Path('./data/calorvia_eval.json')
+    eval_dataset_path: Path = Path('./data/corpus/calorvia_eval.json')
     models_folder: Path
 
     # Converter Settings
