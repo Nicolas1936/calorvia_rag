@@ -10,6 +10,7 @@ Usage : uv run python -m calorvia_rag.etl.inventory
 """
 from calorvia_rag.config import settings
 from calorvia_rag.db import save_inventory
+from calorvia_rag.etl.metadata import extract_metadata
 
 from collections import defaultdict
 from functools import cache
@@ -68,38 +69,48 @@ def detect_language(text, default = 'fr', min_probability = 0.9):
 
 # --- Lecture d'un fichier ----------------------------------------------------
 
+def count_pdf_tables(pdf):
+    """Nombre de tableaux détectés par PyMuPDF (0 si la détection échoue)."""
+    try:
+        return sum(len(page.find_tables().tables) for page in pdf)
+    except Exception:
+        return 0
+
+
 def pdf_info(path):
-    """Nombre de pages, texte et type d'un PDF : 'scan' (pas de couche texte), 'texte + images' ou 'texte'."""
+    """Nombre de pages, texte, type, tableaux et images d'un PDF. Type : 'scan', 'texte + images' ou 'texte'."""
     with pymupdf.open(path) as pdf:
         text = ' '.join(page.get_text() for page in pdf)          # texte sélectionnable de toutes les pages
         images = sum(len(page.get_images()) for page in pdf)      # nombre d'images intégrées
+        tables = count_pdf_tables(pdf) if text.strip() else 0     # pas de tableau lisible dans un scan
         page_count = pdf.page_count
     if not text.strip():  # aucun texte -> les pages sont des photos du papier
         kind = 'scan'
     else:
         kind = 'texte + images' if images else 'texte'
-    return page_count, text, kind
+    return page_count, text, kind, tables, images
 
 
 def docling_info(path):
-    """Nombre de pages (slides PPTX, feuilles XLSX ; None sans notion de page) et texte brut d'un document."""
+    """Nombre de pages (slides PPTX, feuilles XLSX ; None sans notion de page), texte brut, tableaux et images."""
     document = get_converter().convert(path).document
-    return len(document.pages) or None, document.export_to_text()
+    return len(document.pages) or None, document.export_to_text(), len(document.tables), len(document.pictures)
 
 
 def read_file(path, file_format):
-    """Nombre de pages, texte brut, type de PDF et erreur de lecture d'un fichier."""
-    # Renvoie toujours 4 valeurs : (page_count, text, pdf_kind, error)
+    """Nombre de pages, texte brut, type de PDF, tableaux, images et erreur de lecture d'un fichier."""
+    # Renvoie toujours 6 valeurs : (page_count, text, pdf_kind, table_count, image_count, error)
     try:
         if file_format == 'pdf':
             return *pdf_info(path), None
         if file_format in TEXT_FORMATS:
-            return *docling_info(path), None, None
+            page_count, text, tables, images = docling_info(path)
+            return page_count, text, None, tables, images, None
         if file_format in IMAGE_FORMATS:
-            return 1, '', None, None  # 1 « page », texte vide
-        return None, '', None, f'unsupported format: {file_format}'
+            return 1, '', None, 0, 1, None  # 1 « page », texte vide, l'image elle-même
+        return None, '', None, 0, 0, f'unsupported format: {file_format}'
     except Exception as error:  # un fichier cassé ne doit pas arrêter tout l'inventaire
-        return None, '', None, f'{type(error).__name__}: {error}'
+        return None, '', None, 0, 0, f'{type(error).__name__}: {error}'
 
 
 # --- Empreintes --------------------------------------------------------------
@@ -138,9 +149,9 @@ def inventory_file(path, corpus_folder):
     size_bytes = path.stat().st_size
 
     if size_bytes:
-        page_count, text, pdf_kind, error = read_file(path, file_format)
+        page_count, text, pdf_kind, table_count, image_count, error = read_file(path, file_format)
     else:  # fichier vide : rien à lire
-        page_count, text, pdf_kind, error = None, '', None, None
+        page_count, text, pdf_kind, table_count, image_count, error = None, '', None, 0, 0, None
 
     return {
         'path': str(relative_path),
@@ -155,6 +166,11 @@ def inventory_file(path, corpus_folder):
         'words': len(text.split()),
         'language': detect_language(text) if text.strip() else None,  # None = pas de texte à analyser
         'read_error': error,
+        'table_count': table_count,
+        'image_count': image_count,
+        # Métadonnées de la section 2 : department, doc_type, doc_date, date_precision, period,
+        # version, status, source_type, context_line
+        **extract_metadata(relative_path, text, file_format, pdf_kind, table_count),
         'excluded_reason': folder_exclusion(relative_path) or ('empty_file' if size_bytes == 0 else None),
         'duplicate_of': None,  # rempli plus tard par mark_duplicates
     }

@@ -24,6 +24,9 @@ def start_experiment(name, config, git_commit, git_dirty):
 INVENTORY_COLUMNS = (
     'path', 'file_name', 'format', 'size_bytes', 'sha256', 'content_sha256', 'page_count', 'has_text_layer',
     'pdf_kind', 'words', 'language', 'read_error', 'excluded_reason', 'duplicate_of',
+    # section 2 : metadata
+    'table_count', 'image_count', 'department', 'doc_type', 'doc_date', 'date_precision', 'period',
+    'version', 'status', 'source_type', 'context_line',
 )
 
 def save_inventory(rows):

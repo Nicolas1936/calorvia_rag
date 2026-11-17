@@ -78,3 +78,20 @@ CREATE TABLE IF NOT EXISTS documents (
 
 CREATE INDEX IF NOT EXISTS documents_sha256 ON documents (sha256);
 CREATE INDEX IF NOT EXISTS documents_content_sha256 ON documents (content_sha256);
+
+-- Section 2: metadata extracted from the path, the file name and the content (etl/metadata.py)
+ALTER TABLE documents
+    ADD COLUMN IF NOT EXISTS table_count INT,           -- tables found by Docling / PyMuPDF
+    ADD COLUMN IF NOT EXISTS image_count INT,           -- pictures found by Docling / PyMuPDF
+    ADD COLUMN IF NOT EXISTS department TEXT,           -- first folder: 00_Direction, 01_Finance...
+    ADD COLUMN IF NOT EXISTS doc_type TEXT,             -- pv_codir, pv_ca, non_conformite, facture... ('autre' = no rule)
+    ADD COLUMN IF NOT EXISTS doc_date DATE,             -- date of the document (file name, else content)
+    ADD COLUMN IF NOT EXISTS date_precision TEXT,       -- 'day' or 'month' (Reporting 2026-03)
+    ADD COLUMN IF NOT EXISTS period TEXT,               -- validity year or range: 'Tarif 2026' -> '2026', '2026-2028'
+    ADD COLUMN IF NOT EXISTS version INT,               -- v1, v2... ('FINAL' is ignored on purpose)
+    ADD COLUMN IF NOT EXISTS status TEXT,               -- projet, valide, copie, modele, archive
+    ADD COLUMN IF NOT EXISTS source_type TEXT,          -- texte, texte + tableau, texte + images, tableau, image, scan
+    ADD COLUMN IF NOT EXISTS context_line TEXT;         -- '[PV du CODIR du 17 novembre 2025 (v2) · 00_Direction/CODIR/2025]'
+
+CREATE INDEX IF NOT EXISTS documents_doc_type ON documents (doc_type);
+CREATE INDEX IF NOT EXISTS documents_doc_date ON documents (doc_date);
