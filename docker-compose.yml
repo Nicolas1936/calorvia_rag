@@ -1,0 +1,128 @@
+services:
+  # Base de données PostgreSQL — identifiants lus depuis le fichier .env
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: calorvia_rag
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d calorvia_rag"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Base vectorielle Qdrant — clé API lue depuis le fichier .env
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    ports:
+      - "6333:6333"   # API REST + dashboard (http://localhost:6333/dashboard)
+      - "6334:6334"   # API gRPC
+    environment:
+      QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY}
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  # Embeddings BGE-M3 (vLLM) — démarre en premier pour réserver sa part de VRAM
+  vllm-embedder:
+    image: vllm/vllm-openai:latest   # idéalement : même version que `vllm -v` en local (ex. vllm/vllm-openai:v0.x.y)
+    container_name: vllm-embedder
+    ports:
+      - "8001:8001"
+    volumes:
+      - /home/nicolas/models:/models:ro
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    entrypoint: ["vllm", "serve"]
+    command: >
+      /models/rag/embedder/bge-m3
+      --served-model-name bge-m3
+      --gpu-memory-utilization 0.1
+      --max-model-len 8192
+      --host 0.0.0.0 --port 8001
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 5s
+      start_period: 180s
+      retries: 3
+
+  # LLM Qwen (llama.cpp)
+  llama-server:
+    image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    container_name: llama-server
+    ports:
+      - "8000:8000"
+    volumes:
+      - /home/nicolas/models:/models:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    depends_on:
+      vllm-embedder:
+        condition: service_healthy
+    # L'entrypoint de l'image est déjà /app/llama-server : on ne passe que les arguments
+    command: >
+      -m /models/qwen3.8-27b/llama/Qwen3.8-27B-UD-Q4_K_XL.gguf
+      -ngl 50 -fa on
+      --parallel 3 --ctx-size 16384
+      -ctk q8_0 -ctv q8_0
+      --spec-type draft-mtp --spec-draft-n-max 4
+      --host 0.0.0.0 --port 8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 120s
+      retries: 3
+
+  # Qwen multimodal (texte + images) — llama.cpp avec mmproj, 64k de contexte
+  # Profil "vision" : ne démarre qu'avec `docker compose --profile vision up -d`
+  llama-vision:
+    image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    container_name: llama-vision
+    profiles: ["vision"]
+    ports:
+      - "127.0.0.1:8005:8005"   # accessible uniquement depuis ta machine (comme --host 127.0.0.1)
+    volumes:
+      - /home/nicolas/models:/models:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: >
+      -m /models/qwen3.8-27b/llama/Qwen3.8-27B-UD-Q4_K_XL.gguf
+      --mmproj /models/qwen3.8-27b/llama/mmproj-F16.gguf
+      -np 1 -fa on
+      -c 65536
+      -ctk q8_0 -ctv q8_0
+      --host 0.0.0.0 --port 8005
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 120s
+      retries: 3
+ 
+volumes:
+  pgdata:
+  qdrant_data:

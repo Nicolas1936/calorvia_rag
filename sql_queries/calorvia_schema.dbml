@@ -1,0 +1,117 @@
+// Calorvia RAG — schéma PostgreSQL
+// À coller dans https://dbdiagram.io/d (éditeur de gauche)
+
+Project calorvia_rag {
+  database_type: 'PostgreSQL'
+}
+
+// ---------- ETL (Docling export) ----------
+
+Table run {
+  run_id serial [pk]
+  start_time timestamptz [default: `now()`]
+  end_time timestamptz
+  doc_processed int
+  doc_ignored int
+  doc_failed int
+  parameters jsonb
+}
+
+Table document {
+  document_id serial [pk]
+  run_id int [ref: > run.run_id]
+  file_path text
+  export_folder text
+  file_name text
+  file_format_ text
+  file_hash text
+  status_ text
+  page_count int
+  text_count int
+  table_count int
+  image_count int
+  process_time float
+  error text
+}
+
+// ---------- Inventaire (registre du corpus) ----------
+
+Table documents {
+  path text [pk, note: 'relative to the corpus root, as in the evaluation set']
+  file_name text [not null]
+  format text [not null]
+  size_bytes bigint [not null]
+  sha256 text [not null, note: 'of the bytes: exact copies']
+  content_sha256 text [note: 'of the text: copies saved separately']
+  page_count int [note: 'PDF pages, PPTX slides, XLSX sheets, 1 for images']
+  has_text_layer boolean [note: 'PDF only: FALSE = scan']
+  pdf_kind text [note: "'scan', 'texte + images' or 'texte'"]
+  words int
+  language text [note: 'fr, nl, en, de; NULL without text']
+  read_error text
+  excluded_reason text [note: 'NULL = indexed']
+  duplicate_of text [note: 'for duplicates: the copy that is kept']
+  inventoried_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    sha256 [name: 'documents_sha256']
+    content_sha256 [name: 'documents_content_sha256']
+  }
+}
+
+// Lien logique (pas de FOREIGN KEY dans le SQL) : un doublon pointe vers la copie gardée
+Ref documents_duplicate: documents.duplicate_of > documents.path
+
+// ---------- Évaluation ----------
+
+Table experiments {
+  id serial [pk]
+  name text [not null]
+  config jsonb [not null]
+  started_at timestamptz [not null, default: `now()`]
+  duration_s real
+  status text [not null, default: 'running']
+  git_commit text
+  git_dirty boolean
+}
+
+Table answers {
+  experiment_id int [not null, ref: > experiments.id]
+  question_id text [not null]
+  chunks jsonb [not null]
+  answer text
+  latency_ms real
+  llm_metrics jsonb
+
+  indexes {
+    (experiment_id, question_id) [pk]
+  }
+}
+
+Table scores {
+  experiment_id int [not null, ref: > experiments.id]
+  question_id text [not null]
+  question_type text [not null]
+  metric text [not null]
+  value real
+  reason text
+
+  indexes {
+    (experiment_id, question_id, metric) [pk]
+  }
+}
+
+TableGroup etl_docling {
+  run
+  document
+}
+
+TableGroup inventaire {
+  documents
+}
+
+TableGroup evaluation {
+  experiments
+  answers
+  scores
+}

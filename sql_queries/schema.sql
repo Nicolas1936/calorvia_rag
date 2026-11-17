@@ -57,3 +57,24 @@ CREATE TABLE IF NOT EXISTS scores (
     reason TEXT,
     PRIMARY KEY (experiment_id, question_id, metric)
 );
+
+CREATE TABLE IF NOT EXISTS documents (
+    path TEXT PRIMARY KEY,              -- relative to the corpus root, as in the evaluation set
+    file_name TEXT NOT NULL,
+    format TEXT NOT NULL,
+    size_bytes BIGINT NOT NULL,
+    sha256 TEXT NOT NULL,               -- of the bytes: exact copies
+    content_sha256 TEXT,                -- of the text: copies saved separately (other bytes, same text)
+    page_count INT,                     -- PDF pages, PPTX slides, XLSX sheets, 1 for images; NULL for DOCX, HTML, MD, CSV
+    has_text_layer BOOLEAN,             -- PDF only: FALSE means a scan, to be read with OCR or the VLM
+    pdf_kind TEXT,                      -- PDF only: 'scan', 'texte + images' (charts to read with the VLM) or 'texte'
+    words INT,                          -- words in the raw text (0 for images and scans)
+    language TEXT,                      -- fr, nl, en, de; NULL for images, scans and files without text
+    read_error TEXT,
+    excluded_reason TEXT,               -- NULL = indexed
+    duplicate_of TEXT,                  -- for duplicates: the copy that is kept
+    inventoried_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS documents_sha256 ON documents (sha256);
+CREATE INDEX IF NOT EXISTS documents_content_sha256 ON documents (content_sha256);

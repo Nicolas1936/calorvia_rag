@@ -19,3 +19,23 @@ def start_experiment(name, config, git_commit, git_dirty):
             'INSERT INTO experiments(name, config, git_commit, git_dirty) VALUES(%s, %s, %s, %s) RETURNING id',
             (name, Jsonb(config), git_commit, git_dirty)
         ).fetchone()[0]
+
+
+INVENTORY_COLUMNS = (
+    'path', 'file_name', 'format', 'size_bytes', 'sha256', 'content_sha256', 'page_count', 'has_text_layer',
+    'pdf_kind', 'words', 'language', 'read_error', 'excluded_reason', 'duplicate_of',
+)
+
+def save_inventory(rows):
+    """Replace the registry with the current state of the corpus, in one transaction."""
+    init_db()
+    columns = ', '.join(INVENTORY_COLUMNS)
+    placeholders = ', '.join(f'%({column})s' for column in INVENTORY_COLUMNS)
+    updates = ', '.join(f'{column} = EXCLUDED.{column}' for column in INVENTORY_COLUMNS if column != 'path')
+    with get_connection(autocommit = False) as conn:
+        conn.cursor().executemany(
+            f'''INSERT INTO documents ({columns}) VALUES ({placeholders})
+                ON CONFLICT (path) DO UPDATE SET {updates}, inventoried_at = NOW()''',
+            rows,
+        )
+        conn.execute('DELETE FROM documents WHERE NOT (path = ANY(%s))', ([row['path'] for row in rows],))
