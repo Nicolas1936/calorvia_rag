@@ -3,8 +3,9 @@ from calorvia_rag.db import start_experiment, end_experiment, insert_answer, ins
 from calorvia_rag.qdrant import get_qdrant_client
 from calorvia_rag.embedding import get_embedder
 from calorvia_rag.rag.ask import generate_response, get_llm_client
-from calorvia_rag.evaluation.metrics import retrieval_scores, is_refusal
+from calorvia_rag.evaluation.metrics import retrieval_scores, is_refusal, trap_hit
 from calorvia_rag.evaluation.judge import get_judge_metrics, get_judge_sample, judge_scores
+from calorvia_rag.git_info import git_state
 
 from openai import OpenAI
 from pathlib import Path
@@ -14,10 +15,14 @@ import asyncio
 import json
 import sys
 
+def is_test_question(question):
+    """Réserve de test : les questions dont le numéro est un multiple de 5 (Q005, Q010… Q155)."""
+    return int(question['id'][1:]) % 5 == 0
 
 def load_questions(path):
+    """Le jeu de développement : les 127 questions hors réserve de test."""
     with open(path, encoding = 'utf-8') as f:
-        return json.load(f)
+        return [question for question in json.load(f) if not is_test_question(question)]
 
 def get_experiment_config():
     generation_cfg = runner_settings['generation']
