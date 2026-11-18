@@ -19,7 +19,6 @@ embedding_batch_size = 2048
 query_instruction = ''
 
 [index]
-collection_name = 'calorvia_exp02_with_ctx'
 sparse_vector = 'bm25'
 sparse_embedder_ascii_folding = true
 
