@@ -30,9 +30,12 @@ def get_experiment_config():
     return {**runner_settings, 'generation': {**generation_cfg, 'system_prompt_text': system_prompt}}
 
 def evaluate_question(question, answer, chunks):
+    k = runner_settings['reranker']['top_k']
     scores = [('refusal', float(is_refusal(answer)), None)]
     if question['evidence']:
-        scores += retrieval_scores(question, chunks, runner_settings['reranker']['top_k'])
+        scores += retrieval_scores(question, chunks, k)
+    if question['traps']:
+        scores.append(('trap_hit', float(trap_hit(chunks, question)), None))
     return scores
 
 async def answer_question(experiment_id, question, qdrant_client, embedder, llm_client, semaphore):
@@ -59,7 +62,12 @@ async def answer_questions(experiment_id, questions):
 
 def run_experiment():
     questions = load_questions(settings.eval_dataset_path)
-    experiment_id = start_experiment(runner_settings['name'], get_experiment_config())
+
+    git_commit, git_dirty = git_state()
+    if git_dirty:
+        print('⚠️  Modifications non commitées : le commit enregistré ne reproduit pas exactement cette expérience.')
+
+    experiment_id = start_experiment(runner_settings['name'], get_experiment_config(), git_commit, git_dirty)
     print('Experiment', experiment_id)
     start = perf_counter()
     status = 'failed'
