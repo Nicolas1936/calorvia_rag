@@ -37,11 +37,11 @@ class Settings(BaseSettings):
     corpus_language: str = 'french'
 
     # Run Config
-    runner_config_path: Path = Path('./experiments/prompt_minimal.toml')
+    runner_config_path: Path = Path('./experiments/exp01_baseline_no_ctx.toml')
 
 def load_runner_settings(config_path):
     with open(config_path, 'rb') as f:
         return tomllib.load(f)
 
 settings = Settings()
-#runner_settings = load_runner_settings(settings.runner_config_path)
+runner_settings = load_runner_settings(settings.runner_config_path)

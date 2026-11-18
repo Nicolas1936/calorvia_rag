@@ -1,5 +1,6 @@
 from calorvia_rag.config import settings, runner_settings
 from calorvia_rag.db import list_documents_to_chunk
+from calorvia_rag.etl.inventory import detect_language
 
 from transformers import AutoTokenizer
 from docling_core.types.doc import DoclingDocument
@@ -9,7 +10,7 @@ from docling_core.transforms.chunker.tokenizer.huggingface import HuggingFaceTok
 
 from pathlib import Path
 
-import json
+from pathlib import Path
 
 CHUNKERS = {
     'hybrid': HybridChunker,
@@ -24,52 +25,46 @@ def get_chunker(chunker_type, embedder_name, max_tokens):
     chunker = CHUNKERS.get(chunker_type)(tokenizer=tokenizer)
     return chunker
 
-def chunk_document(document_path, chunker):
-    document = DoclingDocument.load_from_json(document_path)
-    
-    origin_file_path = Path(document.origin.filename)
+def chunk_document(row, chunker, context_line):
+    """Découpe un export Docling. `row` est la ligne du registre du document."""
+    document = DoclingDocument.load_from_json(settings.processed_documents_folder / f"{row['sha256']}.json")
 
-    origin_file_name = origin_file_path.stem
-    origin_file_extension = origin_file_path.suffix.lstrip('.').lower() 
+    for i, chunk in enumerate(chunker.chunk(dl_doc = document)):
+        text = chunker.contextualize(chunk)          # titres de section + texte du chunk
+        if context_line:
+            text = row['context_line'] + '\n' + text
 
-    for i, chunk in enumerate(chunker.chunk(dl_doc=document)):
         yield {
-            'document': origin_file_name,
+            'document': row['path'],                 # chemin relatif : c'est l'identité du document
             'chunk_index': i,
             'headings': ' | '.join(chunk.meta.headings or []),
-            'text': chunker.contextualize(chunk),
-            'file_extension': origin_file_extension,
+            'text': text,
+            'language': detect_language(chunk.text, default = row['language'] or 'fr'),
+            'format': row['format'],
+            'department': row['department'],
+            'doc_type': row['doc_type'],
+            'doc_date': row['doc_date'].isoformat() if row['doc_date'] else None,
+            'period': row['period'],
+            'version': row['version'],
+            'status': row['status'],
+            'source_type': row['source_type'],
         }
 
-def load_documents_metadata(path):
-    with open(path, encoding = 'utf-8') as f:
-        return {Path(document['document']).stem: document for document in json.load(f)}
-
-def get_patient_line(metadata):
-    if metadata['patient_name'] is None:
-        return ''
-    return f"Patient : {metadata['patient_name']} (IPP {metadata['patient_ipp']}) - {metadata['title']} du {metadata['date']}\n"
-
-def chunk_document_with_patient_line(document_path, chunker, documents_metadata):
-    for chunk in chunk_document(document_path, chunker):
-        metadata = documents_metadata[chunk['document']]
-        yield {
-            **chunk,
-            'text': get_patient_line(metadata) + chunk['text'],
-            'patient_ipp': metadata['patient_ipp'],
-            'patient_name': metadata['patient_name'],
-            'doc_type': metadata['doc_type'],
-            'date': metadata['date'],
-        }
-
-def iter_chunks(documents_folder, chunker):
-    patient_line = runner_settings['chunking']['patient_line']
-    documents_metadata = load_documents_metadata(settings.documents_metadata_path)
-    for document_path in Path(documents_folder).rglob('*.json'):
-        if patient_line:
-            yield from chunk_document_with_patient_line(document_path, chunker, documents_metadata)
-        else:
-            yield from chunk_document(document_path, chunker)
+def iter_chunks(chunker):
+    """Tous les chunks du corpus, document par document, dans l'ordre du registre."""
+    context_line = runner_settings['chunking']['context_line']
+    for row in list_documents_to_chunk():
+        yield from chunk_document(row, chunker, context_line)
 
 if  __name__ == '__main__':
-    pass
+    from collections import Counter
+
+    chunking = runner_settings['chunking']
+    chunker = get_chunker(chunking['type'], runner_settings['embedder']['model'], chunking['max_tokens'])
+    chunks = list(iter_chunks(chunker))
+
+    print(runner_settings['name'], '- context_line =', chunking['context_line'])
+    print(len(chunks), 'chunks')
+    print('Formats:  ', Counter(c['format'] for c in chunks))
+    print('Languages:', Counter(c['language'] for c in chunks))
+    print(chunks[0]['text'][:300])
