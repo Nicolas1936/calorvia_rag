@@ -36,11 +36,6 @@ def get_converter(models_folder, device, num_threads):
 
     return converter
 
-def list_allowed_files(corpus_folder):
-    return sorted(
-        f for f in corpus_folder.rglob('*') if f.is_file() and f.suffix.lower() in ALLOWED_SUFFIXES
-        )
-
 def get_hash(file_path):
     return hashlib.sha256(file_path.read_bytes()).hexdigest()
 
@@ -98,7 +93,7 @@ def convert_corpus():
 
     run_id = start_run(conversion_parameters)
 
-    files = list_allowed_files(settings.corpus_folder)
+    files = list_files_to_convert()
 
     settings.processed_documents_folder.mkdir(exist_ok = True)
 
@@ -107,8 +102,8 @@ def convert_corpus():
     doc_processed = doc_ignored = doc_failed = 0
 
     try:
-        for file_path in files:
-            file_hash = get_hash(file_path)
+        for relative_path, file_hash in files:
+            file_path = settings.corpus_folder / relative_path
             if not is_file_processed(file_path, file_hash):
                 log = convert_file(file_path, converter, settings.processed_documents_folder, file_hash)
                 doc_processed += 1

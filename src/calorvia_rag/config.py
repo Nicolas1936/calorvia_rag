@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     models_folder: Path
 
     # Converter Settings
-    ocr_device: str = 'cpu'
+    ocr_device: str = 'cuda'
     ocr_num_threads: int = 6
 
     # Language support
