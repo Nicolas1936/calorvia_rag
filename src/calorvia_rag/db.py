@@ -95,3 +95,28 @@ def list_documents_to_chunk():
                  AND source_type NOT IN ('image', 'scan')
                ORDER BY path'''
         ).fetchall()
+
+def end_experiment(experiment_id, duration_s, status):
+    with get_connection() as conn:
+        conn.execute(
+            'UPDATE experiments SET duration_s = %s, status = %s WHERE id = %s',
+            (duration_s, status, experiment_id)
+        )
+
+def insert_answer(experiment_id, question_id, chunks, answer, latency_ms, llm_metrics):
+    with get_connection() as conn:
+        conn.execute(
+            'INSERT INTO answers (experiment_id, question_id, chunks, answer, latency_ms, llm_metrics) VALUES (%s, %s, %s, %s, %s, %s)',
+            (experiment_id, question_id, Jsonb(chunks), answer, latency_ms, Jsonb(llm_metrics))
+        )
+
+def get_answers(experiment_id):
+    with get_connection() as conn:
+        rows = conn.execute('SELECT question_id, answer, chunks FROM answers WHERE experiment_id = %s', (experiment_id,)).fetchall()
+    return {question_id: (answer, chunks) for question_id, answer, chunks in rows}
+
+def insert_scores(experiment_id, question_id, question_type, scores):
+    with get_connection() as conn:
+        conn.cursor().executemany(
+            'INSERT INTO scores (experiment_id, question_id, question_type, metric, value, reason) VALUES (%s, %s, %s, %s, %s, %s)',
+            [(experiment_id, question_id, question_type, metric, value, reason) for metric, value, reason in scores]
