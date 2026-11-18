@@ -11,7 +11,7 @@ def get_qdrant_client():
 def get_collection_name(embedder_name, chunk_type, chunk_size, sparse_vector=None, context_line=False):
     name = f'{embedder_name}_{chunk_type}_{chunk_size}'
     if context_line:
-        name += '_patient'
+        name += '_ctx'
     if sparse_vector:
         name += f'_{sparse_vector}'
     return name.replace('/', '-')

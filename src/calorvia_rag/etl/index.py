@@ -43,8 +43,8 @@ def init_collection(qdrant_client, collection_name, vector_size):
 def get_chunk_uuid(chunk):
     return str(uuid.uuid5(uuid.NAMESPACE_URL, f"{chunk['document']}/{chunk['chunk_index']}"))
 
-def iter_points(document_folder, chunker, embedder, model_name, embedding_batch_size, sparse_embedder_options):
-    chunks = iter_chunks(document_folder, chunker)
+def iter_points(chunker, embedder, model_name, embedding_batch_size, sparse_embedder_options):
+    chunks = iter_chunks(chunker)
     for batch in batched(chunks, embedding_batch_size):
         dense_vectors = embed([chunk['text'] for chunk in batch], embedder, model_name)
         for chunk, dense_vector in zip(batch, dense_vectors):
@@ -57,13 +57,12 @@ def iter_points(document_folder, chunker, embedder, model_name, embedding_batch_
                 , payload = chunk
             )
 
-def probe_avg_len(document_folder, chunker, probe_size: int = 500):
-    chunks = iter_chunks(document_folder, chunker)
-    for batch in batched(chunks, probe_size):
-        return int(np.mean([len(chunk['text'].split()) for chunk in batch]))
+def probe_avg_len(chunker):
+    """Longueur moyenne d'un chunk en mots, sur tout le corpus (utilisée par BM25)."""
+    return int(np.mean([len(chunk['text'].split()) for chunk in iter_chunks(chunker)]))
 
-def index_chunks(qdrant_client, collection_name, document_folder, chunker, embedder, model_name, embedding_batch_size, sparse_embedder_options):    
-    points = iter_points(document_folder, chunker, embedder, model_name, embedding_batch_size, sparse_embedder_options)
+def index_chunks(qdrant_client, collection_name, chunker, embedder, model_name, embedding_batch_size, sparse_embedder_options):    
+    points = iter_points(chunker, embedder, model_name, embedding_batch_size, sparse_embedder_options)
     qdrant_client.upload_points(collection_name, points=points, batch_size=64)
 
 def index_corpus():
@@ -80,7 +79,7 @@ def index_corpus():
         chunk_type = chunking_cfg['type'],
         chunk_size = chunking_cfg['max_tokens'],
         sparse_vector = index_cfg.get('sparse_vector'),
-        patient_line = chunking_cfg['patient_line'],
+        context_line = chunking_cfg['context_line'],
     )
 
     init_collection(qdrant_client, collection_name, embedder_cfg['vector_size'])
@@ -88,13 +87,14 @@ def index_corpus():
     convert_corpus()
 
     sparse_embedder_options = get_sparse_options(index_cfg)
-    sparse_embedder_options['avg_len'] = probe_avg_len(settings.processed_documents_folder, chunker)
+    sparse_embedder_options['avg_len'] = probe_avg_len(chunker)
 
     index_chunks(
-        qdrant_client, collection_name , settings.processed_documents_folder, chunker,
+        qdrant_client, collection_name , chunker,
         embedder, embedder_cfg['model'], embedder_cfg['embedding_batch_size'], sparse_embedder_options
         )
 
+    print(f'{collection_name}: {qdrant_client.count(collection_name).count} points')   # 3. contrôle
 
 if __name__ == '__main__':
     index_corpus()

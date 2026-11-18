@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     corpus_language: str = 'french'
 
     # Run Config
-    runner_config_path: Path = Path('./experiments/exp01_baseline_no_ctx.toml')
+    runner_config_path: Path = Path('./experiments/exp02_baseline_with_ctx.toml')
 
 def load_runner_settings(config_path):
     with open(config_path, 'rb') as f:
