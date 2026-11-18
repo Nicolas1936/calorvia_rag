@@ -93,10 +93,19 @@ def judge_experiment(experiment_id):
     judge_sample = get_judge_sample(questions)
 
     for question in questions:
+        names = []
         if question['id'] in judge_sample:
-            answer, chunks = answers[question['id']]
-            insert_scores(experiment_id, question['id'], question['type'], judge_scores(question, answer, chunks, judge_metrics))
-            print(question['id'], question['type'], 'judged')
+            names += ['faithfulness', 'correctness']
+        if question['traps']:
+            names.append('trap_answer')
+        if not names:
+            continue
+
+        answer, chunks = answers[question['id']]
+        metrics = {name: judge_metrics[name] for name in names}
+        insert_scores(experiment_id, question['id'], question['type'], judge_scores(question, answer, chunks, metrics))
+        print(question['id'], question['type'], ', '.join(names))
+
 
 
 if __name__ == '__main__':

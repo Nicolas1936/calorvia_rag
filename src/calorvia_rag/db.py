@@ -119,4 +119,4 @@ def insert_scores(experiment_id, question_id, question_type, scores):
     with get_connection() as conn:
         conn.cursor().executemany(
             'INSERT INTO scores (experiment_id, question_id, question_type, metric, value, reason) VALUES (%s, %s, %s, %s, %s, %s)',
-            [(experiment_id, question_id, question_type, metric, value, reason) for metric, value, reason in scores]
+            [(experiment_id, question_id, question_type, metric, value, reason) for metric, value, reason in scores])

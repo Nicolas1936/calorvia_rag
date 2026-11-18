@@ -1,4 +1,4 @@
-from calorivia_rag.config import settings, runner_settings
+from calorvia_rag.config import settings, runner_settings
 
 import requests as rq
 
