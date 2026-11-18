@@ -11,10 +11,11 @@ from qdrant_client import models
 import uuid
 from itertools import batched
 
+KEYWORD_FIELDS = ('document', 'doc_type', 'status', 'department', 'language')
 
 def init_collection(qdrant_client, collection_name, vector_size):
     if qdrant_client.collection_exists(collection_name):
-        return
+        qdrant_client.delete_collection(collection_name)   # on repart de zéro : pas de vieux chunks
 
     qdrant_client.create_collection(
         collection_name,
@@ -26,10 +27,17 @@ def init_collection(qdrant_client, collection_name, vector_size):
         },
     )
 
+    for field in KEYWORD_FIELDS:
+        qdrant_client.create_payload_index(
+            collection_name, 
+            field_name=field, 
+            field_schema=models.PayloadSchemaType.KEYWORD,
+        )
+
     qdrant_client.create_payload_index(
         collection_name,
-        field_name='document',
-        field_schema=models.PayloadSchemaType.KEYWORD,
+        field_name='doc_date',
+        field_schema=models.PayloadSchemaType.DATETIME,
     )
 
 def get_chunk_uuid(chunk):
