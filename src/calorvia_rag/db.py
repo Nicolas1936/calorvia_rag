@@ -12,6 +12,28 @@ def init_db():
     with get_connection() as conn:
         conn.execute(load_sql('schema.sql'))
 
+def start_run(parameters):
+    init_db()
+    with get_connection() as conn:
+        return conn.execute('INSERT INTO run(parameters) VALUES(%s) RETURNING run_id', (Jsonb(parameters),)).fetchone()[0]
+
+def end_run(run_id, doc_processed, doc_ignored, doc_failed):
+    with get_connection() as conn:
+        conn.execute(
+            'UPDATE run SET end_time = NOW(), doc_processed = %s, doc_ignored = %s, doc_failed = %s WHERE run_id = %s',
+            (doc_processed, doc_ignored, doc_failed, run_id)
+        )
+
+def insert_log(run_id, log):
+    with get_connection() as conn:
+        conn.execute(
+            '''INSERT INTO document (run_id, file_path, export_folder, file_name, file_format_, file_hash
+                                    , status_, page_count, text_count, table_count, image_count, process_time, error)
+            VALUES (%(run_id)s, %(file_path)s, %(export_folder)s, %(file_name)s, %(file_format_)s, %(file_hash)s,
+                    %(status_)s, %(page_count)s, %(text_count)s, %(table_count)s, %(image_count)s, %(process_time)s, %(error)s)''',
+            {'run_id': run_id, **log},
+        )
+
 def start_experiment(name, config, git_commit, git_dirty):
     init_db()
     with get_connection() as conn:
@@ -42,3 +64,21 @@ def save_inventory(rows):
             rows,
         )
         conn.execute('DELETE FROM documents WHERE NOT (path = ANY(%s))', ([row['path'] for row in rows],))
+
+def is_file_processed(file_path, file_hash):
+    with get_connection() as conn:
+        r = conn.execute(
+            "SELECT 1 FROM document WHERE file_hash = (%s) AND status_ IN ('success', 'partial_success') LIMIT 1",
+            (file_hash,)
+        ).fetchone()
+    return r is not None
+
+def list_files_to_convert():
+    """Fichiers du registre à convertir : indexés, et avec du texte (ni image ni scan)."""
+    with get_connection() as conn:
+        return conn.execute(
+            '''SELECT path, sha256 FROM documents
+               WHERE excluded_reason IS NULL
+                 AND source_type NOT IN ('image', 'scan')
+               ORDER BY path'''
+        ).fetchall()
