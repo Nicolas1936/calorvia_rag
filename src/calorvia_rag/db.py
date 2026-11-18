@@ -1,5 +1,6 @@
 from calorvia_rag.config import settings
 from psycopg.types.json import Jsonb
+from psycopg.rows import dict_row
 import psycopg as pg
 
 def get_connection(autocommit = True):
@@ -78,6 +79,18 @@ def list_files_to_convert():
     with get_connection() as conn:
         return conn.execute(
             '''SELECT path, sha256 FROM documents
+               WHERE excluded_reason IS NULL
+                 AND source_type NOT IN ('image', 'scan')
+               ORDER BY path'''
+        ).fetchall()
+
+def list_documents_to_chunk():
+    """Documents à découper, avec leurs métadonnées (mêmes filtres que list_files_to_convert)."""
+    with get_connection() as conn:
+        return conn.cursor(row_factory = dict_row).execute(
+            '''SELECT path, sha256, format, department, doc_type, doc_date, period,
+                      version, status, source_type, language, context_line
+               FROM documents
                WHERE excluded_reason IS NULL
                  AND source_type NOT IN ('image', 'scan')
                ORDER BY path'''
