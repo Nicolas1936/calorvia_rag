@@ -104,10 +104,19 @@ services:
       - ./config.yaml:/app/config.yaml:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/bin/docker:/usr/bin/docker:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [utility] # Donne uniquement accès à nvidia-smi sans réserver de calcul
     # depends_on:
     #   vllm-reranker:
     #     condition: service_healthy
     command: ["--config", "/app/config.yaml", "--listen", "0.0.0.0:8000"]
+    healthcheck:
+      disable: true
 
   # LLM 1 : Qwen 3.8 27B (piloté à la demande par llama-swap)
   llama-qwen38:
