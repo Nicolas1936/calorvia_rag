@@ -2,7 +2,7 @@ from calorvia_rag.config import settings, runner_settings
 
 from deepeval.models import LocalModel
 from deepeval.metrics import FaithfulnessMetric, GEval
-from deepeval.test_case import LLMTestCase, LLMTestCaseParams as SingleTurnParams
+from deepeval.test_case import LLMTestCase, SingleTurnParams
 import random
 
 
