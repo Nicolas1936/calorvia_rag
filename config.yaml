@@ -1,0 +1,22 @@
+healthCheckTimeout: 120
+
+hooks:
+  on_startup:
+    preload:
+      - "qwen3.8-27b"
+
+models:
+  "qwen3.8-27b":
+    proxy: "http://llama-qwen38:8080"
+    cmd: docker start -a llama-qwen38
+    cmdStop: docker stop llama-qwen38
+
+  "gemma-4-26b":
+    proxy: "http://llama-gemma4:8080"
+    cmd: docker start -a llama-gemma4
+    cmdStop: docker stop llama-gemma4
+
+  "qwen3.8-vision":
+    proxy: "http://llama-vision:8080"
+    cmd: docker start -a llama-vision
+    cmdStop: docker stop llama-vision

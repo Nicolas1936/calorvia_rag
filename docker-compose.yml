@@ -31,7 +31,7 @@ services:
 
   # Embeddings BGE-M3 (vLLM) — démarre en premier pour réserver sa part de VRAM
   vllm-embedder:
-    image: vllm/vllm-openai:latest   # idéalement : même version que `vllm -v` en local (ex. vllm/vllm-openai:v0.x.y)
+    image: vllm/vllm-openai:latest
     container_name: vllm-embedder
     ports:
       - "8001:8001"
@@ -61,7 +61,7 @@ services:
 
   # Reranker BGE-Reranker-v2-M3 (vLLM) — démarre juste après l'embedder
   vllm-reranker:
-    image: vllm/vllm-openai:latest   # idéalement : même version que `vllm -v` en local (ex. vllm/vllm-openai:v0.x.y)
+    image: vllm/vllm-openai:latest
     container_name: vllm-reranker
     ports:
       - "8002:8002"
@@ -75,9 +75,9 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    depends_on:
-      vllm-embedder:
-        condition: service_healthy
+    # depends_on:
+    #   vllm-embedder:
+    #     condition: service_healthy
     entrypoint: ["vllm", "serve"]
     command: >
       /models/rag/reranker/bge-reranker-v2-m3
@@ -92,12 +92,28 @@ services:
       start_period: 180s
       retries: 3
 
-  # LLM Qwen (llama.cpp)
-  llama-server:
-    image: ghcr.io/ggml-org/llama.cpp:server-cuda
-    container_name: llama-server
+  # Proxy llama-swap — point d'entrée unique sur le port 8000 après l'initialisation vLLM
+  llama-swap:
+    image: ghcr.io/mostlygeek/llama-swap:cpu
+    container_name: llama-swap
+    user: root
+    restart: unless-stopped
     ports:
       - "8000:8000"
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker:ro
+    # depends_on:
+    #   vllm-reranker:
+    #     condition: service_healthy
+    command: ["--config", "/app/config.yaml", "--listen", "0.0.0.0:8000"]
+
+  # LLM 1 : Qwen 3.8 27B (piloté à la demande par llama-swap)
+  llama-qwen38:
+    image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    container_name: llama-qwen38
+    profiles: ["on-demand"]
     volumes:
       - /home/nicolas/models:/models:ro
     deploy:
@@ -107,32 +123,42 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    depends_on:
-      vllm-reranker:
-        condition: service_healthy
-    # L'entrypoint de l'image est déjà /app/llama-server : on ne passe que les arguments
     command: >
       -m /models/qwen3.8-27b/llama/Qwen3.8-27B-UD-Q4_K_XL.gguf
-      -ngl 50 -fa on
-      --parallel 3 --ctx-size 16384
-      -ctk q8_0 -ctv q8_0
+      -ngl 99 -fa on
+      --parallel 1 --ctx-size 8192
+      -ctk q4_0 -ctv q4_0
       --spec-type draft-mtp --spec-draft-n-max 4
-      --host 0.0.0.0 --port 8000
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 5s
-      start_period: 120s
-      retries: 3
+      --host 0.0.0.0 --port 8080
 
-  # Qwen multimodal (texte + images) — llama.cpp avec mmproj, 64k de contexte
-  # Profil "vision" : ne démarre qu'avec `docker compose --profile vision up -d`
+  # LLM 2 : Gemma 4 26B (piloté à la demande par llama-swap)
+  llama-gemma4:
+    image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    container_name: llama-gemma4
+    profiles: ["on-demand"]
+    volumes:
+      - /home/nicolas/models:/models:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: >
+      -m /models/gemma4-26b-a4b/llama/gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf
+      -ngl 50 -fa on
+      --parallel 1 --ctx-size 8196
+      -ctk q8_0 -ctv q8_0
+      --model-draft /models/gemma4-26b-a4b/llama/mtp-gemma-4-26B-A4B-it.gguf
+      --spec-type draft-mtp --spec-draft-n-max 4
+      --host 0.0.0.0 --port 8080
+
+  # LLM 3 : Qwen multimodal 64k (piloté à la demande par llama-swap)
   llama-vision:
     image: ghcr.io/ggml-org/llama.cpp:server-cuda
     container_name: llama-vision
-    profiles: ["vision"]
-    ports:
-      - "127.0.0.1:8005:8005"   # accessible uniquement depuis ta machine (comme --host 127.0.0.1)
+    profiles: ["on-demand"]
     volumes:
       - /home/nicolas/models:/models:ro
     deploy:
@@ -148,13 +174,7 @@ services:
       -np 1 -fa on
       -c 65536
       -ctk q8_0 -ctv q8_0
-      --host 0.0.0.0 --port 8005
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
-      interval: 30s
-      timeout: 5s
-      start_period: 120s
-      retries: 3
+      --host 0.0.0.0 --port 8080
 
 volumes:
   pgdata:
