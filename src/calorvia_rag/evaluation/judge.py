@@ -15,10 +15,12 @@ def get_judge_model():
         generation_kwargs = {'extra_body': {'chat_template_kwargs': {'enable_thinking': False}}}
     )
 
-TRAP_CRITERIA = (
-    'The context lists wrong or outdated values (a draft, an old version, a minute corrected later). '
-    'Determine whether the actual output gives one of these values as the answer, instead of the expected output. '
-    'Mentioning the wrong value only to say that it was corrected or replaced does not count.'
+TRAP_STEPS = (
+    "Identifier la valeur de la sortie attendue qui répond à la question.",
+    "Identifier les valeurs erronées ou obsolètes présentes dans le contexte.",
+    "Si la sortie réelle donne l'une des valeurs du contexte comme réponse, le score est 0.",
+    "Si la sortie réelle donne la valeur de la sortie attendue, ou refuse de répondre, le score est 1. "
+    "Si elle mentionne une valeur erronée seulement pour dire qu'elle a été corrigée ou remplacée, le score reste 1.",
 )
 
 
@@ -32,9 +34,9 @@ def get_judge_metrics():
             evaluation_params = [SingleTurnParams.INPUT, SingleTurnParams.ACTUAL_OUTPUT, SingleTurnParams.EXPECTED_OUTPUT],
             model = judge_model, async_mode = False
         ),
-        'trap_answer': GEval(
-            name = 'trap_answer',
-            criteria = TRAP_CRITERIA,
+        'trap_avoided': GEval(
+            name = 'trap_avoided',
+            criteria = TRAP_STEPS,
             evaluation_params = [SingleTurnParams.INPUT, SingleTurnParams.ACTUAL_OUTPUT,
                                  SingleTurnParams.EXPECTED_OUTPUT, SingleTurnParams.CONTEXT],
             model = judge_model, async_mode = False

@@ -97,7 +97,7 @@ def judge_experiment(experiment_id):
         if question['id'] in judge_sample:
             names += ['faithfulness', 'correctness']
         if question['traps']:
-            names.append('trap_answer')
+            names.append('trap_avoided')
         if not names:
             continue
 
