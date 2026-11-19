@@ -1,8 +1,28 @@
 # Rapport : RAG documentaire Calorvia
 
-## Tableau comparatif des expériences
+## Méthode
 
-Jeu de développement : 127 questions, dont 122 avec une réponse dans le corpus. La réserve de test (31 questions, `id % 5 == 0`) n'a pas été utilisée.
+- **Jeu de développement** : 127 questions, dont 122 avec une réponse dans le corpus et 5 hors corpus (`out_of_corpus`). La réserve de test (31 questions, `id % 5 == 0`) n'a pas été utilisée.
+- **Un changement à la fois** : chaque expérience modifie un seul réglage par rapport à la référence et tourne sur un code commité (`git_dirty = false`).
+- **Numérotation** : le « # » du tableau est l'identifiant de l'expérience dans la base, dans l'ordre de lancement. Le nom (`exp01_…`, `exp02_…`) est celui de son fichier de configuration dans `experiments/`.
+
+### Métriques
+
+| Métrique | Ce qu'elle mesure | Calculée sur |
+|---|---|---|
+| hit@5 | Au moins un passage de preuve figure parmi les 5 passages retenus | 122 questions |
+| MRR | Rang du premier passage de preuve : 1 s'il est 1er, 1/2 s'il est 2e, 1/3 s'il est 3e… | 122 questions |
+| recall@5 | Part des passages de preuve retrouvés dans le top 5, quand une question en a plusieurs | 122 questions |
+| nDCG@5 | Qualité du classement, en tenant compte du grade de chaque preuve | 122 questions |
+| Refus à tort | Le modèle répond qu'il ne sait pas alors que la réponse est dans le corpus | 122 questions |
+| correctness | Note du juge (0 à 1) : la réponse est-elle juste et complète par rapport à la réponse attendue ? | Échantillon du juge (31 questions) |
+| faithfulness | Note du juge (0 à 1) : la réponse s'appuie-t-elle uniquement sur les passages retrouvés ? | Échantillon du juge (31 questions) |
+| trap_hit | Un passage piège (valeur fausse ou périmée) figure dans le top 5 | 17 questions avec piège |
+| Pièges repris | Après relecture, la réponse donne la valeur piège | 17 questions avec piège |
+
+Un passage compte comme preuve s'il vient du document attendu et contient tous les extraits de la preuve. hit@5, MRR et recall@5 ne comptent que les preuves de grade 2 ou plus. nDCG@5 les compte toutes, pondérées par leur grade.
+
+## Tableau comparatif des expériences
 
 | # | Expérience | Commit | Changement | hit@5 | MRR | recall@5 | nDCG@5 | Refus à tort | correctness | Pièges repris | Durée |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -10,7 +30,7 @@ Jeu de développement : 127 questions, dont 122 avec une réponse dans le corpus
 | **1** | **`exp02_baseline_with_ctx`** | **`da85aca`** | **+ ligne de contexte** (retenue, `v0.2-baseline`) | **0,787** | **0,708** | **0,762** | **0,697** | **13,9 %** | **0,62** | **1/17** | 281 s |
 | 2 | `exp01_baseline_no_ctx` | `da85aca` | Abandonnée (`superseded`) : lancée avec `git_dirty = true`, puis relancée en n° 3 | – | – | – | – | – | – | – | – |
 
-- Les métriques de recherche et les refus à tort sont calculés sur les 122 questions qui ont une réponse dans le corpus. `correctness` est calculé sur l'échantillon du juge (31 questions). « Pièges repris » compte, après relecture, les réponses qui donnent la valeur piège (17 questions avec piège). La durée est celle du run complet (127 questions).
+- La durée est celle du run complet (127 questions).
 - Le modèle a refusé toutes les questions `out_of_corpus` (5/5), dans les deux expériences.
 
 ## Section 3 : version de référence (`v0.2-baseline`)
@@ -23,9 +43,30 @@ Jeu de développement : 127 questions, dont 122 avec une réponse dans le corpus
 - **Génération** : `qwen3.8-27b`, prompt `prompts/detailed.txt`.
 - **Juge** : `gemma-4-26b`, échantillon de 31 questions (2 par type, graine 42).
 
+### Le changement testé : la ligne de contexte
+
+L'expérience 3 indexe chaque chunk seul. L'expérience 1 ajoute en tête de chaque chunk une ligne qui donne le type du document, sa date, sa version et son dossier :
+
+```
+[PV du CODIR du 17 novembre 2025 (v2) · 00_Direction/CODIR/2025]
+```
+
+Sans cette ligne, deux versions d'un même document, ou les PV de deux séances différentes, donnent des chunks presque identiques. La ligne permet de les distinguer, à la recherche comme à la génération. Elle est rédigée en français, avec la date en toutes lettres, comme dans les questions.
+
 ### Comparabilité des deux expériences
 
 Les expériences 1 et 3 ont tourné sur des commits différents. Entre `da85aca` et `fa951e7`, seuls le code du juge, le fichier de configuration par défaut et les versions de `deepeval` et `transformers` ont changé. La recherche, le prompt et l'index sont identiques. L'expérience 3 obtient d'ailleurs, question par question, le même hit@5 que l'expérience 2. Les scores du juge des deux expériences ont été recalculés avec le juge du commit `79200be`.
+
+### Résultats globaux (sans → avec ligne de contexte)
+
+Les sept indicateurs de qualité progressent :
+
+- la recherche trouve une preuve pour 96 questions sur 122, contre 91 (hit@5 de 0,746 à 0,787), et retrouve une plus grande part des preuves quand une question en a plusieurs (recall@5 de 0,71 à 0,76) ;
+- la preuve est mieux classée (MRR de 0,60 à 0,71, nDCG@5 de 0,61 à 0,70) ;
+- le modèle refuse à tort 17 questions au lieu de 22 (13,9 % contre 18,0 %) ;
+- les réponses sont plus justes (correctness de 0,54 à 0,62), et une réponse de moins reprend un piège (1/17 contre 2/17).
+
+Le run complet prend 14 s de plus (+5 %).
 
 ### Résultats par type de question (sans → avec ligne de contexte)
 
@@ -49,9 +90,10 @@ Les expériences 1 et 3 ont tourné sur des commits différents. Entre `da85aca`
 | image_in_document | 1 | 0,00 → 0,00 | 0,00 → 0,00 | 1,00 → 1,00 | 0,00 → 0,00 |
 
 **Lecture :**
-- Les questions `image_only`, `image_in_document` et `scan_ocr` échouent, comme prévu, puisque ces documents ne sont pas encore lus : c'est le point de départ de la section 6. Pour `image_only`, le modèle refuse 9 questions sur 13 et répond aux 4 autres sans le document qui contient la réponse. Ces 4 réponses sont à vérifier.
-- La ligne de contexte aide surtout pour `multilingual` (hit@5 de 0,57 à 0,86, refus de 43 % à 0 %), `excel_reasoning` (hit@5 de 0,60 à 1,00) et `meeting_detail`. Elle améliore aussi le classement (MRR) pour `decision_history`, `version_trap` et `multi_doc` : la date et le type du document permettent de distinguer des documents qui se ressemblent.
-- `action_tracking`, `excel_lookup` et `multi_doc` trouvent le bon document (hit@5 ≥ 0,92), mais la réponse est souvent incomplète (correctness autour de 0,55). Le problème vient de la génération ou de la taille des chunks, pas de la recherche.
+- Les questions `image_only`, `image_in_document` et `scan_ocr` échouent dans les deux expériences, comme prévu : ces documents ne sont pas encore lus, et la ligne de contexte ne peut rien quand le texte n'est pas indexé. Pour `image_only`, le modèle refuse 9 questions sur 13 et répond aux 4 autres sans le document qui contient la réponse. Ces 4 réponses sont à vérifier.
+- La ligne de contexte aide surtout pour `multilingual` (hit@5 de 0,57 à 0,86, refus de 43 % à 0 %). Les questions sont en français et les documents en néerlandais ou en anglais : la ligne, en français, ajoute probablement aux chunks des mots de la question (type de document, date). Elle aide aussi pour `excel_reasoning` (hit@5 de 0,60 à 1,00) et `meeting_detail` (hit@5 de 0,80 à 1,00).
+- Elle améliore le classement (MRR) pour `decision_history`, `version_trap` et `multi_doc` : la date et le type du document permettent de distinguer des documents qui se ressemblent.
+- `action_tracking`, `excel_lookup` et `multi_doc` trouvent le bon document (hit@5 ≥ 0,92), mais les réponses jugées sont souvent incomplètes (correctness autour de 0,55). Le problème viendrait alors de la génération ou de la taille des chunks, pas de la recherche. Avec 2 réponses jugées par type, c'est un indice à confirmer.
 
 ### Résultats par format de document (sans → avec ligne de contexte)
 
@@ -88,6 +130,9 @@ Pour les images et les scans, les quelques hits viennent d'un autre document de 
 - La ligne de contexte ne change ni `trap_hit` (les passages pièges restent dans le top 5) ni `faithfulness` (0,87 dans les deux cas).
 - `decision_current` : hit@5 passe de 0,86 à 0,79, une question perdue sur 14.
 - `multi_doc` : une question sur 5 est refusée avec la ligne de contexte, alors qu'aucune ne l'était sans.
+- La durée du run passe de 267 s à 281 s (+5 %).
+
+Les deux dégradations portent chacune sur une seule question. À cette taille d'échantillon, elles peuvent relever du bruit.
 
 ### Limites de l'évaluation
 
@@ -95,6 +140,22 @@ Pour les images et les scans, les quelques hits viennent d'un autre document de 
 - **`faithfulness`** pénalise des réponses justes de `decision_history` (Q002, Q052) qui retracent l'historique d'une décision. Pour ce type, je m'appuie sur `correctness`.
 - **`trap_avoided`** : le juge se trompe sur 1 à 2 questions sur 17. Pour Q008, la réponse est incomplète mais ne donne pas la valeur piège, et aucune étape des consignes du juge ne couvre ce cas. Pour Q027 (sans ligne de contexte), le juge note 0 une réponse juste. C'est pourquoi le taux de pièges retenu est celui de la relecture manuelle.
 - **Plafond du texte seul** : sur les 217 passages de preuve du jeu de développement, 177 se trouvent dans le texte indexé. Les 40 autres sont dans des images (29), des scans (7) ou un graphique (1), dans des doublons exclus mais couverts par la copie conservée (2), ou dans `02_RH/Confidentiel`, que l'inventaire exclut (1, Q154).
+
+### Décision : la ligne de contexte est retenue
+
+1. **La comparaison est équitable** : seule la ligne de contexte change entre les deux expériences. La recherche, le prompt et l'index sont identiques, et les deux runs sont notés par le même juge.
+2. **Tous les indicateurs de qualité progressent ensemble** : la recherche (hit@5, MRR, recall@5, nDCG@5), les refus à tort, la correctness globale et les pièges repris.
+3. **Les gains s'expliquent** : ils portent sur les types où la langue, la date ou le type du document aident (`multilingual`, `version_trap`, `decision_history`). Ils sont nuls là où le texte n'est pas indexé (images, scans).
+4. **Les pertes sont faibles** : une question en `decision_current`, un refus en `multi_doc` et 14 s de calcul.
+
+L'expérience 1 devient la référence `v0.2-baseline`. Les sections 4 à 7 lui sont comparées.
+
+### Points de départ des sections suivantes
+
+- **Section 4 (langues)** : `multilingual` reste en dessous des autres types textuels (hit@5 de 0,86, MRR de 0,69).
+- **Section 5 (Excel)** : `excel_lookup` trouve le bon classeur (hit@5 de 0,92), mais les réponses jugées restent incomplètes.
+- **Section 6 (images et scans)** : 40 des 217 passages de preuve ne sont pas dans le texte indexé. `image_only`, `image_in_document` et `scan_ocr` ont un hit@5 compris entre 0 et 0,17.
+- **Section 7 (versions)** : les passages pièges restent dans le top 5 pour 7 questions sur 17. La ligne de contexte aide le modèle à choisir la bonne version, mais elle ne les écarte pas. Taux de départ : 1/17 réponse reprend le piège.
 
 ## Section 4 : les langues (`v0.3-langues`)
 _À compléter._
