@@ -59,6 +59,39 @@ services:
       start_period: 180s
       retries: 3
 
+  # Reranker BGE-Reranker-v2-M3 (vLLM) — démarre juste après l'embedder
+  vllm-reranker:
+    image: vllm/vllm-openai:latest   # idéalement : même version que `vllm -v` en local (ex. vllm/vllm-openai:v0.x.y)
+    container_name: vllm-reranker
+    ports:
+      - "8002:8002"
+    volumes:
+      - /home/nicolas/models:/models:ro
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    depends_on:
+      vllm-embedder:
+        condition: service_healthy
+    entrypoint: ["vllm", "serve"]
+    command: >
+      /models/rag/reranker/bge-reranker-v2-m3
+      --served-model-name bge-reranker-v2-m3
+      --gpu-memory-utilization 0.1
+      --max-model-len 4096
+      --host 0.0.0.0 --port 8002
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
+      interval: 30s
+      timeout: 5s
+      start_period: 180s
+      retries: 3
+
   # LLM Qwen (llama.cpp)
   llama-server:
     image: ghcr.io/ggml-org/llama.cpp:server-cuda
@@ -75,7 +108,7 @@ services:
               count: all
               capabilities: [gpu]
     depends_on:
-      vllm-embedder:
+      vllm-reranker:
         condition: service_healthy
     # L'entrypoint de l'image est déjà /app/llama-server : on ne passe que les arguments
     command: >
@@ -122,7 +155,7 @@ services:
       timeout: 5s
       start_period: 120s
       retries: 3
- 
+
 volumes:
   pgdata:
   qdrant_data:
