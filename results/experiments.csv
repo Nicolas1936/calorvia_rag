@@ -1,0 +1,4 @@
+id,name,status,git_commit,git_dirty,duration_s,started_at
+1,exp02_baseline_with_ctx,done,da85aca8403fcb042113cf13d8949b5fceb437a6,f,281,2026-11-19 13:02:32.772587+00
+2,exp01_baseline_no_ctx,superseded,da85aca8403fcb042113cf13d8949b5fceb437a6,t,247,2026-11-19 13:44:19.316872+00
+3,exp01_baseline_no_ctx,done,fa951e7644673ae5bd8590f0856a789773476995,f,267,2026-11-19 14:30:56.814231+00
