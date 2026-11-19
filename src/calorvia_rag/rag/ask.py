@@ -50,7 +50,7 @@ async def generate_response(query, qdrant_client, embedder, llm_client):
 
 if __name__ == '__main__':
     response, llm_metrics, chunks = asyncio.run(generate_response(
-        "Quelle était l'HbA1c de M. Jean Simon sur le bilan biologique d'avril 2025 ?",
+        "Quelle vitesse est autorisée dans l'entrepôt de Gand ?",
         get_qdrant_client(), get_embedder(), get_llm_client()
     ))
     print(response)

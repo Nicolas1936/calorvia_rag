@@ -29,7 +29,7 @@ services:
     volumes:
       - qdrant_data:/qdrant/storage
 
-  # Embeddings BGE-M3 (vLLM) — démarre en premier pour réserver sa part de VRAM
+   # Embeddings BGE-M3 (vLLM)
   vllm-embedder:
     image: vllm/vllm-openai:latest
     container_name: vllm-embedder
@@ -37,6 +37,7 @@ services:
       - "8001:8001"
     volumes:
       - /home/nicolas/models:/models:ro
+      - vllm_cache:/root/.cache # <-- Met en cache les compilations Triton/Inductor entre redémarrages
     ipc: host
     deploy:
       resources:
@@ -46,20 +47,23 @@ services:
               count: all
               capabilities: [gpu]
     entrypoint: ["vllm", "serve"]
+    # Pas de KV cache pour un encodeur : la VRAM réelle = poids + activations.
+    # max-model-len 2048 (chunks <= 512 tokens) réduit le pic d'activations (-320 Mo avec le reranker)
     command: >
       /models/rag/embedder/bge-m3
       --served-model-name bge-m3
-      --gpu-memory-utilization 0.1
-      --max-model-len 8192
+      --gpu-memory-utilization 0.08
+      --max-model-len 2048
+      --enforce-eager
       --host 0.0.0.0 --port 8001
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
-      interval: 30s
-      timeout: 5s
-      start_period: 180s
-      retries: 3
+      interval: 5s
+      timeout: 3s
+      start_period: 15s
+      retries: 20
 
-  # Reranker BGE-Reranker-v2-M3 (vLLM) — démarre juste après l'embedder
+  # Reranker BGE-Reranker-v2-M3 (vLLM)
   vllm-reranker:
     image: vllm/vllm-openai:latest
     container_name: vllm-reranker
@@ -67,6 +71,7 @@ services:
       - "8002:8002"
     volumes:
       - /home/nicolas/models:/models:ro
+      - vllm_cache:/root/.cache
     ipc: host
     deploy:
       resources:
@@ -75,22 +80,23 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    # depends_on:
-    #   vllm-embedder:
-    #     condition: service_healthy
+    depends_on:
+      vllm-embedder:
+        condition: service_healthy
     entrypoint: ["vllm", "serve"]
     command: >
       /models/rag/reranker/bge-reranker-v2-m3
       --served-model-name bge-reranker-v2-m3
-      --gpu-memory-utilization 0.1
-      --max-model-len 4096
+      --gpu-memory-utilization 0.08
+      --max-model-len 2048
+      --enforce-eager
       --host 0.0.0.0 --port 8002
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
-      interval: 30s
-      timeout: 5s
-      start_period: 180s
-      retries: 3
+      interval: 5s
+      timeout: 3s
+      start_period: 15s
+      retries: 20
 
   # Proxy llama-swap — point d'entrée unique sur le port 8000 après l'initialisation vLLM
   llama-swap:
@@ -111,9 +117,9 @@ services:
             - driver: nvidia
               count: all
               capabilities: [utility] # Donne uniquement accès à nvidia-smi sans réserver de calcul
-    # depends_on:
-    #   vllm-reranker:
-    #     condition: service_healthy
+    depends_on:
+      vllm-reranker:
+        condition: service_healthy
     command: ["--config", "/app/config.yaml", "--listen", "0.0.0.0:8000"]
     healthcheck:
       disable: true
@@ -132,12 +138,17 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+    # Pas de -ngl : llama.cpp place automatiquement le max de couches sur le GPU (--fit, défaut)
+    #   en gardant 512 Mo de marge (~62/66 couches avec embedder + reranker chargés).
+    # 3 slots + KV unifié 16k = les 3 requêtes parallèles du runner (llm_parallel_requests) :
+    #   32 t/s agrégés contre 23 t/s pour 1 slot + MTP (MTP coûte ~900 Mo de VRAM = 4 couches).
+    #   Si reasoning = true (réponses longues), monter -c à 24576 (≈ 25 t/s).
     command: >
       -m /models/qwen3.8-27b/llama/Qwen3.8-27B-UD-Q4_K_XL.gguf
-      -ngl 99 -fa on
-      --parallel 1 --ctx-size 8192
-      -ctk q4_0 -ctv q4_0
-      --spec-type draft-mtp --spec-draft-n-max 4
+      -fa on
+      --fit-target 512
+      -np 3 -kvu -c 16384
+      -ctk q8_0 -ctv q8_0
       --host 0.0.0.0 --port 8080
 
   # LLM 2 : Gemma 4 26B (piloté à la demande par llama-swap)
@@ -154,16 +165,20 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+    # Pas de -ngl : --fit place les experts MoE en trop sur le CPU (impact faible, 4B actifs).
+    # --fit-target 1280 : le fit ne sait pas mesurer le draft MTP (~700 Mo), on lui réserve la place.
+    # 1 slot : le juge deepeval appelle séquentiellement. MTP n-max 2 : ~105 t/s (89 sans MTP).
     command: >
       -m /models/gemma4-26b-a4b/llama/gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf
-      -ngl 50 -fa on
-      --parallel 1 --ctx-size 8196
+      -fa on
+      --fit-target 1280
+      -np 1 -c 16384
       -ctk q8_0 -ctv q8_0
       --model-draft /models/gemma4-26b-a4b/llama/mtp-gemma-4-26B-A4B-it.gguf
-      --spec-type draft-mtp --spec-draft-n-max 4
+      --spec-type draft-mtp --spec-draft-n-max 2
       --host 0.0.0.0 --port 8080
 
-  # LLM 3 : Qwen multimodal 64k (piloté à la demande par llama-swap)
+  # LLM 3 : Qwen multimodal pour l'ETL des images et scans (piloté à la demande par llama-swap)
   llama-vision:
     image: ghcr.io/ggml-org/llama.cpp:server-cuda
     container_name: llama-vision
@@ -177,14 +192,27 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+    # 1 image par requête = 1 000 à 4 096 tokens d'image (plafond 4 Mpx du mmproj) + la réponse :
+    #   8k suffisent. Le 64k coûtait 2,1 Go de KV (56/66 couches GPU, ~10 t/s).
+    # MTP n-max 2 : ~87 % d'acceptation sur de la transcription -> ~57 t/s (66/66 couches, Discord fermé).
+    #   Bench 3 images : 236 s avant, 44 s après. Mieux que 3 slots en parallèle sans MTP (41 s mais
+    #   ETL parallèle obligatoire) ; 3 slots + MTP a planté en parallèle.
+    # --fit-target 256 : le fit compte déjà le mmproj (1,16 Go pire cas) et le draft MTP.
+    # --image-min-tokens 1024 : recommandé par llama.cpp pour Qwen-VL (petits graphiques agrandis).
+    # --reasoning off : pas de thinking par défaut (inutile pour l'OCR, saturerait les 8k).
     command: >
       -m /models/qwen3.8-27b/llama/Qwen3.8-27B-UD-Q4_K_XL.gguf
       --mmproj /models/qwen3.8-27b/llama/mmproj-F16.gguf
-      -np 1 -fa on
-      -c 65536
+      --image-min-tokens 1024
+      -fa on
+      --fit-target 256
+      -np 1 -c 8192
       -ctk q8_0 -ctv q8_0
+      --spec-type draft-mtp --spec-draft-n-max 2
+      --reasoning off
       --host 0.0.0.0 --port 8080
 
 volumes:
   pgdata:
   qdrant_data:
+  vllm_cache:

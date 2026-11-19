@@ -69,7 +69,7 @@ def search_and_filter_chunks(query, qdrant_client, embedder, query_filter = None
 
 if __name__ == '__main__':
     points = search_and_filter_chunks(
-        "Quelle était l'HbA1c de M. Jean Simon sur le bilan biologique d'avril 2025 ?",
+        "Quelle vitesse est autorisée dans l'entrepôt de Gand ?",
         get_qdrant_client(), get_embedder()
     )
     for point in points:
