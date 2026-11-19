@@ -15,13 +15,13 @@ def get_judge_model():
         generation_kwargs = {'extra_body': {'chat_template_kwargs': {'enable_thinking': False}}}
     )
 
-TRAP_STEPS = (
+TRAP_STEPS = [
     "Identifier la valeur de la sortie attendue qui répond à la question.",
     "Identifier les valeurs erronées ou obsolètes présentes dans le contexte.",
     "Si la sortie réelle donne l'une des valeurs du contexte comme réponse, le score est 0.",
     "Si la sortie réelle donne la valeur de la sortie attendue, ou refuse de répondre, le score est 1. "
     "Si elle mentionne une valeur erronée seulement pour dire qu'elle a été corrigée ou remplacée, le score reste 1.",
-)
+]
 
 
 def get_judge_metrics():
