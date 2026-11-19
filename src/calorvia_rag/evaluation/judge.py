@@ -19,8 +19,8 @@ TRAP_STEPS = [
     "Identifier la valeur de la sortie attendue qui répond à la question.",
     "Identifier les valeurs erronées ou obsolètes présentes dans le contexte.",
     "Si la sortie réelle donne l'une des valeurs du contexte comme réponse, le score est 0.",
-    "Si la sortie réelle donne la valeur de la sortie attendue, ou refuse de répondre, le score est 1. "
-    "Si elle mentionne une valeur erronée seulement pour dire qu'elle a été corrigée ou remplacée, le score reste 1.",
+    "Si la sortie réelle donne la valeur de la sortie attendue, ou refuse de répondre, le score est 10. "
+    "Si elle mentionne une valeur erronée seulement pour dire qu'elle a été corrigée ou remplacée, le score reste 10.",
 ]
 
 
@@ -36,7 +36,7 @@ def get_judge_metrics():
         ),
         'trap_avoided': GEval(
             name = 'trap_avoided',
-            criteria = TRAP_STEPS,
+            evaluation_steps = TRAP_STEPS,
             evaluation_params = [SingleTurnParams.INPUT, SingleTurnParams.ACTUAL_OUTPUT,
                                  SingleTurnParams.EXPECTED_OUTPUT, SingleTurnParams.CONTEXT],
             model = judge_model, async_mode = False
