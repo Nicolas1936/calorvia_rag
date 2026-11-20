@@ -3,6 +3,7 @@ from calorvia_rag.config import settings
 from openai import OpenAI
 from qdrant_client import models
 
+STEMMERS = {'fr': 'french', 'nl': 'dutch', 'en': 'english'}
 
 def get_embedder():
     return OpenAI(
@@ -10,9 +11,13 @@ def get_embedder():
         api_key = settings.llm_server_api_key
     )
 
-def get_sparse_options(index_cfg):
+def get_stemmer(language):
+    """Code de langue (fr, nl, en…) → stemmer BM25 de Qdrant ; langue du corpus si inconnu ou None."""
+    return STEMMERS.get(language, settings.corpus_language)
+
+def get_sparse_options(index_cfg, language = None):
     return {
-        'language': settings.corpus_language,
+        'language': get_stemmer(language),
         'ascii_folding': index_cfg['sparse_embedder_ascii_folding'],
     }
 

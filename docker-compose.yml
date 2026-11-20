@@ -103,7 +103,6 @@ services:
     image: ghcr.io/mostlygeek/llama-swap:cpu
     container_name: llama-swap
     user: root
-    restart: unless-stopped
     ports:
       - "8000:8000"
     volumes:

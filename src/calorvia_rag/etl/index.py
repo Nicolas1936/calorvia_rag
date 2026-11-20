@@ -3,7 +3,7 @@ import numpy as np
 from calorvia_rag.config import runner_settings
 from calorvia_rag.etl.convert import convert_corpus
 from calorvia_rag.etl.chunker import iter_chunks, get_chunker
-from calorvia_rag.embedding import get_embedder, get_sparse_options, embed, embed_sparse
+from calorvia_rag.embedding import get_embedder, get_sparse_options, embed, embed_sparse, get_stemmer
 from calorvia_rag.qdrant import get_qdrant_client, get_collection_name
 
 from qdrant_client import models
@@ -43,16 +43,19 @@ def init_collection(qdrant_client, collection_name, vector_size):
 def get_chunk_uuid(chunk):
     return str(uuid.uuid5(uuid.NAMESPACE_URL, f"{chunk['document']}/{chunk['chunk_index']}"))
 
-def iter_points(chunker, embedder, model_name, embedding_batch_size, sparse_embedder_options):
+def iter_points(chunker, embedder, model_name, embedding_batch_size, sparse_embedder_options, per_language):
     chunks = iter_chunks(chunker)
     for batch in batched(chunks, embedding_batch_size):
         dense_vectors = embed([chunk['text'] for chunk in batch], embedder, model_name)
         for chunk, dense_vector in zip(batch, dense_vectors):
+            sparse_options = sparse_embedder_options
+            if per_language:
+                sparse_options = {**sparse_embedder_options, 'language': get_stemmer(chunk['language'])}
             yield models.PointStruct(
                 id=get_chunk_uuid(chunk),
                 vector = {
                     'dense': dense_vector,
-                    'sparse': embed_sparse(chunk['text'], sparse_embedder_options)
+                    'sparse': embed_sparse(chunk['text'], sparse_options)
                 }
                 , payload = chunk
             )
@@ -61,8 +64,8 @@ def probe_avg_len(chunker):
     """Longueur moyenne d'un chunk en mots, sur tout le corpus (utilisée par BM25)."""
     return int(np.mean([len(chunk['text'].split()) for chunk in iter_chunks(chunker)]))
 
-def index_chunks(qdrant_client, collection_name, chunker, embedder, model_name, embedding_batch_size, sparse_embedder_options):    
-    points = iter_points(chunker, embedder, model_name, embedding_batch_size, sparse_embedder_options)
+def index_chunks(qdrant_client, collection_name, chunker, embedder, model_name, embedding_batch_size, sparse_embedder_options, per_language):    
+    points = iter_points(chunker, embedder, model_name, embedding_batch_size, sparse_embedder_options, per_language)
     qdrant_client.upload_points(collection_name, points=points, batch_size=64)
 
 def index_corpus():
@@ -80,6 +83,7 @@ def index_corpus():
         chunk_size = chunking_cfg['max_tokens'],
         sparse_vector = index_cfg.get('sparse_vector'),
         context_line = chunking_cfg['context_line'],
+        sparse_language = index_cfg.get('sparse_language'),
     )
 
     init_collection(qdrant_client, collection_name, embedder_cfg['vector_size'])
@@ -88,10 +92,12 @@ def index_corpus():
 
     sparse_embedder_options = get_sparse_options(index_cfg)
     sparse_embedder_options['avg_len'] = probe_avg_len(chunker)
+    per_language = index_cfg.get('sparse_language') == 'per_chunk'   # True avec exp03, False avec exp01/exp02
 
     index_chunks(
         qdrant_client, collection_name , chunker,
-        embedder, embedder_cfg['model'], embedder_cfg['embedding_batch_size'], sparse_embedder_options
+        embedder, embedder_cfg['model'], embedder_cfg['embedding_batch_size'], 
+        sparse_embedder_options, per_language
         )
 
     print(f'{collection_name}: {qdrant_client.count(collection_name).count} points')   # 3. contrôle
