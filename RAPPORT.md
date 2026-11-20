@@ -33,6 +33,8 @@ Un passage compte comme preuve s'il vient du document attendu et contient tous l
 | 5 | `exp04_translate_query` | `6fd79d3` | Abandonnée (`failed`) : échec au démarrage (0 réponse en 6 s), relancée en n° 6 | – | – | – | – | – | – | – | – |
 | 6 | `exp04_translate_query` | `6fd79d3` | n° 4 + traduction de la question en nl/en, 6 listes fusionnées par RRF | 0,787 | 0,708 | 0,762 | 0,697 | 14,8 % | 0,62 | 1/17 | 407 s |
 | 7 | `exp05_rerank_per_language` | `ee0e6fe` | n° 6 + reranking de chaque passage avec la question dans sa langue (abandonné avec la traduction) | 0,779 | 0,705 | 0,754 | 0,694 | 16,4 % | 0,61 | 1/17 | 422 s |
+| 8 | `exp06_prompt_french` | `1ed0698` | Abandonnée (`superseded`) : lancée avec `git_dirty = true` (prompt et TOML pas encore commités), puis relancée en n° 9 | – | – | – | – | – | – | – | – |
+| **9** | **`exp06_prompt_french`** | **`530973a`** | **n° 4 + prompt « réponds en français même si le passage est en néerlandais ou en anglais »** (retenue, `v0.3-langues`) | **0,787** | **0,708** | **0,762** | **0,697** | **14,8 %** | **0,62** | **1/17** | 272 s |
 
 - La durée est celle du run complet (127 questions).
 - Le modèle a refusé toutes les questions `out_of_corpus` (5/5), dans toutes les expériences.
@@ -168,7 +170,7 @@ Les questions sont toutes en français. L'index contient 1 072 chunks en frança
 1. le stemmer BM25 choisi selon la langue du chunk (n° 4, retenu) ;
 2. la traduction de la question en néerlandais et en anglais (n° 6, gardée à l'essai) ;
 3. le reranking de chaque passage avec la question dans sa langue (n° 7), ajouté après le diagnostic de l'étape 2. Il est abandonné, et la traduction avec lui ;
-4. un prompt qui impose une réponse en français (à venir), ajouté à la configuration n° 4.
+4. un prompt qui impose une réponse en français (n° 9, retenu), ajouté à la configuration n° 4.
 
 ### Étape 1 : le stemmer BM25 selon la langue du chunk (n° 4)
 
@@ -400,8 +402,80 @@ L'étape 3 gagne une preuve (Q062) et en perd deux (Q024, Q112). Elle ajoute 3 r
 
 Piste non testée : reranker chaque passage avec les trois versions de la question et garder le meilleur des trois scores. Sur les trois questions examinées, chaque preuve garderait son meilleur score : 0,244 pour Q024 (fr), 0,999 pour Q112 (en) et 0,523 pour Q062 (nl). Mais cette idée vient de l'examen des résultats du jeu de développement. Elle triplerait aussi les appels au reranker, et 7 questions ne suffiraient pas à la valider.
 
-### Étape 4 : prompt « réponds en français »
-_À compléter._
+### Étape 4 : prompt « réponds en français » (n° 9)
+
+#### Le changement testé
+
+Le nouveau prompt `prompts/detailed_fr.txt` est une copie de `prompts/detailed.txt` dont seule la consigne 7 change (à une ligne vide près en fin de fichier) :
+
+> 7. Réponds en français, même si le passage est en néerlandais ou en anglais, en une à trois phrases. Donne les montants, les dates et les valeurs avec leurs unités, tels qu'ils sont écrits dans les documents.
+
+L'ancienne consigne demandait déjà « Réponds en français ». Le changement ne fait qu'y ajouter le cas des passages en néerlandais ou en anglais. Le TOML (`exp06_prompt_french.toml`) reprend celui de l'étape 1 (n° 4), donc sans traduction, et seul `system_prompt` y change.
+
+#### Comparabilité
+
+Le premier run (n° 8) a tourné alors que le prompt et le TOML n'étaient pas encore commités (`git_dirty = true`). Il est marqué `superseded` et a été relancé en n° 9 sur le commit `530973a`. Entre `156554b` (n° 4) et `530973a` (n° 9), en dehors du rapport, seuls le code de la traduction et du reranking par langue (désactivés ici), le nouveau prompt et les TOML ont changé. Le top 5 est identique pour 126 questions sur 127. Seul celui de Q021 change, une question dont le top 5 avait déjà changé entre les n° 1 et 4.
+
+Pour Q002, le juge a renvoyé un JSON invalide, et la note de faithfulness était vide. Elle a été rejugée seule, deux fois, et obtient 1 les deux fois.
+
+#### Résultats (stemmer par langue → + prompt)
+
+| | Stemmer par langue (n° 4) | + prompt « réponds en français » (n° 9) |
+|---|---|---|
+| hit@5 | 0,787 | 0,787 |
+| MRR | 0,708 | 0,708 |
+| recall@5 | 0,762 | 0,762 |
+| nDCG@5 | 0,697 | 0,697 |
+| Refus à tort | 17/122 (13,9 %) | 18/122 (14,8 %) |
+| correctness (31) | 0,616 | 0,619 |
+| faithfulness (31) | 0,871 | 0,927 |
+| `trap_hit` | 7/17 | 7/17 |
+| `trap_avoided` selon le juge | 15/17 (0,88) | 15/17 (0,88) |
+| Réponses qui reprennent le piège, après relecture | 1/17 (Q023) | 1/17 (Q023) |
+| Temps de réponse moyen / médian / 90e centile | 6,41 s / 5,99 s / 10,5 s | 6,35 s / 6,15 s / 10,6 s |
+| Durée du run | 275 s | 272 s |
+
+#### La langue des réponses
+
+Le détecteur de langue de l'inventaire classe les 127 réponses en français, dans l'expérience 9 comme dans toutes les précédentes (n° 1, 4, 6 et 7). Les 7 réponses `multilingual` sont identiques ou seulement reformulées. Elles traduisent déjà les faits tirés des passages néerlandais et anglais : pour Q024, « binnen 8 werkuren » devient « 8 heures ouvrées ». Le modèle suivait donc déjà la consigne, et la nouvelle formulation n'a rien à corriger.
+
+#### Les autres changements
+
+- **Réponses reformulées** : 33 réponses changent alors que leur top 5 est le même, contre 10 entre les n° 1 et 4. Changer le prompt modifie le texte que reçoit le modèle, et donc la suite de ses calculs.
+- **Q114** (`image_only`) : la réponse est dans une image, qui n'est pas indexée. Avant, le modèle disait que les passages ne donnaient pas la date. Maintenant, il ajoute la phrase de refus, et la réponse compte comme un refus à tort. Le contenu est le même.
+- **correctness** : seule la note de Q024 change, de 0,3 à 0,4, sur une réponse reformulée.
+- **faithfulness** : la hausse de 0,056 vient de trois notes. Q002 passe de 0 à 1, Q116 de 0 à 1, et Q117 de 1 à 0,75. Les réponses de Q116 et Q117 sont identiques à celles de l'expérience 4. Q002 est la question de `decision_history` que le juge pénalise (voir la section 3) : selon les runs, elle a obtenu 0 (n° 1, 4, 6, 7) ou 1 (n° 2, 3, 9). Cette hausse relève du bruit du juge.
+- **Pièges** : 13 réponses sur 17 sont identiques. Les 4 autres (Q008, Q026, Q096, Q099) ne donnent pas la valeur piège.
+
+#### Décision : le prompt est conservé
+
+Il ne change aucun résultat et ne coûte rien. Il rend explicite le comportement attendu face aux passages néerlandais et anglais, ce qui servirait avec un modèle moins discipliné. C'est la même logique que pour le stemmer de l'étape 1. La configuration n° 9 devient `v0.3-langues`.
+
+### Bilan de la section 4
+
+| | Référence `v0.2-baseline` (n° 1) | `v0.3-langues` (n° 9) |
+|---|---|---|
+| hit@5 | 0,787 | 0,787 |
+| MRR | 0,708 | 0,708 |
+| recall@5 | 0,762 | 0,762 |
+| nDCG@5 | 0,697 | 0,697 |
+| hit@5 / MRR `multilingual` (7) | 0,86 / 0,69 | 0,86 / 0,69 |
+| Refus à tort | 17/122 (13,9 %) | 18/122 (14,8 %) |
+| correctness (31) | 0,619 | 0,619 |
+| faithfulness (31) | 0,871 | 0,927 |
+| Réponses qui reprennent le piège | 1/17 (Q023) | 1/17 (Q023) |
+| Temps de réponse moyen | 6,45 s | 6,35 s |
+
+Par type de question, hit@5, MRR et taux de refus sont ceux de la référence. Il y a deux exceptions, qui portent chacune sur une seule question : le MRR de `excel_reasoning` (de 0,64 à 0,65, Q158) et les refus de `image_only` (de 0,69 à 0,77, Q114). Les correctness de `factual` (de 0,80 à 0,85) et de `scan_ocr` (de 0,35 à 0,30) changent chacune d'une note, sur 2 réponses jugées.
+
+**La section n'améliore pas les résultats.** Elle explique en revanche pourquoi les questions `multilingual` résistent :
+
+1. **La recherche lexicale n'est pas en cause.** La ligne de contexte, en français, apporte déjà les chunks néerlandais et anglais (section 3). Le stemmer de leur langue ne change rien.
+2. **La traduction de la question retrouve le rapport de Q062 parmi les candidats, mais le reranker le recule.** Reranker chaque passage avec la question dans sa langue récupère Q062, mais fait perdre Q024 et Q112. Les traductions n'emploient pas les mots des documents, et les scores obtenus avec des questions différentes ne sont pas comparables entre eux.
+3. **La génération répondait déjà en français** : la consigne explicite ne change rien.
+4. **Le bruit de mesure est important.** Sans aucun changement de la recherche, la correctness varie d'environ 0,03 et la faithfulness jusqu'à 0,1 sur les 31 questions jugées. Le juge renvoie parfois un JSON invalide (Q008, Q002) : il faut vérifier qu'aucune note n'est vide avant de lire les moyennes.
+
+**Ce qui reste à faire** : Q062 reste sans sa preuve dans `v0.3-langues`. Sa réponse est juste mais incomplète, et elle s'appuie sur un projet de PV. Deux pistes n'ont pas été testées : reranker chaque passage avec les trois versions de la question et garder le meilleur score (étape 3) ; compter la notice néerlandaise d'Aéris 9 comme preuve de Q117 dans le jeu d'évaluation.
 
 ## Section 5 : les fichiers Excel (`v0.4-excel`)
 _À compléter._
