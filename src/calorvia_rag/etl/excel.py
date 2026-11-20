@@ -45,11 +45,57 @@ def sheet_tables(ws):
         tables.append({'title': title, 'header': None, 'rows': [], 'notes': []})
     return tables
 
+MAX_ROWS = 30           # au-delà, le tableau est découpé en paquets de lignes, avec un chunk de résumé
+ROWS_PER_CHUNK = 20
+
+def row_text(header, row):
+    """Une ligne de tableau en phrase : « colonne : valeur ; … », ou « libellé : valeur » sans en-tête."""
+    if header is None:
+        values = [display_value(cell) for cell in row if cell.value is not None]
+        return f'{values[0]} : ' + ' ; '.join(values[1:])
+    return ' ; '.join(f'{name} : {display_value(cell)}'
+                      for name, cell in zip(header, row) if name is not None and cell.value is not None)
+
+def table_markdown(header, rows):
+    lines = ['| ' + ' | '.join('' if name is None else str(name) for name in header) + ' |', '|' + '---|' * len(header)]
+    lines += ['| ' + ' | '.join(display_value(cell) for cell in row) + ' |' for row in rows]
+    return '\n'.join(lines)
+
+def table_texts(path, ws, table):
+    """Les chunks d'un bloc, avec le numéro de leur première ligne dans l'onglet : (texte, ligne)."""
+    context = f'{path.stem} · onglet « {ws.title} »'
+    if table['title']:
+        context += f" · {table['title']}"
+    rows = table['rows']
+    if not rows:                                             # bloc de texte : le titre est le contenu
+        yield context, None
+    elif table['header'] is None or len(rows) <= MAX_ROWS:   # une phrase par ligne
+        for row in rows:
+            yield f"{context} · {row_text(table['header'], row)}", row[0].row
+    else:                                                    # grand tableau : un résumé, puis des paquets de lignes
+        columns = ', '.join(str(name) for name in table['header'] if name is not None)
+        yield f'{context} : tableau de {len(rows)} lignes. Colonnes : {columns}.', rows[0][0].row
+        for start in range(0, len(rows), ROWS_PER_CHUNK):
+            part = rows[start:start + ROWS_PER_CHUNK]
+            yield (f'{context} · lignes {start + 1} à {start + len(part)}\n'
+                   + table_markdown(table['header'], part)), part[0][0].row
+    if table['notes']:
+        yield f"{context} · Notes : {' '.join(table['notes'])}", None
+
+def workbook_texts(path):
+    """Tous les chunks d'un classeur : (texte, intitulé, onglet, ligne)."""
+    for ws in load_workbook(path, data_only = True).worksheets:
+        for table in sheet_tables(ws):
+            headings = f"{ws.title} · {table['title']}" if table['title'] else ws.title
+            for text, row_number in table_texts(path, ws, table):
+                yield text, headings, ws.title, row_number
+
+
 if __name__ == '__main__':
     from calorvia_rag.config import settings
-    for name in ('Reporting 2026-03.xlsx', 'Plan de formation 2026.xlsx', 'Enquete teletravail - reponses brutes.xlsx'):
+    for name in ('Plan de formation 2026.xlsx', 'Enquete teletravail - reponses brutes.xlsx'):
         path = next(settings.corpus_folder.rglob(name))
-        for ws in load_workbook(path, data_only = True).worksheets:
-            for table in sheet_tables(ws):
-                print(f"{name} [{ws.title}] titre={table['title']!r} en-tête={table['header']} "
-                      f"{len(table['rows'])} lignes, notes={table['notes']}")
+        for text, headings, sheet, row_number in workbook_texts(path):
+            print(f'[{sheet} · ligne {row_number}] {text[:180]}')
+
+

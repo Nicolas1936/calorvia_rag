@@ -84,6 +84,7 @@ def index_corpus():
         sparse_vector = index_cfg.get('sparse_vector'),
         context_line = chunking_cfg['context_line'],
         sparse_language = index_cfg.get('sparse_language'),
+        excel_reader = chunking_cfg.get('excel_reader'), 
     )
 
     init_collection(qdrant_client, collection_name, embedder_cfg['vector_size'])

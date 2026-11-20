@@ -43,6 +43,7 @@ def search_chunks(query, qdrant_client, embedder, query_filter = None, translati
         sparse_vector = index_cfg.get('sparse_vector'),
         context_line = chunking_cfg['context_line'],
         sparse_language = index_cfg.get('sparse_language'),
+        excel_reader = chunking_cfg.get('excel_reader'), 
     )
     limit = search_cfg['candidates']
 

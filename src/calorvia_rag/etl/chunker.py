@@ -1,6 +1,7 @@
 from calorvia_rag.config import settings, runner_settings
 from calorvia_rag.db import list_documents_to_chunk
 from calorvia_rag.etl.inventory import detect_language
+from calorvia_rag.etl.excel import workbook_texts
 
 from transformers import AutoTokenizer
 from docling_core.types.doc import DoclingDocument
@@ -40,21 +41,47 @@ def chunk_document(row, chunker, context_line):
             'headings': ' | '.join(chunk.meta.headings or []),
             'text': text,
             'language': detect_language(chunk.text, default = row['language'] or 'fr'),
-            'format': row['format'],
-            'department': row['department'],
-            'doc_type': row['doc_type'],
-            'doc_date': row['doc_date'].isoformat() if row['doc_date'] else None,
-            'period': row['period'],
-            'version': row['version'],
-            'status': row['status'],
-            'source_type': row['source_type'],
+            **document_metadata(row)
+        }
+
+def chunk_workbook(row, context_line):
+    """Découpe un classeur lu par openpyxl (etl/excel.py) : une phrase par ligne de tableau."""
+    path = settings.corpus_folder / row['path']
+    for i, (text, headings, sheet, row_number) in enumerate(workbook_texts(path)):
+        yield {
+            'document': row['path'],
+            'chunk_index': i,
+            'headings': headings,
+            'text': row['context_line'] + '\n' + text if context_line else text,
+            'language': row['language'] or 'fr',     # langue du classeur : une ligne de nombres se détecte mal
+            'sheet': sheet,
+            'row': row_number,
+            **document_metadata(row),
         }
 
 def iter_chunks(chunker):
     """Tous les chunks du corpus, document par document, dans l'ordre du registre."""
-    context_line = runner_settings['chunking']['context_line']
+    chunking_cfg = runner_settings['chunking']
+    context_line = chunking_cfg['context_line']
+    excel_reader = chunking_cfg.get('excel_reader', 'docling')
     for row in list_documents_to_chunk():
-        yield from chunk_document(row, chunker, context_line)
+        if row['format'] == 'xlsx' and excel_reader == 'openpyxl':
+            yield from chunk_workbook(row, context_line)
+        else:
+            yield from chunk_document(row, chunker, context_line)
+
+def document_metadata(row):
+    """Les métadonnées du registre, communes à tous les chunks d'un document."""
+    return {
+        'format': row['format'],
+        'department': row['department'],
+        'doc_type': row['doc_type'],
+        'doc_date': row['doc_date'].isoformat() if row['doc_date'] else None,
+        'period': row['period'],
+        'version': row['version'],
+        'status': row['status'],
+        'source_type': row['source_type'],
+    }
 
 if  __name__ == '__main__':
     from collections import Counter
