@@ -1,0 +1,46 @@
+name = 'exp06_prompt_french'
+tag = 'v0.3-langues'
+
+[corpus]
+include_formats = ['docx', 'pdf', 'html', 'pptx', 'md', 'csv', 'xlsx']
+include_scanned_pdfs = false
+include_images = false
+
+[chunking]
+type = 'hybrid'
+max_tokens = 512
+overlap = 0
+context_line = true           # Active la ligne [Type · Date · Dossier]
+
+[embedder]
+model = 'bge-m3'
+vector_size = 1024
+embedding_batch_size = 2048
+query_instruction = ''
+
+[index]
+sparse_vector = 'bm25'
+sparse_embedder_ascii_folding = true
+sparse_language = 'per_chunk'   # stemmer BM25 selon la langue du chunk ; absent = langue du corpus
+
+[search]
+method = 'hybrid'
+candidates = 30
+
+[reranker]
+model = 'bge-reranker-v2-m3'
+top_k = 5
+
+[generation]
+model = 'qwen3.8-27b'
+system_prompt = 'prompts/detailed_fr.txt'
+temperature = 0.0
+top_p = 1.0
+top_k = 40
+max_tokens = 4096
+reasoning = false
+
+[judge]
+model = 'gemma-4-26b'
+samples_per_type = 2
+seed = 42
