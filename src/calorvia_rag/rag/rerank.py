@@ -2,18 +2,29 @@ from calorvia_rag.config import settings, runner_settings
 
 import requests as rq
 
-def rerank_chunks(query, chunks):
-    reranker_cfg = runner_settings['reranker']
+def call_reranker(query, chunks, top_n):
     payload = {
-        'model': reranker_cfg['model'],
+        'model': runner_settings['reranker']['model'],
         'query': query,
         'documents': [chunk.payload['text'] for chunk in chunks],
-        'top_n': reranker_cfg['top_k']
+        'top_n': top_n,
     }
-
     r = rq.post(settings.rerank_url, json = payload)
     r.raise_for_status()
     return [(chunks[result['index']], result['relevance_score']) for result in r.json()['results']]
+
+def rerank_chunks(query, chunks, translations = None):
+    reranker_cfg = runner_settings['reranker']
+    if not (reranker_cfg.get('per_language') and translations):
+        return call_reranker(query, chunks, reranker_cfg['top_k'])          # comme avant
+
+    groups = {}                                                             # question → passages de sa langue
+    for chunk in chunks:
+        question = translations.get(chunk.payload['language'], query)       # langue sans traduction → question fr
+        groups.setdefault(question, []).append(chunk)
+
+    scored = [pair for question, group in groups.items() for pair in call_reranker(question, group, len(group))]
+    return sorted(scored, key = lambda pair: pair[1], reverse = True)[:reranker_cfg['top_k']]
 
 
 if __name__ == '__main__':

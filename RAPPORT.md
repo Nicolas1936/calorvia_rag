@@ -30,6 +30,8 @@ Un passage compte comme preuve s'il vient du document attendu et contient tous l
 | **1** | **`exp02_baseline_with_ctx`** | **`da85aca`** | **+ ligne de contexte** (retenue, `v0.2-baseline`) | **0,787** | **0,708** | **0,762** | **0,697** | **13,9 %** | **0,62** | **1/17** | 281 s |
 | 2 | `exp01_baseline_no_ctx` | `da85aca` | Abandonnée (`superseded`) : lancée avec `git_dirty = true`, puis relancée en n° 3 | – | – | – | – | – | – | – | – |
 | 4 | `exp03_stemmer_per_language` | `156554b` | Référence + stemmer BM25 selon la langue du chunk (index `_lang`) | 0,787 | 0,708 | 0,762 | 0,697 | 13,9 % | 0,62 | 1/17 | 275 s |
+| 5 | `exp04_translate_query` | `6fd79d3` | Abandonnée (`failed`) : échec au démarrage (0 réponse en 6 s), relancée en n° 6 | – | – | – | – | – | – | – | – |
+| 6 | `exp04_translate_query` | `6fd79d3` | n° 4 + traduction de la question en nl/en, 6 listes fusionnées par RRF | 0,787 | 0,708 | 0,762 | 0,697 | 14,8 % | 0,62 | 1/17 | 407 s |
 
 - La durée est celle du run complet (127 questions).
 - Le modèle a refusé toutes les questions `out_of_corpus` (5/5), dans toutes les expériences.
@@ -160,11 +162,12 @@ L'expérience 1 devient la référence `v0.2-baseline`. Les sections 4 à 7 lui 
 
 ## Section 4 : les langues (`v0.3-langues`)
 
-Les questions sont toutes en français. L'index contient 1 072 chunks en français, 94 en néerlandais et 18 en anglais : la langue est détectée pour chaque chunk et enregistrée dans le payload. La section teste trois changements, un par expérience, chacun comparé à la référence `v0.2-baseline` (n° 1) :
+Les questions sont toutes en français. L'index contient 1 072 chunks en français, 94 en néerlandais et 18 en anglais : la langue est détectée pour chaque chunk et enregistrée dans le payload. La section teste un changement par expérience, chacune ajoutée à la précédente et comparée à la référence `v0.2-baseline` (n° 1) :
 
 1. le stemmer BM25 choisi selon la langue du chunk (n° 4) ;
-2. la traduction de la question en néerlandais et en anglais (à venir) ;
-3. un prompt qui impose une réponse en français (à venir).
+2. la traduction de la question en néerlandais et en anglais (n° 6) ;
+3. le reranking de chaque passage avec la question dans sa langue (à venir), ajouté après le diagnostic de l'étape 2 ;
+4. un prompt qui impose une réponse en français (à venir).
 
 ### Étape 1 : le stemmer BM25 selon la langue du chunk (n° 4)
 
@@ -244,10 +247,79 @@ Sur les 31 questions jugées, un écart de 0,03 correspond à une seule note qui
 
 Il ne change aucun résultat et ne coûte rien à la recherche. Surtout, il prépare l'étape 2 : une question traduite en néerlandais, analysée avec le stemmer `dutch`, pourra retrouver par BM25 les chunks néerlandais analysés avec le même stemmer. Les expériences suivantes de la section utilisent donc l'index `_lang`.
 
-### Étape 2 : traduction de la question
+### Étape 2 : traduction de la question (n° 6)
+
+#### Le changement testé
+
+Avant la recherche, le LLM de génération (`qwen3.8-27b`, température 0, sans raisonnement, sortie JSON) traduit la question en néerlandais et en anglais (`rag/translate.py`, prompt repris du notebook, partie 1.3). La recherche hybride utilise ensuite les trois versions de la question. Pour chacune, elle construit une liste dense (bge-m3) et une liste BM25 analysée avec le stemmer de sa langue. Les six listes sont fusionnées par RRF (k = 60) en 30 candidats. Le reranker trie ensuite ces candidats avec la question française, comme dans la référence.
+
+Le réglage s'active dans le TOML (`[search] translate_query = true`) et utilise l'index `_lang` de l'étape 1. Si la réponse du LLM n'est pas un JSON valide, la recherche se fait avec la question française seule.
+
+Exemple, Q062 :
+
+| Langue | Question |
+|---|---|
+| fr | Quelles causes de l'accident de Gand le rapport d'incident identifie-t-il ? |
+| nl | Welke oorzaken van het ongeluk van Gent identificeert het incidentrapport? |
+| en | Which causes of the Ghent accident does the incident report identify? |
+
+Le LLM a traduit « Gand » par « Gent », le nom employé dans les documents néerlandais, alors que la consigne demande de garder les noms propres tels quels. Ici, ça aide la recherche.
+
+#### Comparabilité
+
+Entre les commits `156554b` (n° 4) et `6fd79d3` (n° 6), seuls le rapport et le code de la traduction ont changé. L'index est le même.
+
+#### Résultats (stemmer par langue → + traduction)
+
+| | Stemmer par langue (n° 4) | + traduction (n° 6) |
+|---|---|---|
+| hit@5 | 0,787 | 0,787 |
+| MRR | 0,708 | 0,708 |
+| recall@5 | 0,762 | 0,762 |
+| nDCG@5 | 0,697 | 0,697 |
+| Refus à tort | 17/122 (13,9 %) | 18/122 (14,8 %) |
+| correctness (31) | 0,616 | 0,616 |
+| faithfulness (31) | 0,871 | 0,774 |
+| `trap_hit` | 7/17 | 7/17 |
+| `trap_avoided` selon le juge | 15/17 (0,88) | 15/17 (0,88) |
+| Réponses qui reprennent le piège, après relecture | 1/17 (Q023) | 1/17 (Q023) |
+| Temps de réponse moyen / médian / 90e centile | 6,41 s / 5,99 s / 10,5 s | **9,51 s / 9,16 s / 13,3 s** |
+| Durée du run | 275 s | **407 s (+48 %)** |
+
+La traduction ne change rien à la qualité de la recherche. Le top 5 change pour 27 questions, mais jamais à la position de la preuve : hit@5, MRR et nDCG@5 restent identiques pour chaque question, sauf pour Q158, dont le MRR revient à sa valeur de la référence (de 0,25 à 0,20). Les passages néerlandais et anglais du top 5 passent de 26 à 30, sur 635. Les 7 questions `multilingual` gardent le même rang de preuve qu'à l'étape 1 : Q062 reste absente du top 5.
+
+#### Diagnostic : le reranker défait le gain de la recherche
+
+Pour Q062, la recherche fait son travail : l'`Incidentrapport` arrive 1er et 5e des 30 candidats après la fusion RRF. Le reranker, lui, compare ces candidats à la question française. Voici le rang du même rapport quand on donne au reranker chacune des trois versions de la question :
+
+| Question donnée au reranker | Rang de l'`Incidentrapport` | Son score | Score du 1er passage français |
+|---|---|---|---|
+| fr | 7e et 10e | 0,057 | 0,693 |
+| nl | **1er et 2e** | **0,523** | 0,011 |
+| en | **1er et 2e** | **0,466** | 0,010 |
+
+bge-reranker-v2-m3 est multilingue, mais il favorise nettement les passages écrits dans la langue de la question : le même passage obtient 0,057 avec la question française et 0,523 avec la question néerlandaise. Les candidats néerlandais et anglais ajoutés par la traduction passent donc derrière les passages français, et le top 5 final reste presque le même.
+
+La réponse à Q062 est quand même juste (absence de passage piéton, visibilité réduite à l'angle des racks, chariot à environ 11 km/h). Elle s'appuie sur le *Projet PV CA* du 18 novembre 2025, qui résume le rapport d'incident. Mais c'est un projet de PV (voir la section 7), et hit@5 ne compte comme preuve que le rapport lui-même.
+
+#### Les autres changements
+
+- **Q077** (« conditions de paiement de Calorvia ») : la preuve (`Conditions generales de vente 2026.pdf`) n'est dans le top 5 ni avant ni après. Avant, le modèle donnait les conditions de paiement d'offres de **fournisseurs** (30 / 60 / 10 %) : une réponse fausse. Maintenant, il refuse. Le refus compte « à tort », mais il vaut mieux qu'une réponse fausse.
+- **faithfulness** : la baisse de 0,871 à 0,774 vient de 3 notes qui passent de 1 à 0. Pour Q082 et Q144, la réponse est identique à celle de l'expérience 4 : c'est le juge qui varie (la note de Q144 change à chaque run). Pour Q153, le top 5 est le même et seule la formulation de la réponse change. Cette baisse relève du bruit décrit à l'étape 1.
+- **Pièges** : 13 réponses sur 17 sont identiques. Les 4 autres ne donnent pas la valeur piège.
+
+#### Coût
+
+Chaque question coûte un appel de plus au LLM, avant la recherche. Le temps de réponse moyen augmente de 3,1 s (+48 %), et la durée du run passe de 275 s à 407 s. Ce surcoût vient probablement surtout de cet appel : les quatre recherches de plus sont faites dans la même requête Qdrant, et les trois embeddings dans le même appel à l'embedder.
+
+#### Décision : la traduction est gardée pour l'étape suivante, à l'essai
+
+Seule, la traduction coûte 3 s par question sans rien améliorer. Le diagnostic montre pourtant que la recherche trouve les bons passages et que le problème se situe au reranking. L'étape 3 garde donc la traduction et compare chaque passage à la question dans sa langue. Si cette étape n'apporte rien non plus, la traduction sera abandonnée.
+
+### Étape 3 : reranker chaque passage avec la question dans sa langue
 _À compléter._
 
-### Étape 3 : prompt « réponds en français »
+### Étape 4 : prompt « réponds en français »
 _À compléter._
 
 ## Section 5 : les fichiers Excel (`v0.4-excel`)

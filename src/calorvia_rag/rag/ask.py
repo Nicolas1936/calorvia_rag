@@ -48,7 +48,7 @@ async def generate_response(query, qdrant_client, embedder, llm_client):
         translations = await translate_question(query, llm_client)
     
     filtered_chunks = await asyncio.to_thread(search_and_filter_chunks, query, qdrant_client, embedder, None, translations)
-    reranked_chunks = await asyncio.to_thread(rerank_chunks, query, filtered_chunks)
+    reranked_chunks = await asyncio.to_thread(rerank_chunks, query, filtered_chunks, translations)
     response, llm_metrics = await get_response(query, reranked_chunks, llm_client)
 
     return response, llm_metrics, reranked_chunks
