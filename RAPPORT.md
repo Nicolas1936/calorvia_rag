@@ -32,6 +32,7 @@ Un passage compte comme preuve s'il vient du document attendu et contient tous l
 | 4 | `exp03_stemmer_per_language` | `156554b` | Référence + stemmer BM25 selon la langue du chunk (index `_lang`) | 0,787 | 0,708 | 0,762 | 0,697 | 13,9 % | 0,62 | 1/17 | 275 s |
 | 5 | `exp04_translate_query` | `6fd79d3` | Abandonnée (`failed`) : échec au démarrage (0 réponse en 6 s), relancée en n° 6 | – | – | – | – | – | – | – | – |
 | 6 | `exp04_translate_query` | `6fd79d3` | n° 4 + traduction de la question en nl/en, 6 listes fusionnées par RRF | 0,787 | 0,708 | 0,762 | 0,697 | 14,8 % | 0,62 | 1/17 | 407 s |
+| 7 | `exp05_rerank_per_language` | `ee0e6fe` | n° 6 + reranking de chaque passage avec la question dans sa langue (abandonné avec la traduction) | 0,779 | 0,705 | 0,754 | 0,694 | 16,4 % | 0,61 | 1/17 | 422 s |
 
 - La durée est celle du run complet (127 questions).
 - Le modèle a refusé toutes les questions `out_of_corpus` (5/5), dans toutes les expériences.
@@ -162,12 +163,12 @@ L'expérience 1 devient la référence `v0.2-baseline`. Les sections 4 à 7 lui 
 
 ## Section 4 : les langues (`v0.3-langues`)
 
-Les questions sont toutes en français. L'index contient 1 072 chunks en français, 94 en néerlandais et 18 en anglais : la langue est détectée pour chaque chunk et enregistrée dans le payload. La section teste un changement par expérience, chacune ajoutée à la précédente et comparée à la référence `v0.2-baseline` (n° 1) :
+Les questions sont toutes en français. L'index contient 1 072 chunks en français, 94 en néerlandais et 18 en anglais : la langue est détectée pour chaque chunk et enregistrée dans le payload. La section teste un changement par expérience. Chacun est ajouté à la dernière configuration retenue, en partant de la référence `v0.2-baseline` (n° 1) :
 
-1. le stemmer BM25 choisi selon la langue du chunk (n° 4) ;
-2. la traduction de la question en néerlandais et en anglais (n° 6) ;
-3. le reranking de chaque passage avec la question dans sa langue (à venir), ajouté après le diagnostic de l'étape 2 ;
-4. un prompt qui impose une réponse en français (à venir).
+1. le stemmer BM25 choisi selon la langue du chunk (n° 4, retenu) ;
+2. la traduction de la question en néerlandais et en anglais (n° 6, gardée à l'essai) ;
+3. le reranking de chaque passage avec la question dans sa langue (n° 7), ajouté après le diagnostic de l'étape 2. Il est abandonné, et la traduction avec lui ;
+4. un prompt qui impose une réponse en français (à venir), ajouté à la configuration n° 4.
 
 ### Étape 1 : le stemmer BM25 selon la langue du chunk (n° 4)
 
@@ -316,8 +317,88 @@ Chaque question coûte un appel de plus au LLM, avant la recherche. Le temps de 
 
 Seule, la traduction coûte 3 s par question sans rien améliorer. Le diagnostic montre pourtant que la recherche trouve les bons passages et que le problème se situe au reranking. L'étape 3 garde donc la traduction et compare chaque passage à la question dans sa langue. Si cette étape n'apporte rien non plus, la traduction sera abandonnée.
 
-### Étape 3 : reranker chaque passage avec la question dans sa langue
-_À compléter._
+### Étape 3 : reranker chaque passage avec la question dans sa langue (n° 7)
+
+#### Le changement testé
+
+La recherche est celle de l'étape 2 : trois versions de la question, six listes fusionnées par RRF en 30 candidats. Les candidats sont ensuite répartis selon la langue de leur chunk, et le reranker trie chaque groupe avec la question dans la même langue : les passages néerlandais avec la question néerlandaise, les anglais avec l'anglaise, les français avec la française (`rag/rerank.py`). Les scores des trois groupes sont enfin réunis et triés pour garder les 5 meilleurs passages.
+
+Le réglage s'active dans le TOML (`[reranker] per_language = true`) et n'a d'effet que si `translate_query` est activé. Un passage dont la langue n'a pas de traduction est comparé à la question française.
+
+#### Comparabilité
+
+Entre les commits `6fd79d3` (n° 6) et `ee0e6fe` (n° 7), seuls le rapport, le code du reranking et son appel dans `rag/ask.py` ont changé. L'index et la recherche sont les mêmes.
+
+#### Résultats (stemmer par langue → + traduction → + reranking par langue)
+
+| | Stemmer par langue (n° 4) | + traduction (n° 6) | + reranking par langue (n° 7) |
+|---|---|---|---|
+| hit@5 | 0,787 | 0,787 | 0,779 |
+| MRR | 0,708 | 0,708 | 0,705 |
+| recall@5 | 0,762 | 0,762 | 0,754 |
+| nDCG@5 | 0,697 | 0,697 | 0,694 |
+| Refus à tort | 17/122 (13,9 %) | 18/122 (14,8 %) | **20/122 (16,4 %)** |
+| correctness (31) | 0,616 | 0,616 | 0,610 |
+| faithfulness (31) | 0,871 | 0,774 | 0,871 |
+| `trap_hit` | 7/17 | 7/17 | 7/17 |
+| `trap_avoided` selon le juge | 15/17 (0,88) | 15/17 (0,88) | 15/17 (0,88) |
+| Réponses qui reprennent le piège, après relecture | 1/17 (Q023) | 1/17 (Q023) | 1/17 (Q023) |
+| Temps de réponse moyen / médian / 90e centile | 6,41 s / 5,99 s / 10,5 s | 9,51 s / 9,16 s / 13,3 s | 9,83 s / 9,24 s / 14,4 s |
+| Durée du run | 275 s | 407 s | 422 s |
+
+Par rapport à l'expérience 6, le top 5 change pour 27 questions. Les passages néerlandais et anglais du top 5 passent de 30 à 35 sur 635 (néerlandais : de 16 à 24, anglais : de 14 à 11).
+
+#### Les questions `multilingual`
+
+| Question | Langue de la preuve | Rang de la preuve (n° 6) | Rang de la preuve (n° 7) |
+|---|---|---|---|
+| Q003 : chiffre d'affaires et EBITDA 2025 | en | 1 | 1 |
+| Q024 : contrat de maintenance des chariots de Gand | nl | 2 | **absent du top 5** |
+| Q062 : causes de l'accident de Gand | nl | absent du top 5 | **2** |
+| Q074 : délai de livraison de Kompra | en | 1 | 1 |
+| Q083 : objectif de chiffre d'affaires avec Klimaat Partners | nl | 1 | 1 |
+| Q086 : part des coûts d'un rappel supportée par Valtek | en | 3 | **1** |
+| Q112 : absentéisme de Gand en mars 2026 | nl | 1 | **absent du top 5** |
+
+Le gain attendu se produit pour Q062 : l'`Incidentrapport` arrive 2e et 5e. La réponse s'appuie maintenant sur le rapport lui-même et donne les quatre causes de la réponse attendue, dont la vitesse autorisée de 12 km/h, jugée trop élevée, et l'imprimante d'étiquettes. À l'étape 2, elle n'en donnait que trois, tirées du projet de PV. Q086 gagne aussi deux places.
+
+En revanche, Q024 et Q112 perdent leur preuve, et leurs réponses deviennent des refus. Pour Q024, qui fait partie de l'échantillon du juge, la correctness passe de 0,3 à 0.
+
+#### Diagnostic : pourquoi Q024 et Q112 perdent leur preuve
+
+J'ai relancé le reranker sur les candidats de ces deux questions avec chacune des trois versions de la question. Score du passage de preuve :
+
+| Question donnée au reranker | Q024 : `Onderhoudscontract heftrucks LiftService.pdf` | Q112 : `Verslag Comite PBW Gent 2026-04-16.docx` |
+|---|---|---|
+| fr | 0,244 | 0,997 |
+| nl (celle qu'utilise l'étape 3) | **0,012** | **0,509** |
+| en | 0,006 | 0,999 |
+| Pour comparer : 5e passage français, avec la question fr | 0,064 | 0,990 |
+
+Avec la question néerlandaise, la preuve passe derrière les cinq meilleurs passages français, notés avec la question française. Il y a deux causes :
+
+1. **La traduction n'emploie pas les mots des documents.** Pour Q112, le passage dit « Absenteïsme in maart 2026: 5,1 % », et la traduction parle de « ziekteverzuimpercentage ». Pour Q024, le contrat parle de « heftrucks », d'« Interventietijd » et de « panne ». La traduction emploie « reachstackers » (un autre type d'engin), « reactietijd » et « storing ». La question française partage plus de mots avec le passage néerlandais (absentéisme, intervention, panne) que sa traduction.
+2. **Les scores obtenus avec des questions différentes ne sont pas comparables.** Pour Q112, la question française donne environ 0,99 à tous les PV du CODIR qui citent l'absentéisme global de Calorvia. La question néerlandaise donne au mieux 0,624 à un passage néerlandais. En triant ensemble les scores des trois groupes, l'étape 3 compare des valeurs qui ne sont pas sur la même échelle.
+
+Le biais de langue observé sur Q062 à l'étape 2 n'est donc pas général. Pour Q112, la question française donnait 0,997 au passage néerlandais : la question en français fonctionnait déjà.
+
+#### Les autres changements
+
+- **Q117** (`multi_doc`) : la notice néerlandaise d'Aéris 9 (0,977 avec la question néerlandaise) passe devant la notice française (0,845), et le MRR passe de 1 à 0,5. Les deux notices disent la même chose, mais le jeu d'évaluation ne compte que la française comme preuve. Le classement n'est pas faux : c'est une limite de l'évaluation.
+- **Q087** : le communiqué de presse anglais, 1er avec la question française (0,836), passe 3e avec la question anglaise (0,500). La preuve passe ainsi de la 2e à la 1re place (MRR de 0,5 à 1).
+- **Q101** : le contrat anglais de Valtek, l'une des preuves, sort du top 5 (recall@5 de 1 à 0,5).
+- **faithfulness** : 4 notes repassent de 0 à 1 (Q082, Q116, Q144, Q153). La note de Q024, dont la réponse est devenue un refus, passe de 1 à 0. La faithfulness revient ainsi à sa valeur de l'étape 1, ce qui confirme que sa baisse à l'étape 2 venait du bruit du juge.
+- **Pièges** : 12 réponses sur 17 sont identiques. Les 5 autres sont reformulées sans donner la valeur piège.
+
+#### Coût
+
+Le reranker est appelé une fois par langue présente parmi les candidats, au lieu d'une fois. Le temps de réponse moyen augmente de 0,3 s par rapport à l'étape 2, et de 3,4 s par rapport à l'étape 1 : ce surcoût vient surtout de la traduction.
+
+#### Décision : le reranking par langue et la traduction sont abandonnés
+
+L'étape 3 gagne une preuve (Q062) et en perd deux (Q024, Q112). Elle ajoute 3 refus à tort par rapport à l'étape 1, pour 3,4 s de plus par question. Sur 7 questions `multilingual`, ces écarts d'une question ne montrent aucune amélioration. Comme annoncé à l'étape 2, la traduction est donc abandonnée avec le reranking par langue. L'étape 4 part de la configuration n° 4 (stemmer par langue, sans traduction). Le code reste dans le dépôt, désactivé par défaut (`translate_query` et `per_language` absents du TOML).
+
+Piste non testée : reranker chaque passage avec les trois versions de la question et garder le meilleur des trois scores. Sur les trois questions examinées, chaque preuve garderait son meilleur score : 0,244 pour Q024 (fr), 0,999 pour Q112 (en) et 0,523 pour Q062 (nl). Mais cette idée vient de l'examen des résultats du jeu de développement. Elle triplerait aussi les appels au reranker, et 7 questions ne suffiraient pas à la valider.
 
 ### Étape 4 : prompt « réponds en français »
 _À compléter._
