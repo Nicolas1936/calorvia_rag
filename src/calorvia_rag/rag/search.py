@@ -18,18 +18,19 @@ def sparse_search(sparse_query, collection_name, qdrant_client, limit, query_fil
         limit = limit, query_filter = query_filter
     ).points
 
-def hybrid_search(dense_vector, sparse_query, collection_name, qdrant_client, limit, query_filter = None):
+def hybrid_search(dense_vectors, sparse_queries, collection_name, qdrant_client, limit, query_filter = None):
+    """Une liste dense et une liste BM25 par version de la question, toutes fusionnées par RRF."""
+    prefetch = [models.Prefetch(query = vector, using = 'dense', limit = limit) for vector in dense_vectors]
+    prefetch += [models.Prefetch(query = sparse_query, using = 'sparse', limit = limit) for sparse_query in sparse_queries]
+    
     return qdrant_client.query_points(
         collection_name,
-        prefetch = [
-            models.Prefetch(query = dense_vector, using = 'dense', limit = limit),
-            models.Prefetch(query = sparse_query, using = 'sparse', limit = limit),
-        ],
+        prefetch = prefetch,
         query = models.RrfQuery(rrf = models.Rrf(k = 60)),
         limit = limit, query_filter = query_filter
     ).points
 
-def search_chunks(query, qdrant_client, embedder, query_filter = None):
+def search_chunks(query, qdrant_client, embedder, query_filter = None, translations = None):
     embedder_cfg = runner_settings['embedder']
     chunking_cfg = runner_settings['chunking']
     index_cfg = runner_settings['index']
@@ -53,18 +54,24 @@ def search_chunks(query, qdrant_client, embedder, query_filter = None):
         sparse_query = embed_sparse(query, get_sparse_options(index_cfg))
         return sparse_search(sparse_query, collection_name, qdrant_client, limit, query_filter)
 
-    dense_vector = embed([get_query_text(query, embedder_cfg)], embedder, embedder_cfg['model'])[0]
-    sparse_query = embed_sparse(query, get_sparse_options(index_cfg))
-    return hybrid_search(dense_vector, sparse_query, collection_name, qdrant_client, limit, query_filter)
+    # Recherche hybride : une liste dense et une liste BM25 par version de la question
+    translations = translations or {'fr': query}      # sans traduction : la question seule, en français
+    texts = [get_query_text(text, embedder_cfg) for text in translations.values()]
+
+    dense_vectors = embed(texts, embedder, embedder_cfg['model'])          # un seul appel pour 1 ou 3 langues
+    sparse_queries = [embed_sparse(text, get_sparse_options(index_cfg, language))
+                      for language, text in translations.items()]           # chaque langue avec son stemme
+    
+    return hybrid_search(dense_vectors, sparse_queries, collection_name, qdrant_client, limit, query_filter)
 
 
 _search_lock = threading.Lock()
 
-def search_and_filter_chunks(query, qdrant_client, embedder, query_filter = None):
+def search_and_filter_chunks(query, qdrant_client, embedder, query_filter = None, translations = None):
     with _search_lock:
-        points = search_chunks(query, qdrant_client, embedder, query_filter)
+        points = search_chunks(query, qdrant_client, embedder, query_filter, translations)
         if not points and query_filter:
-            points = search_chunks(query, qdrant_client, embedder)
+            points = search_chunks(query, qdrant_client, embedder, translations=translations)
         return points
 
 

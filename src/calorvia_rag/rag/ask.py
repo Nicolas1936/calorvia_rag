@@ -3,6 +3,7 @@ from calorvia_rag.qdrant import get_qdrant_client
 from calorvia_rag.embedding import get_embedder
 from calorvia_rag.rag.search import search_and_filter_chunks
 from calorvia_rag.rag.rerank import rerank_chunks
+from calorvia_rag.rag.translate import translate_question
 
 from openai import AsyncOpenAI
 from pathlib import Path
@@ -42,7 +43,11 @@ async def get_response(query, chunks, llm_client):
     return response.choices[0].message.content, response.model_extra['timings']
 
 async def generate_response(query, qdrant_client, embedder, llm_client):
-    filtered_chunks = await asyncio.to_thread(search_and_filter_chunks, query, qdrant_client, embedder)
+    translations = None
+    if runner_settings['search'].get('translate_query'):
+        translations = await translate_question(query, llm_client)
+    
+    filtered_chunks = await asyncio.to_thread(search_and_filter_chunks, query, qdrant_client, embedder, None, translations)
     reranked_chunks = await asyncio.to_thread(rerank_chunks, query, filtered_chunks)
     response, llm_metrics = await get_response(query, reranked_chunks, llm_client)
 
