@@ -35,6 +35,7 @@ Un passage compte comme preuve s'il vient du document attendu et contient tous l
 | 7 | `exp05_rerank_per_language` | `ee0e6fe` | n° 6 + reranking de chaque passage avec la question dans sa langue (abandonné avec la traduction) | 0,779 | 0,705 | 0,754 | 0,694 | 16,4 % | 0,61 | 1/17 | 422 s |
 | 8 | `exp06_prompt_french` | `1ed0698` | Abandonnée (`superseded`) : lancée avec `git_dirty = true` (prompt et TOML pas encore commités), puis relancée en n° 9 | – | – | – | – | – | – | – | – |
 | **9** | **`exp06_prompt_french`** | **`530973a`** | **n° 4 + prompt « réponds en français même si le passage est en néerlandais ou en anglais »** (retenue, `v0.3-langues`) | **0,787** | **0,708** | **0,762** | **0,697** | **14,8 %** | **0,62** | **1/17** | 272 s |
+| 10 | `exp07_excel_openpyxl` | `3b024a1` | n° 9 + classeurs lus par openpyxl, une phrase par ligne de tableau (index `_xlsx`, retenue) | 0,787 | 0,706 | 0,758 | 0,694 | 14,8 % | 0,61 | 1/17 | 247 s |
 
 - La durée est celle du run complet (127 questions).
 - Le modèle a refusé toutes les questions `out_of_corpus` (5/5), dans toutes les expériences.
@@ -478,6 +479,118 @@ Par type de question, hit@5, MRR et taux de refus sont ceux de la référence. I
 **Ce qui reste à faire** : Q062 reste sans sa preuve dans `v0.3-langues`. Sa réponse est juste mais incomplète, et elle s'appuie sur un projet de PV. Deux pistes n'ont pas été testées : reranker chaque passage avec les trois versions de la question et garder le meilleur score (étape 3) ; compter la notice néerlandaise d'Aéris 9 comme preuve de Q117 dans le jeu d'évaluation.
 
 ## Section 5 : les fichiers Excel (`v0.4-excel`)
+
+Le corpus contient 55 classeurs. L'inventaire en exclut 6 (3 doublons, 2 fichiers de données personnelles, 1 fichier sans intérêt) : 49 sont indexés. Jusqu'ici, Docling les convertissait en tableaux Markdown. Il écrit alors les pourcentages en décimal (`-0.00681316572305923`), recopie le titre fusionné dans chaque colonne et perd le nom de l'onglet.
+
+Dans le jeu de développement, 21 questions ont une preuve dans un classeur : les 13 `excel_lookup`, les 5 `excel_reasoning`, les pièges du budget (Q043) et du tarif (Q089), et Q081. La section teste deux changements, ajoutés à `v0.3-langues` (n° 9) :
+
+1. lire les classeurs avec openpyxl, une phrase par ligne de tableau (n° 10, retenu) ;
+2. pour `excel_reasoning`, des fonctions de calcul que le LLM choisit (à venir).
+
+### Étape 1 : lire les classeurs avec openpyxl (n° 10)
+
+#### Le changement testé
+
+`etl/excel.py` (repris du notebook, partie 2) ouvre chaque classeur avec openpyxl (`data_only=True`, pour lire les valeurs calculées et non les formules). Il découpe chaque onglet en blocs : titre, en-tête, lignes, notes. Les valeurs sont écrites comme Excel les affiche : un pourcentage au format `0.0%` devient `-0,7 %`. Les nombres gardent le rendu de Docling (`4568`, `41.5`), celui des extraits de preuve.
+
+- **Tableau de 30 lignes ou moins** : une phrase par ligne, qui reprend le fichier, l'onglet, le titre du tableau, puis chaque valeur précédée du nom de sa colonne :
+  ```
+  Reporting 2026-03 · onglet « Ventes par région » · Chiffre d'affaires par région (k€) · Région : Flandre ; CA du mois : 4358 ; Part : 32,0 %
+  ```
+- **Tableau de plus de 30 lignes** (2 cas : le suivi du rappel Aéris 12, 214 lignes, et les réponses brutes de l'enquête sur le télétravail, 84 lignes) : un chunk de résumé (nombre de lignes, liste des colonnes), puis des paquets de 20 lignes en Markdown, avec l'en-tête répété.
+
+La ligne de contexte du document précède chaque chunk, comme pour les autres formats. Le payload reçoit en plus l'onglet (`sheet`) et le numéro de la première ligne dans l'onglet (`row`). La période et la version y figuraient déjà. Pour la langue, chaque chunk reprend celle du classeur (40 en français, les 9 `Productierapport Gent` en néerlandais) : une phrase faite de noms de colonnes et de nombres se détecte mal.
+
+Le réglage s'active dans le TOML (`[chunking] excel_reader = 'openpyxl'`) et ajoute le suffixe `_xlsx` au nom de la collection. L'index du n° 9 est donc conservé.
+
+#### Deux corrections du code du notebook
+
+Les 49 classeurs comptent 95 onglets, tous visibles. Aucune formule n'est sans valeur calculée (notebook, partie 2.2). Aucune date n'est stockée comme une date : elles sont toutes écrites en texte (`06/07/2026`). Les nombres se limitent à 902 entiers, 180 pourcentages et 155 décimaux sans format. Sur ce corpus, le découpage du notebook (`sheet_tables`) a deux défauts :
+
+1. **Il prend toujours la première ligne d'un bloc pour un en-tête.** Trois blocs n'en ont pas :
+   - l'onglet `Synthèse` de l'enquête (`Nombre de réponses | 84`, …, `Satisfaction moyenne | 8.1`) ;
+   - l'onglet `Synthèse` du rappel (`Unités concernées | 214`) ;
+   - la ligne 17 du plan de formation (`Heures de formation à la sécurité | 620`).
+
+   Cette dernière ligne devenait l'en-tête d'un tableau vide et disparaissait, alors que c'est la preuve de Q113. Correction : un en-tête ne contient que du texte. Sinon, le bloc est lu ligne par ligne, sous la forme « libellé : valeur ».
+2. **Il perd les onglets qui ne contiennent que des cellules isolées.** C'est le cas des 5 onglets `Commentaires` des reportings, par exemple : « Valtek prend en charge 65 % du coût du rappel (117 000 €) ». Leur texte restait en attente comme titre d'un tableau qui ne venait jamais. Correction : à la fin d'un onglet, un titre resté sans tableau devient un chunk de texte.
+
+#### Vérification avant l'indexation
+
+| | Docling (n° 9) | openpyxl (n° 10) |
+|---|---|---|
+| Chunks des classeurs | 111 | 551 |
+| Chunks au total | 1 184 | 1 624 |
+| Mots par chunk de classeur (moyenne / médiane / max) | 190 / 189 / 309 | 49 / 39 / 361 |
+| Preuves Excel contenues dans un chunk | 23/26 | 23/26 |
+
+Les chunks des autres formats sont identiques : même nombre pour chaque format. Les 23 preuves trouvées avec Docling le sont aussi avec openpyxl. Les 3 autres sont dans des documents non indexés : `Copie de Tarif 2026` et l'annexe de la grille ERP sont des doublons, et la `Grille salariale 2026` est dans `02_RH/Confidentiel`. Les passages pièges du budget et du tarif restent eux aussi dans un chunk. Le plafond de la recherche ne change donc pas : l'expérience mesure seulement l'effet de la forme des chunks.
+
+Effet de bord : la longueur moyenne d'un chunk, que BM25 utilise pour tout le corpus, passe de 71 à 56 mots. Le classement BM25 des autres documents peut donc bouger un peu.
+
+#### Comparabilité
+
+Entre les commits `530973a` (n° 9) et `3b024a1` (n° 10), en dehors du rapport, de l'export CSV et du notebook, seuls ont changé la lecture des classeurs et son branchement dans le chunker, l'indexation et la recherche (nom de la collection), ainsi que le TOML. La génération, le reranker et le prompt sont les mêmes. Le top 5 change pour 58 questions : les chunks des classeurs ont changé, et la longueur moyenne utilisée par BM25 aussi.
+
+#### Résultats (Docling → openpyxl)
+
+| | Docling (n° 9) | openpyxl (n° 10) |
+|---|---|---|
+| hit@5 | 0,787 | 0,787 |
+| MRR | 0,708 | 0,706 |
+| recall@5 | 0,762 | 0,758 |
+| nDCG@5 | 0,697 | 0,694 |
+| `excel_lookup` (13) : hit@5 / MRR / refus | 0,92 / 0,85 / 0,08 | 0,92 / **0,88** / 0,08 |
+| `excel_reasoning` (5) : hit@5 / MRR / recall@5 | 1,00 / 0,65 / 1,00 | 1,00 / 0,62 / 0,90 |
+| `version_trap` (4) : hit@5 / MRR | 1,00 / 0,81 | 1,00 / 0,67 |
+| Refus à tort | 18/122 (14,8 %) | 18/122 (14,8 %) |
+| correctness (31) | 0,619 | 0,610 |
+| faithfulness (31) | 0,927 | 0,839 |
+| `trap_hit` | 7/17 | 7/17 |
+| `trap_avoided` selon le juge | 15/17 (0,88) | 15/17 (0,88) |
+| Réponses qui reprennent le piège, après relecture | 1/17 (Q023) | 1/17 (Q023) |
+| Tokens envoyés au LLM par question (moyenne) | 1 915 | **1 688** |
+| Temps de réponse moyen / médian / 90e centile | 6,35 s / 6,15 s / 10,6 s | **5,75 s / 5,08 s / 9,9 s** |
+| Durée du run | 272 s | 247 s |
+
+hit@5 ne change pour aucune question. Le MRR change pour 6 questions, et le taux de refus pour 2.
+
+#### Les questions dont la preuve est dans un classeur
+
+L'échantillon du juge ne contient que 2 questions par type. J'ai donc relu les réponses aux 21 questions des deux runs. Dans les deux, 20 réponses sont justes. Seule Q154 échoue : sa preuve est dans un document non indexé. Q081 reçoit une réponse juste (725 k€), mais tirée des PV de COPIL Atlas qui occupent le top 5, sans aucune preuve de grade 2. Les différences :
+
+- **Q124** (montant de l'ERP dans le budget approuvé) : la preuve passe de la 2e à la 1re place, et la réponse précise maintenant « approuvé par le conseil d'administration le 16 décembre 2025 ».
+- **Q043** (piège du budget) : les phrases des versions 1 et 2 du budget passent devant celle du budget approuvé, qui recule de la 1re à la 3e place. Les trois phrases ne diffèrent que par le nom du fichier, la ligne de contexte et le montant. La réponse reste juste (280 k€) et cite le budget approuvé.
+- **Q126** (baisse du chiffre d'affaires budgété) : la ligne `Total 2026` de la version 1 sort du top 5 (recall@5 de 1 à 0,5). La réponse reste juste (−2,5 M€) grâce à la note de présentation du budget.
+- **Q158** (unités du rappel introuvables) : la correctness passe de 1 à 0,6. Le modèle cite bien « Chauffage Lambert & Fils », mais écrit aussi que le document ne précise pas le nom de l'installateur : la réponse se contredit.
+- **Q101** (`multi_doc`) : l'onglet `Commentaires` du reporting de mars, que le code du notebook aurait perdu, arrive 1er : « Valtek prend en charge 65 % du coût du rappel ». La preuve recule à la 2e place (MRR de 1 à 0,5), mais la réponse est la même et reste juste.
+
+#### Deux effets de la forme des chunks
+
+- **Les chunks de classeur s'invitent moins dans les autres questions.** Avec Docling, 29 questions sans preuve Excel avaient au moins un chunk de classeur dans leur top 5. Avec openpyxl, elles ne sont plus que 20. Un gros tableau de 190 mots ressemble à beaucoup de questions, une phrase de 39 mots à peu. Par exemple, le plan de formation et le budget sortent du top 5 de Q024 (`multilingual`), dont la preuve passe de la 2e à la 1re place.
+- **Le top 5 se remplit de lignes d'un même classeur.** Avant, 15 questions avaient au moins 3 chunks du même document dans leur top 5. Elles sont maintenant 28. Q103 et Q121 en ont 5 sur 5. C'est sans conséquence pour une question sur une seule valeur. Mais pour une question qui demande aussi un document texte, la place peut manquer.
+
+#### Les autres changements
+
+- **Refus** : Q024 compte maintenant comme un refus. Elle donne le délai d'intervention, puis ajoute la phrase de refus pour le coût, qui manque. Q114, à l'inverse, n'en est plus un. Le nombre de refus à tort ne change pas.
+- **faithfulness** : la baisse de 0,927 à 0,839 vient du bruit du juge. Pour Q082, Q098 et Q144, la réponse est identique à celle du n° 9, mais la note change (Q098 monte, les deux autres baissent). Q002 retrouve sa formulation du n° 4 et sa note de 0. La réponse de Q117 devient un refus.
+- **Autres types** : le MRR de `multilingual` passe de 0,69 à 0,76 (Q024), celui de `multi_doc` baisse d'une question (Q101).
+- **Pièges** : 13 réponses sur 17 sont identiques. Les 4 autres (Q008, Q043, Q089, Q091) ne donnent pas la valeur piège. Q089 cite le nom du produit, qui fait partie de l'extrait piège, mais donne le prix juste (18 110 €).
+
+#### Coût
+
+Les chunks sont plus courts : le prompt envoyé au LLM perd 12 % de tokens, et le temps de réponse moyen baisse de 0,6 s. L'index passe de 1 184 à 1 624 points.
+
+#### Décision : la lecture par openpyxl est retenue
+
+1. **Elle ne perd rien** : le plafond de la recherche est le même, hit@5 ne change pour aucune question, et les réponses aux questions Excel restent justes, sauf la réponse contradictoire de Q158.
+2. **Elle corrige ce que Docling abîmait** : les pourcentages, le nom de l'onglet, le titre du tableau et l'unité sont dans chaque chunk, et les onglets de commentaires sont lus.
+3. **Elle rend les chunks plus précis et moins coûteux** : moins de chunks de classeur dans les questions qui n'en ont pas besoin, 12 % de tokens en moins.
+4. **Elle prépare l'étape 2**, qui a besoin des tableaux sous forme structurée.
+
+Elle n'améliore pas les métriques. Les questions Excel du jeu de développement étaient déjà bien traitées par Docling (hit@5 de 0,92 et 1,00), parce que leurs extraits de preuve ne contiennent ni pourcentage ni date mise en forme. Les 5 questions `excel_reasoning` reçoivent déjà une réponse juste du RAG seul : l'étape 2 a donc peu de marge sur ce jeu.
+
+### Étape 2 : des fonctions de calcul pour `excel_reasoning`
 _À compléter._
 
 ## Section 6 : les images et les scans (`v0.5-images`)
