@@ -23,7 +23,7 @@ dependencies = [
 ]
 
 [project.scripts]
-20-calorvia-rag-1 = "20_calorvia_rag_1:main"
+calorvia-rag = "calorvia_rag:main"
 
 [build-system]
 requires = ["uv_build>=0.13.6,<0.14.0"]
