@@ -29,9 +29,10 @@ Un passage compte comme preuve s'il vient du document attendu et contient tous l
 | 3 | `exp01_baseline_no_ctx` | `fa951e7` | Version de référence, sans ligne de contexte | 0,746 | 0,602 | 0,713 | 0,611 | 18,0 % | 0,54 | 2/17 | 267 s |
 | **1** | **`exp02_baseline_with_ctx`** | **`da85aca`** | **+ ligne de contexte** (retenue, `v0.2-baseline`) | **0,787** | **0,708** | **0,762** | **0,697** | **13,9 %** | **0,62** | **1/17** | 281 s |
 | 2 | `exp01_baseline_no_ctx` | `da85aca` | Abandonnée (`superseded`) : lancée avec `git_dirty = true`, puis relancée en n° 3 | – | – | – | – | – | – | – | – |
+| 4 | `exp03_stemmer_per_language` | `156554b` | Référence + stemmer BM25 selon la langue du chunk (index `_lang`) | 0,787 | 0,708 | 0,762 | 0,697 | 13,9 % | 0,62 | 1/17 | 275 s |
 
 - La durée est celle du run complet (127 questions).
-- Le modèle a refusé toutes les questions `out_of_corpus` (5/5), dans les deux expériences.
+- Le modèle a refusé toutes les questions `out_of_corpus` (5/5), dans toutes les expériences.
 
 ## Section 3 : version de référence (`v0.2-baseline`)
 
@@ -158,6 +159,95 @@ L'expérience 1 devient la référence `v0.2-baseline`. Les sections 4 à 7 lui 
 - **Section 7 (versions)** : les passages pièges restent dans le top 5 pour 7 questions sur 17. La ligne de contexte aide le modèle à choisir la bonne version, mais elle ne les écarte pas. Taux de départ : 1/17 réponse reprend le piège.
 
 ## Section 4 : les langues (`v0.3-langues`)
+
+Les questions sont toutes en français. L'index contient 1 072 chunks en français, 94 en néerlandais et 18 en anglais : la langue est détectée pour chaque chunk et enregistrée dans le payload. La section teste trois changements, un par expérience, chacun comparé à la référence `v0.2-baseline` (n° 1) :
+
+1. le stemmer BM25 choisi selon la langue du chunk (n° 4) ;
+2. la traduction de la question en néerlandais et en anglais (à venir) ;
+3. un prompt qui impose une réponse en français (à venir).
+
+### Étape 1 : le stemmer BM25 selon la langue du chunk (n° 4)
+
+#### Le changement testé
+
+Dans la référence, la recherche lexicale (BM25, calculé par Qdrant) applique le stemmer et les mots vides `french` à tous les chunks, y compris aux chunks néerlandais et anglais. L'expérience 4 prend à l'indexation la langue de chaque chunk : `fr` → `french`, `nl` → `dutch`, `en` → `english`. La question, toujours en français, garde le stemmer `french`.
+
+Le réglage s'active dans le TOML (`[index] sparse_language = 'per_chunk'`) et ajoute le suffixe `_lang` au nom de la collection (`bge-m3_hybrid_512_ctx_bm25_lang`). L'index de la référence est donc conservé.
+
+#### Vérification de l'index
+
+Qdrant accepte sans erreur un nom de langue inconnu : `klingon` donne une analyse sans stemmer ni mots vides. Une faute de frappe dans le nom d'une langue passerait donc inaperçue. Pour vérifier que `dutch` et `english` sont bien appliqués, j'ai lancé des requêtes faites uniquement de mots vides, analysées avec `klingon` pour qu'aucun mot ne soit retiré de la requête :
+
+| Requête | Référence (`french` partout) | Expérience 4 (`_lang`) |
+|---|---|---|
+| `het een van zijn niet` (néerlandais) | 81 chunks | 15 chunks |
+| `the and of with from` (anglais) | 19 chunks | 0 chunk |
+
+Dans l'index `_lang`, les chunks néerlandais et anglais ne contiennent plus leurs mots vides. Les 15 chunks restants sont tous classés en français (des COPIL du projet Atlas, pour la plupart) : ils contiennent l'un de ces mots, sans doute dans un nom propre.
+
+#### Comparabilité
+
+Entre les commits `da85aca` (n° 1) et `156554b` (n° 4), en dehors de ce changement, seuls le code du juge, le fichier de configuration par défaut et les versions de `deepeval` et `transformers` ont changé, comme pour l'expérience 3. Les deux expériences sont notées par le même code de juge (celui du commit `79200be`). Le top 5 est identique, dans le même ordre, pour 122 questions sur 127.
+
+#### Résultats (référence → stemmer par langue)
+
+| | Référence (n° 1) | Stemmer par langue (n° 4) |
+|---|---|---|
+| hit@5 | 0,787 | 0,787 |
+| MRR | 0,708 | 0,708 |
+| recall@5 | 0,762 | 0,762 |
+| nDCG@5 | 0,697 | 0,697 |
+| Refus à tort | 17/122 (13,9 %) | 17/122 (13,9 %) |
+| correctness (31) | 0,619 | 0,616 |
+| faithfulness (31) | 0,871 | 0,871 |
+| `trap_hit` | 7/17 | 7/17 |
+| `trap_avoided` selon le juge | 15/17 (0,88) | 15/17 (0,88) |
+| Réponses qui reprennent le piège, après relecture | 1/17 (Q023) | 1/17 (Q023) |
+| Temps de réponse moyen / médian | 6,45 s / 6,24 s | 6,41 s / 5,99 s |
+| Durée du run | 281 s | 275 s |
+
+Par type de question, aucun hit@5, MRR ou taux de refus ne change, sauf le MRR de `excel_reasoning`, qui passe de 0,64 à 0,65 (Q158 : de 0,20 à 0,25). Le top 5 change pour 5 questions (Q021, Q031, Q059, Q074, Q158), sans effet sur les métriques, sauf pour Q158.
+
+#### Les questions `multilingual`
+
+Rien ne change pour ce type. Le tableau sert de point de départ pour l'étape 2 :
+
+| Question | Document de preuve | Langue | Rang de la preuve |
+|---|---|---|---|
+| Q003 : chiffre d'affaires et EBITDA 2025 | `2026-03-19 PR 2025 results.docx` | en | 1 |
+| Q024 : contrat de maintenance des chariots de Gand | `Onderhoudscontract heftrucks LiftService.pdf` | nl | 2 |
+| Q062 : causes de l'accident de Gand | `Incidentrapport 2025-11-12 heftruck gang 7.pdf` | nl | **absent du top 5** |
+| Q074 : délai de livraison de Kompra | `Supply agreement Kompra GmbH 2024-2026.pdf` | en | 1 |
+| Q083 : objectif de chiffre d'affaires avec Klimaat Partners | `Accountplan Klimaat Partners 2026.docx` | nl | 1 |
+| Q086 : part des coûts d'un rappel supportée par Valtek | `Supply agreement Valtek Components 2025.pdf` | en | 3 |
+| Q112 : absentéisme de Gand en mars 2026 | `Verslag Comite PBW Gent 2026-04-16.docx` | nl | 1 |
+
+Le seul échec, Q062, porte sur un rapport néerlandais qui ne partage aucun mot avec la question : seule la recherche dense peut le trouver, et elle ne le classe pas assez haut. Q024 et Q086 trouvent leur preuve, mais pas en première position.
+
+#### Pourquoi rien ne change
+
+- La question reste en français et analysée avec le stemmer `french`. Un mot français ne correspond pas plus qu'avant à un mot néerlandais ou anglais : la partie BM25 de la recherche ne trouve toujours pas les chunks des autres langues, qui n'arrivent que par la recherche dense.
+- Le changement ne touche que la façon dont 112 chunks (9 % de l'index) sont découpés en mots.
+- Un risque ne s'est pas réalisé : la ligne de contexte est en français, mais elle est maintenant analysée avec le stemmer néerlandais dans les chunks néerlandais. Ses mots auraient pu ne plus correspondre à ceux de la question. Or la section 3 a montré que cette ligne aide justement les questions `multilingual`. Les résultats de ce type sont pourtant inchangés.
+
+#### Bruit de mesure
+
+Cette expérience donne une mesure du bruit, puisque le top 5 est presque identique à celui de la référence :
+
+- **La génération n'est pas déterministe** : la température vaut 0, pourtant 12 réponses sur 127 diffèrent, dont 10 avec exactement le même top 5. Cause probable : llama.cpp traite 3 requêtes en parallèle, et la façon dont il les regroupe modifie légèrement les calculs. Les 3 écarts de correctness (Q021 : +0,1, Q024 : −0,1, Q042 : −0,1) portent tous sur ces réponses reformulées.
+- **Le juge varie aussi** : avec des réponses identiques, la faithfulness de Q116 passe de 1 à 0, et celle de Q144 de 0 à 1.
+- **Le juge peut échouer** : pour Q008, Gemma a renvoyé un JSON invalide (`DeepEvalError`). La note était vide, et la moyenne de `trap_avoided`, calculée sur 16 questions seulement, montait à 0,94. Q008 a été rejugée seule et obtient 0, comme dans la référence.
+
+Sur les 31 questions jugées, un écart de 0,03 correspond à une seule note qui passe de 1 à 0. Un écart de cet ordre n'est pas interprétable.
+
+#### Décision : le stemmer par langue est conservé
+
+Il ne change aucun résultat et ne coûte rien à la recherche. Surtout, il prépare l'étape 2 : une question traduite en néerlandais, analysée avec le stemmer `dutch`, pourra retrouver par BM25 les chunks néerlandais analysés avec le même stemmer. Les expériences suivantes de la section utilisent donc l'index `_lang`.
+
+### Étape 2 : traduction de la question
+_À compléter._
+
+### Étape 3 : prompt « réponds en français »
 _À compléter._
 
 ## Section 5 : les fichiers Excel (`v0.4-excel`)
