@@ -33,6 +33,11 @@ class Settings(BaseSettings):
     ocr_device: str = 'cuda'
     ocr_num_threads: int = 6
 
+    vision_model: str = 'qwen3.8-vision'      # VLM servi par llama-swap (port 8000), pas sur le port 8003 de l'énoncé
+    vision_folder: Path = Path('./data/vision')
+
+
+
     # Language support
     corpus_language: str = 'french'
 

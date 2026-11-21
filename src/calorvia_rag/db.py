@@ -120,3 +120,12 @@ def insert_scores(experiment_id, question_id, question_type, scores):
         conn.cursor().executemany(
             'INSERT INTO scores (experiment_id, question_id, question_type, metric, value, reason) VALUES (%s, %s, %s, %s, %s, %s)',
             [(experiment_id, question_id, question_type, metric, value, reason) for metric, value, reason in scores])
+
+def list_documents_to_transcribe():
+    """Images et PDF scannés à faire lire par le VLM (mêmes exclusions que le reste du corpus)."""
+    with get_connection() as conn:
+        return conn.cursor(row_factory = dict_row).execute(
+            '''SELECT path, sha256, source_type FROM documents
+               WHERE excluded_reason IS NULL AND source_type IN ('image', 'scan')
+               ORDER BY path'''
+        ).fetchall()
