@@ -1,7 +1,8 @@
 from calorvia_rag.config import settings, runner_settings
-from calorvia_rag.db import list_documents_to_chunk
+from calorvia_rag.db import list_documents_to_chunk, list_documents_to_transcribe
 from calorvia_rag.etl.inventory import detect_language
 from calorvia_rag.etl.excel import workbook_texts
+from calorvia_rag.etl.vision import get_vlm_client, document_pages, transcribe_cached
 
 from transformers import AutoTokenizer
 from docling_core.types.doc import DoclingDocument
@@ -59,8 +60,57 @@ def chunk_workbook(row, context_line):
             **document_metadata(row),
         }
 
+def pack_paragraphs(text, prefix, tokenizer, max_tokens):
+    """Paragraphes (séparés par une ligne vide) regroupés en morceaux de max_tokens au plus, préfixe compris.
+    Un tableau Markdown forme un seul paragraphe : il n'est jamais coupé, contrairement à Docling qui le
+    relit en triplets et associe mal les colonnes d'un organigramme."""
+    parts, current = [], ''
+    for paragraph in (p.strip() for p in text.split('\n\n')):
+        if paragraph in ('', '***', '---'):                 # lignes de séparation du VLM : rien à chercher
+            continue
+        candidate = f'{current}\n\n{paragraph}' if current else paragraph
+        if current and tokenizer.count_tokens(f'{prefix}\n{candidate}') > max_tokens:
+            parts.append(current)
+            current = paragraph
+        else:
+            current = candidate
+    return parts + [current] if current else parts
+
+def chunk_transcription(row, chunker, context_line, vlm_client):
+    """Découpe la transcription par le VLM (etl/vision.py) d'une image ou des pages d'un scan :
+    la page entière si elle tient dans max_tokens, sinon des paragraphes regroupés.
+    Le payload garde le chemin de l'image et la page, pour l'afficher sous la réponse."""
+    pages = document_pages(row)
+    stem = Path(row['path']).stem
+    i = 0
+    for page in pages:
+        text = transcribe_cached(row, page, vlm_client)['text']     # le cache évite de rappeler le VLM
+        if page is None:
+            header = f"Transcription de l'image « {stem} »"
+        else:
+            header = f"Transcription du scan « {stem} », page {page + 1} sur {len(pages)}"
+        prefix = f"{row['context_line']}\n{header}" if context_line else header
+        for part in pack_paragraphs(text, prefix, chunker.tokenizer, chunker.max_tokens):
+            yield {
+                'document': row['path'],
+                'chunk_index': i,
+                'headings': '',
+                'text': f'{prefix}\n{part}',
+                'language': detect_language(part, default = row['language'] or 'fr'),
+                'image_path': row['path'],
+                'page': page,                                    # à partir de 0, comme page_image() ; None pour une image
+                **document_metadata(row),
+            }
+            i += 1
+
+def vision_source_types():
+    """Les types de documents à faire lire par le VLM, selon la section [corpus] du TOML."""
+    corpus_cfg = runner_settings.get('corpus', {})
+    return {source_type for source_type, key in (('image', 'include_images'), ('scan', 'include_scanned_pdfs'))
+            if corpus_cfg.get(key)}
+
 def iter_chunks(chunker):
-    """Tous les chunks du corpus, document par document, dans l'ordre du registre."""
+    """Tous les chunks du corpus, document par document, dans l'ordre du registre ; puis les images et les scans."""
     chunking_cfg = runner_settings['chunking']
     context_line = chunking_cfg['context_line']
     excel_reader = chunking_cfg.get('excel_reader', 'docling')
@@ -69,6 +119,13 @@ def iter_chunks(chunker):
             yield from chunk_workbook(row, context_line)
         else:
             yield from chunk_document(row, chunker, context_line)
+
+    source_types = vision_source_types()
+    if source_types:
+        vlm_client = get_vlm_client()
+        for row in list_documents_to_transcribe():
+            if row['source_type'] in source_types:
+                yield from chunk_transcription(row, chunker, context_line, vlm_client)
 
 def document_metadata(row):
     """Les métadonnées du registre, communes à tous les chunks d'un document."""

@@ -122,10 +122,13 @@ def insert_scores(experiment_id, question_id, question_type, scores):
             [(experiment_id, question_id, question_type, metric, value, reason) for metric, value, reason in scores])
 
 def list_documents_to_transcribe():
-    """Images et PDF scannés à faire lire par le VLM (mêmes exclusions que le reste du corpus)."""
+    """Images et PDF scannés à faire lire par le VLM (mêmes exclusions que le reste du corpus),
+    avec les métadonnées de list_documents_to_chunk pour le payload de leurs chunks."""
     with get_connection() as conn:
         return conn.cursor(row_factory = dict_row).execute(
-            '''SELECT path, sha256, source_type FROM documents
+            '''SELECT path, sha256, format, department, doc_type, doc_date, period,
+                      version, status, source_type, language, context_line
+               FROM documents
                WHERE excluded_reason IS NULL AND source_type IN ('image', 'scan')
                ORDER BY path'''
         ).fetchall()

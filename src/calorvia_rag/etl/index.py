@@ -84,7 +84,9 @@ def index_corpus():
         sparse_vector = index_cfg.get('sparse_vector'),
         context_line = chunking_cfg['context_line'],
         sparse_language = index_cfg.get('sparse_language'),
-        excel_reader = chunking_cfg.get('excel_reader'), 
+        excel_reader = chunking_cfg.get('excel_reader'),
+        include_images = runner_settings.get('corpus', {}).get('include_images'),
+        include_scans = runner_settings.get('corpus', {}).get('include_scanned_pdfs'),
     )
 
     init_collection(qdrant_client, collection_name, embedder_cfg['vector_size'])
