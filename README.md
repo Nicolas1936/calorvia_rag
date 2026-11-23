@@ -91,8 +91,41 @@ uv run python -m calorvia_rag.evaluation.export          # results/experiments.c
 - **La réserve de test** se lance avec `uv run python -m calorvia_rag.evaluation.runner test`, **une seule fois**, sur la configuration finale.
   - Le mode `test` refuse de démarrer si le code n'est pas commité, ou si la réserve a déjà été évaluée.
   - Le juge note alors les 31 questions, au lieu de 2 par type.
-- **Pour poser une question** : `uv run python -m calorvia_rag.rag.ask`.
+- **Pour poser une question** : `uv run calorvia-ask "Quand le nouvel ERP démarre-t-il ?"`. Sans argument, la commande pose une suite de questions au clavier (voir [Démo](#démo)).
 - **Reproductibilité** : un clone propre tiré de GitHub, avec sa propre base et son propre Qdrant, reproduit les métriques de recherche de `v1.0` à 0,001 près, sans reprendre aucun piège. Le test et les cinq problèmes qu'il a permis de corriger sont décrits à la fin de [RAPPORT.md](RAPPORT.md).
+
+## Démo
+
+```bash
+uv run calorvia-ask "Quand le nouvel ERP démarre-t-il ?"     # une question
+uv run calorvia-ask                                          # une suite de questions ; ligne vide pour quitter
+```
+
+La commande affiche la réponse, puis les seules sources citées, chacune avec son numéro, son document et sa date. Pour un scan, la page est indiquée. Pour une image, l'adresse du fichier s'ouvre d'un Ctrl+clic dans le terminal de VS Code : on montre ainsi l'image d'où vient la réponse. Le temps de réponse s'affiche à la fin.
+
+**Avant de commencer :**
+1. Vérifier que les services tournent (`docker compose ps`).
+2. Vérifier que `curl -s http://localhost:8000/running` montre `qwen3.8-27b`. Sinon, la première question le charge, avec une dizaine de secondes de plus.
+3. Poser une question d'échauffement.
+4. Ouvrir le terminal à la racine du projet.
+
+**Les trois questions**, répétées avec la configuration `v1.0` :
+
+| Question | Réponse | Sources citées | Ce qu'elle montre |
+|---|---|---|---|
+| Quand le nouvel ERP démarre-t-il ? | le 1er juin 2026 à Namur, Seneffe et Lille, le 15 juin 2026 à Gand | PV du CODIR du 01/06 et du 15/06, PV du CA du 16/06 | les versions : la date du 1er avril, reportée en février, n'est pas donnée |
+| Quelle vitesse est autorisée dans l'entrepôt de Gand ? | 6 km/h dans les allées de stockage, 10 km/h sur les voies principales | PV du CODIR du 12/01, l'affiche en néerlandais `Affiche snelheid magazijn.jpg`, le plan de circulation | une décision modifiée deux fois après l'accident (12, puis 8, puis 6 km/h), et des images en néerlandais lues par le VLM |
+| Quel est le débit de la liaison réseau entre Namur et Gand ? | 500 Mbit/s en fibre | `Schema reseau inter-sites.png`, sa seule source | **une réponse tirée d'une image** |
+
+**Les questions de secours :**
+
+| Question | Réponse | Source |
+|---|---|---|
+| Qui est responsable de l'action A-26-008 ? | Kevin Mertens (plan de nettoyage des données articles) | le tableau des actions des PV du CODIR |
+| Quel était le taux de réclamations clients en décembre 2025 ? | 1,9 % | `Taux de reclamations 2025-2026.png`, un graphique |
+| Où se trouve le point de rassemblement en cas d'évacuation de l'usine de Seneffe ? | au parking P2, côté rue de la Forge | `Plan implantation usine Seneffe 2026-02.png` |
+
+Une fois Qwen chargé, chaque réponse prend de 3 à 6 secondes.
 
 ## Configuration
 
