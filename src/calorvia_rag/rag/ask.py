@@ -7,8 +7,11 @@ from calorvia_rag.rag.translate import translate_question
 
 from openai import AsyncOpenAI
 from pathlib import Path
+from time import perf_counter
 
 import asyncio
+import re
+import sys
 
 def get_llm_client():
     return AsyncOpenAI(
@@ -65,11 +68,53 @@ async def generate_response(query, qdrant_client, embedder, llm_client):
 
     return response, llm_metrics, reranked_chunks
 
+def cited_passages(answer, chunks):
+    """Les passages cités par la réponse ([n], le rang au reranking), par numéro croissant."""
+    numbers = sorted({int(n) for n in re.findall(r'\[(\d+)\]', answer) if 1 <= int(n) <= len(chunks)})
+    return [(n, chunks[n - 1][0].payload) for n in numbers]
+
+def format_source(n, payload):
+    """Une ligne par source : document, page d'un scan, date. Pour une image, son adresse cliquable dans le terminal."""
+    line = ' · '.join([f'[{n}] {payload["document"]}']
+                      + ([f'page {payload["page"] + 1}'] if payload.get('page') is not None else [])
+                      + ([payload['doc_date']] if payload.get('doc_date') else []))
+    if payload.get('image_path'):
+        line += '\n      ' + (settings.corpus_folder / payload['image_path']).resolve().as_uri()
+    return line
+
+async def ask(question, qdrant_client, embedder):
+    async with get_llm_client() as llm_client:      # un client par question : chaque asyncio.run a sa boucle d'événements
+        begin = perf_counter()
+        answer, _, chunks = await generate_response(question, qdrant_client, embedder, llm_client)
+        return answer, chunks, perf_counter() - begin
+
+def show(question, qdrant_client, embedder):
+    answer, chunks, seconds = asyncio.run(ask(question, qdrant_client, embedder))
+    print(f'\n{answer}\n')
+    sources = cited_passages(answer, chunks)
+    if sources:
+        print('Sources :')
+        for n, payload in sources:
+            print('  ' + format_source(n, payload))
+    print(f'\n({seconds:.1f} s, {len(chunks)} passages lus)')
+
+def main():
+    """Une question en argument, ou une suite de questions au clavier (ligne vide pour quitter)."""
+    qdrant_client, embedder = get_qdrant_client(), get_embedder()
+    print(f"Configuration : {runner_settings['name']}")
+    if len(sys.argv) > 1:
+        show(' '.join(sys.argv[1:]), qdrant_client, embedder)
+        return
+    print('Posez vos questions (ligne vide pour quitter).')
+    while True:
+        try:
+            question = input('\nQuestion : ').strip()
+        except (EOFError, KeyboardInterrupt):
+            break
+        if not question:
+            break
+        show(question, qdrant_client, embedder)
+
+
 if __name__ == '__main__':
-    response, llm_metrics, chunks = asyncio.run(generate_response(
-        "Quelle vitesse est autorisée dans l'entrepôt de Gand ?",
-        get_qdrant_client(), get_embedder(), get_llm_client()
-    ))
-    print(response)
-    for i, (chunk, score) in enumerate(chunks, start = 1):
-        print(f'[{i}]', round(score, 3), chunk.payload['document'], chunk.payload['chunk_index'])
+    main()
