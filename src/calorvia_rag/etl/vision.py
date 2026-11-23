@@ -1,6 +1,6 @@
 """Transcription des images et des PDF scannés par le VLM, une seule fois, avec un cache (section 6)."""
 from calorvia_rag.config import settings
-from calorvia_rag.db import list_documents_to_transcribe
+from calorvia_rag.db import list_documents_to_transcribe, list_documents_to_chunk
 
 from openai import OpenAI
 from PIL import Image
@@ -50,21 +50,24 @@ def describe_image(image, vlm_client, prompt = TRANSCRIBE_PROMPT, max_tokens = 2
         return choice.message.content + '\n[transcription tronquée]'
     return choice.message.content
 
-def cache_path(sha256, page, prompt):
+def cache_path(sha256, page, prompt, index=None):
     """Fichier du cache : empreinte du fichier, page, modèle et prompt (changer de prompt relance la transcription)."""
-    key = hashlib.sha256(f'{sha256}|{page}|{settings.vision_model}|{prompt}'.encode()).hexdigest()[:16]
+    part = page if index is None else f'{page}-{index}'        # index None : mêmes clés qu'avant
+    key = hashlib.sha256(f'{sha256}|{part}|{settings.vision_model}|{prompt}'.encode()).hexdigest()[:16]
     return settings.vision_folder / f'{key}.json'
 
-def transcribe_cached(row, page, vlm_client, prompt = TRANSCRIBE_PROMPT):
-    """Transcription d'une image (page None) ou d'une page de scan, calculée une seule fois."""
-    cache = cache_path(row['sha256'], page, prompt)
+def transcribe_cached(row, page, vlm_client, prompt = TRANSCRIBE_PROMPT, index = None, image = None):
+    """Transcription d'une image (page None), d'une page de scan, ou d'une image insérée dans un PDF texte
+    (page et index, image fournie), calculée une seule fois."""
+    cache = cache_path(row['sha256'], page, prompt, index)
     if cache.exists():
         return json.loads(cache.read_text(encoding = 'utf-8'))
-    path = settings.corpus_folder / row['path']
-    image = page_image(path, page) if page is not None else Image.open(path)
+    if image is None:
+        path = settings.corpus_folder / row['path']
+        image = page_image(path, page) if page is not None else Image.open(path)
     started = time.perf_counter()
     text = describe_image(image, vlm_client, prompt)
-    record = {'path': row['path'], 'sha256': row['sha256'], 'page': page, 'model': settings.vision_model,
+    record = {'path': row['path'], 'sha256': row['sha256'], 'page': page, 'index': index, 'model': settings.vision_model,
               'prompt': prompt, 'seconds': round(time.perf_counter() - started, 1), 'text': text}
     settings.vision_folder.mkdir(parents = True, exist_ok = True)
     cache.write_text(json.dumps(record, ensure_ascii = False, indent = 2), encoding = 'utf-8')
@@ -86,7 +89,27 @@ def transcribe_corpus():
             record = transcribe_cached(row, page, vlm_client)
             total += record['seconds']
             print(f"{record['seconds']:6.1f} s  {row['path']}" + (f' (page {page + 1})' if page is not None else ''))
+
+    for row in list_documents_to_chunk():                 # graphiques insérés dans les PDF texte
+        if row['format'] != 'pdf':
+            continue
+        for page, index, image in pdf_images(settings.corpus_folder / row['path']):
+            record = transcribe_cached(row, page, vlm_client, index = index, image = image)
+            total += record['seconds']
+            print(f"{record['seconds']:6.1f} s  {row['path']} (page {page + 1}, image {index + 1})")
+
     print(f'Temps total de transcription : {total / 60:.1f} min')
+
+def pdf_images(path, min_side = 200):
+    """Images insérées dans un PDF texte (graphiques), d'au moins min_side pixels : [(page, n° sur la page, image PIL)]."""
+    found = []
+    with pymupdf.open(path) as pdf:
+        for page_number, page in enumerate(pdf):
+            for index, (xref, *_) in enumerate(page.get_images()):
+                image = Image.open(io.BytesIO(pdf.extract_image(xref)['image']))
+                if min(image.size) >= min_side:
+                    found.append((page_number, index, image))
+    return found
 
 if __name__ == '__main__':
     transcribe_corpus()

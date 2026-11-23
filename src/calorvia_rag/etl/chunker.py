@@ -126,9 +126,10 @@ def iter_chunks(chunker):
         ocr_hashes = {sha256 for _, sha256 in list_scans_to_convert()} if scan_reader == 'docling' else set()
         vlm_client = get_vlm_client()
         for row in list_documents_to_transcribe():
-            if row['source_type'] in source_types:
-                yield from chunk_transcription(row, chunker, context_line, vlm_client)
+            if row['source_type'] not in source_types:       # image ou scan exclu par le TOML : on passe
+                continue
             if row['sha256'] in ocr_hashes:                  # document numérisé : export Docling avec OCR
+                 # document numérisé : export Docling avec OCR
                 yield from chunk_document(row, chunker, context_line)
             else:                                            # autres images : transcription du VLM (cache)
                 yield from chunk_transcription(row, chunker, context_line, vlm_client)
