@@ -44,6 +44,7 @@ Un passage compte comme preuve s'il vient du document attendu et contient tous l
 | 16 | `exp11_exclude_drafts` | `6010c97` | n° 15 + filtre `must_not` sur le statut `projet` (projets de PV du CA, projet de tarif), registre corrigé (retenue) | 0,943 | 0,855 | 0,918 | 0,845 | 3,3 % | 0,78 | 0/17 (1 cas limite : Q023) | 268 s |
 | 17 | `exp12_prompt_versions` | `ec9f7b9` | n° 16 + consignes sur les versions dans le prompt : projet, PV corrigé, date passée (retenue) | 0,943 | 0,855 | 0,918 | 0,845 | 3,3 % | 0,77 | 0/17 | 271 s |
 | 18 | `exp13_top10` | `5c42321` | n° 17 + 10 passages au LLM au lieu de 5 (`[reranker] top_k = 10`, retenue ; métriques @5 recalculées sur les 5 premiers passages) | 0,943 | 0,855 | 0,918 | 0,845 | 4,1 % | 0,78 | 0/17 | 393 s |
+| **19** | **`exp14_passages_by_date`** | **`546b59e`** | **n° 18 + passages triés par date dans le prompt, chacun avec sa date** (retenue, `v0.6-versions` ; métriques @5 recalculées sur les 5 premiers passages ; 2 refus de moins par la seule formulation) | **0,943** | **0,855** | **0,918** | **0,845** | **2,5 %** | **0,82** | **0/17** | 407 s |
 
 - La durée est celle du run complet (127 questions).
 - Le modèle a refusé toutes les questions `out_of_corpus` (5/5), dans toutes les expériences.
@@ -1099,7 +1100,7 @@ La section teste les pistes du TODO une par une, de la moins chère à la plus c
 1. un filtre `must_not` sur le statut du registre (n° 16, retenu) ;
 2. des consignes de lecture dans le prompt (n° 17, retenu) ;
 3. plus de passages après le reranking, à la place de « plus de candidats avant le reranking » (n° 18, retenu) ;
-4. les passages triés par date dans le prompt, chacun avec sa date (à venir).
+4. les passages triés par date dans le prompt, chacun avec sa date (n° 19, retenu).
 
 ### Étape 1 : écarter les projets avec un filtre `must_not` sur `status` (n° 16)
 
@@ -1347,14 +1348,14 @@ Les passages de rang 6 à 10 complètent la preuve de quatre questions : Q008 (h
 
 Les 6 réponses `decision_history` restent justes. Q138 donne toujours « 168 sur 214 » au 26 janvier 2026.
 
-Selon le juge, Q008 passe de 0 à 1 en `trap_avoided` : la réponse ne décrit plus une campagne en cours, mais sa clôture. Q056 reste à 0, à cause de l'organigramme (section 6).
+Selon le juge, Q008 passe de 0 à 1 en `trap_avoided` : la réponse annonce maintenant la clôture de la campagne. Q056 reste à 0, à cause de l'organigramme (section 6).
 
 #### Les réponses gagnées
 
 | Question | Rang de la preuve ajoutée | n° 17 | n° 18 |
 |---|---|---|---|
 | Q152 (`action_tracking`) | 8 | « la réponse de Valtek est toujours attendue, ce qui place l'action en retard » | l'accord de Valtek pour 65 % du coût, et la clôture de l'action (correctness de 0 à 0,6) |
-| Q008 (`decision_current`) | 9 | la description du défaut et du lancement de la campagne, sans son état | la clôture au 31 mars 2026. Les 211 unités réparées sur 214 manquent toujours (preuve au 14e rang), ainsi que la part de Valtek |
+| Q008 (`decision_current`) | 9 | la description du défaut et du lancement de la campagne, sans son état | « a été clôturée le 31 mars 2026 ». Mais le passage de rang 9 est la décision du CODIR du 2 mars : « La campagne … sera clôturée le 31 mars 2026 ». La réponse affirme comme faite une clôture seulement annoncée : elle est juste, mais sans preuve (corrigé après la relecture de l'étape 4). Le constat de clôture (211 unités réparées sur 214, au 14e rang) et la part de Valtek manquent toujours |
 | Q101 (`multi_doc`) | 6 | 65 %, mais « aucune information concernant le plafond » | 65 %, « inférieur au plafond de responsabilité de 250 000 € par événement » |
 | Q127 (`multi_doc`) | 8 | « Non » (1 230 unités contre 2 400 par an) : faux | « Oui, … en ligne avec son engagement » : juste, sans citer le plan de compte |
 
@@ -1384,7 +1385,7 @@ Trois autres réponses sont plus précises :
 
 #### Décision : dix passages sont retenus
 
-1. C'est le seul changement de la section qui corrige des réponses fausses : Q152, Q127, Q101 et, en partie, Q008.
+1. C'est le seul changement de la section qui corrige des réponses fausses : Q152, Q127 et Q101. Q008 reçoit en plus la décision de clore la campagne.
 2. Les consignes de l'étape 2 écartent les pièges, alors que 10 questions sur 17 ont maintenant un passage piège dans leur contexte.
 3. Le prix est de 46 % de temps de réponse en plus, et d'une régression (Q062). Q077 était déjà fausse.
 
@@ -1393,6 +1394,149 @@ Un `top_k` de 8 aurait gardé Q101, Q127 et Q152, mais perdu Q008, dont la preuv
 Le taux de pièges est de 4/17 dans les 5 premiers passages et de 10/17 dans les 10 passages lus, avec 0/17 réponse qui reprend le piège.
 
 Avec 10 passages, le LLM reçoit plus d'épisodes de chaque fil de décision. La piste suivante les lui présente dans l'ordre chronologique, chacun avec sa date (piste 3 du TODO).
+
+### Étape 4 : les passages triés par date dans le prompt (n° 19)
+
+#### Le changement testé
+
+Avec `[generation] passage_order = 'date'` (`exp14_passages_by_date.toml`), le prompt présente les 10 passages dans l'ordre chronologique (`ordered_passages` et `build_prompt` dans `rag/ask.py`) :
+- **d'abord les passages sans date** du registre (`doc_date` vide). Ils forment 30 % des passages du n° 18 : surtout des classeurs, des contrats et des fiches. Les placer en tête garantit que le dernier passage est toujours le plus récent ;
+- **puis les autres, du plus ancien au plus récent.** À date égale, l'ordre du reranker est conservé ;
+- **chaque passage daté porte sa date** : `<passage id="9" date="2026-03-02">`.
+
+Le numéro du passage reste son rang au reranking. Une citation [9] renvoie donc toujours au 9e chunk enregistré, et les métriques de recherche ne dépendent pas du tri. Le prompt système ne change pas.
+
+Sans `passage_order`, le prompt est identique, octet pour octet, à celui de l'ancien code. Je l'ai vérifié sur les passages enregistrés des 127 questions du n° 18. Les expériences précédentes restent donc reproductibles.
+
+Avec le tri, l'accord de Valtek (Q152) et la décision de clore le rappel (Q008), tous deux datés du 2 mars 2026, deviennent le dernier passage lu.
+
+#### Comparabilité
+
+Entre les commits `5c42321` (n° 18) et `546b59e` (n° 19), en dehors du rapport et de l'export CSV, seuls ont changé `rag/ask.py` et le TOML. L'index n'a pas été reconstruit.
+
+**Le bruit de la recherche.** Le tri ne touche que le prompt, et pourtant les 10 passages changent pour 9 questions :
+- **pour 7 questions** (Q031, Q034, Q073, Q084, Q087, Q108, Q148), un passage à égalité au 30e rang de la fusion RRF entre ou sort des candidats, comme pour Q034 à l'étape 3 ;
+- **pour Q036 et Q047**, deux passages aux scores presque égaux échangent leur rang.
+
+Les métriques de recherche restent identiques. Le seul effet visible concerne Q108 : son passage piège (CODIR du 26/01, « la mise en service à la mi-juin », 9e rang au n° 18) n'est plus parmi les candidats. D'où le `trap_hit` de 9/17 au lieu de 10/17.
+
+58 réponses sur 127 sont identiques.
+
+#### Résultats (n° 18 → n° 19)
+
+| | n° 18 | n° 19 |
+|---|---|---|
+| hit@5 / MRR / recall@5 / nDCG@5 (5 premiers passages) | 0,943 / 0,855 / 0,918 / 0,845 | identiques |
+| hit@10 / MRR / recall@10 / nDCG@10 | 0,951 / 0,856 / 0,934 / 0,854 | identiques |
+| Refus à tort | 5/122 (4,1 %) | 3/122 (2,5 %) |
+| correctness (31) | 0,777 | **0,823** |
+| faithfulness (31) | 0,892 | 0,887 |
+| `trap_hit` dans les 10 passages | 10/17 | 9/17 (Q108 : bruit de la recherche) |
+| `trap_avoided` selon le juge | 16/17 (0,94) | 16/17 (0,94) |
+| **Réponses qui reprennent le piège, après relecture** | 0/17 | **0/17** |
+| Tokens envoyés au LLM par question (moyenne) | 3 212 | 3 302 |
+| Temps de réponse moyen / médian / 90e centile | 9,20 s / 8,31 s / 15,7 s | 9,53 s / 8,59 s / 16,4 s |
+| Durée du run | 393 s | 407 s |
+
+#### Ce que j'ai relu
+
+**Les pièges et l'historique.** Les 17 réponses aux questions avec piège et les 6 réponses `decision_history` restent justes. Q138 donne toujours « 168 sur 214 » au 26 janvier 2026.
+
+**Les variations de correctness viennent toutes de réponses plus ou moins complètes :**
+
+| Question | correctness | Ce qui change |
+|---|---|---|
+| Q158 (`excel_reasoning`) | 0,4 → 1,0 | la réponse nomme l'installateur, Chauffage Lambert & Fils (la faithfulness baisse de 0,67 à 0,5) |
+| Q143 (`decision_current`) | 0,6 → 1,0 | la réponse ajoute la capacité nominale de 45 unités par jour, après septembre 2026 |
+| Q023 (`board_resolution`) | 0,8 → 1,0 | la réponse cite de nouveau la correction du 16 décembre |
+| Q018 (`action_tracking`) | 0,8 → 1,0 | la réponse cite l'action A-26-012 |
+| Q152 (`action_tracking`) | 0,6 → 0,7 | même contenu |
+| Q052 (`decision_history`) | 0,7 → 0,6 | même contenu |
+
+**Les dates apparaissent plus souvent dans les réponses :**
+- Q099 : « cette règle s'applique depuis le 1er mai 2026, date d'entrée en vigueur de la version 3 » ;
+- Q029 : l'échéance du 28 février restait valable pour les autres comptes.
+
+Q101 ajoute aussi les 180 000 € provisionnés. En sens inverse, des détails disparaissent :
+- Q048 perd de nouveau « version 3 » ;
+- Q002 perd la date du 1er avril ;
+- Q118 perd les horaires du helpdesk.
+
+**Q008 devient fidèle au passage, mais donne un état périmé.**
+- Au n° 18, la réponse disait « a été clôturée le 31 mars 2026 ». Le passage de rang 9 ne dit pas cela : c'est la décision du CODIR du 2 mars, « La campagne … sera clôturée le 31 mars 2026 ». Le tableau de l'étape 3 est corrigé en conséquence.
+- Au n° 19, la réponse dit « est prévue pour être clôturée le 31 mars 2026 », ce qui est exact par rapport au passage. Mais la question porte sur l'état actuel, et la campagne est close.
+- Le constat de clôture (CODIR du 30 mars, 211 unités réparées sur 214) reste au 14e rang.
+
+**Les refus.** Ils passent de 5 à 3, mais seule la formulation change :
+- **Q024** ne contient plus la phrase de refus, mais dit toujours que le coût du contrat « n'est pas mentionné dans les passages fournis » ;
+- **Q147** dit toujours que le nom du responsable n'est pas mentionné ;
+- **Q077** reste un refus.
+
+Les questions toujours fausses sont Q062 (l'hameçonnage), Q056 (l'organigramme) et Q081 (preuves aux 16e et 17e rangs).
+
+#### Coût
+
+Les attributs `date` ajoutent 90 tokens par question (+3 %). Le temps de réponse moyen passe de 9,20 à 9,53 s.
+
+#### Décision : le tri par date est conservé, sans gain démontré
+
+1. Il ne coûte presque rien : +3 % de tokens et +0,3 s par réponse.
+2. Il ne fait reprendre aucun piège.
+3. Il rend les réponses plus fidèles à la chronologie, comme le montre Q008.
+
+La hausse de correctness (+0,05) repose sur 6 questions qui gagnent ou perdent un détail. C'est à peine plus que le bruit mesuré à la section 4 (environ 0,03 sans aucun changement). Je ne la compte pas comme un gain.
+
+### Bilan de la section 7
+
+| | Départ (n° 15) | `v0.6-versions` (n° 19) |
+|---|---|---|
+| hit@5 / MRR / recall@5 / nDCG@5 (5 premiers passages) | 0,943 / 0,847 / 0,918 / 0,839 | 0,943 / **0,855** / 0,918 / **0,845** |
+| hit@10 / recall@10 (10 passages lus) | – | 0,951 / 0,934 |
+| Refus à tort | 4/122 (3,3 %) | 3/122 (2,5 %) |
+| correctness (31) | 0,784 | **0,823** |
+| faithfulness (31) | 0,968 | 0,887 |
+| **`trap_hit` dans le top 5** | **7/17** | **4/17** |
+| `trap_hit` dans les passages lus par le LLM | 7/17 (5 passages) | 9/17 (10 passages) |
+| `trap_avoided` selon le juge | 15/17 (0,88) | 16/17 (0,94) |
+| **Réponses qui reprennent le piège, après relecture** | **0/17** | **0/17** (le cas limite Q023 du n° 16 est réglé) |
+| Tokens envoyés au LLM par question (moyenne) | 1 806 | 3 302 |
+| Temps de réponse moyen / 90e centile | 6,19 s / 9,8 s | 9,53 s / 16,4 s |
+
+La baisse de faithfulness vient entièrement de trois notes :
+- **Q082 et Q116** (`out_of_corpus`) : des refus identiques au n° 15, notés 0 au lieu de 1. C'est le bruit du juge ;
+- **Q158** : de 1 à 0,5.
+
+| Type (questions du jeu de développement) | hit@5 | MRR | correctness (2 jugées) | Piège dans le top 5 | Piège dans les passages lus |
+|---|---|---|---|---|---|
+| `decision_current` (14) | 0,86 → 0,86 | 0,70 → 0,70 | 0,60 → 0,80 | 1/10 → 1/10 | 1/10 → 6/10 |
+| `decision_history` (6) | 1,00 → 1,00 | 0,92 → 0,92 | 0,75 → 0,75 | – | – |
+| `board_resolution` (6) | 1,00 → 1,00 | 0,83 → **1,00** | 1,00 → 1,00 | 3/3 → **1/3** | 3/3 → 1/3 |
+| `version_trap` (4) | 1,00 → 1,00 | 0,67 → 0,67 | 0,65 → 0,60 | 3/3 → **2/3** | 3/3 → 2/3 |
+| `action_tracking` (11) | 1,00 → 1,00 | 1,00 → 1,00 | 0,55 → **0,85** | – | – |
+
+**Le taux de pièges.** Le filtre `must_not` fait passer `trap_hit` de 7/17 à 4/17 dans le top 5. Aucune réponse ne reprend la valeur piège, ni au départ ni à la fin. Les consignes de l'étape 2 tiennent avec 10 passages, alors que 9 questions sur 17 reçoivent un passage piège. Depuis la section 3, le taux de réponses qui reprennent le piège est passé de 1/17 (Q023) à 0/17. La première étape a été l'indexation du PV correctif scanné, à la section 6.
+
+**Ce que chaque étape a apporté :**
+1. **Le filtre sur le statut** : 3 pièges de moins dans le top 5, et deux preuves qui passent au 1er rang (le gain de MRR). Il ne coûte rien.
+2. **Les consignes** : elles règlent le cas limite de Q023 et respectent les questions d'historique. Le prompt est 7 % plus long.
+3. **Dix passages au lieu de cinq** : le seul changement qui corrige des réponses fausses (Q152, Q127, Q101). Le temps de réponse augmente de 46 %, et Q062 régresse.
+4. **Le tri par date** : neutre, et presque gratuit.
+
+**Les pistes du TODO non testées :**
+- **La piste 4**, une date de référence extraite de la question puis un filtre `doc_date <= date`. Elle vise les questions `decision_history`, qui sont justes 6 sur 6 depuis le n° 15. Les échecs restants ne dépendent pas de la date (voir ci-dessous).
+- **La piste 5**, plus de candidats avant le reranking. Elle a été testée hors du runner à l'étape 2 : 60 ou 100 candidats ne changent rien. Elle a été remplacée par `top_k = 10`.
+- **La piste 6**, le suivi des actions du CODIR dans PostgreSQL et des réponses en SQL. La recherche trouve déjà la preuve des 11 questions `action_tracking` au 1er rang (hit@5 et MRR de 1,00). Avec les passages 6 à 10, la correctness des 2 réponses jugées passe de 0,55 à 0,85.
+
+**Ce qui reste faux, et à quelle étape :**
+
+| Question | Étape | Cause |
+|---|---|---|
+| Q008 | reranking | le constat de clôture (CODIR du 30 mars) est classé au 14e rang |
+| Q081 | reranking | les preuves sont classées aux 16e et 17e rangs |
+| Q056 | chunking | le tableau de l'organigramme n'est jamais parmi les candidats (section 6) |
+| Q062 | recherche et génération | le rapport néerlandais n'est pas dans le top 10 (section 4). Un passage hors sujet, au 6e rang, détourne la réponse |
+
+**Une limite de la mesure.** Le 30e candidat de la fusion RRF est souvent à égalité avec le suivant. D'un appel à l'autre, un passage entre ou sort des candidats : c'est arrivé pour 7 questions entre les n° 18 et 19, sans aucun changement de la recherche. Avant d'attribuer à un changement une variation de passages, il faut vérifier qu'elle ne vient pas de là.
 
 ## Évaluation finale sur la réserve de test (`v1.0`)
 _À compléter : réserve de test (31 questions) comparée au jeu de développement._
