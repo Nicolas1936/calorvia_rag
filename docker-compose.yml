@@ -36,7 +36,7 @@ services:
     ports:
       - "8001:8001"
     volumes:
-      - /home/nicolas/models:/models:ro
+      - ${MODELS_DIR:?MODELS_DIR manquant dans .env}:/models:ro
       - vllm_cache:/root/.cache # <-- Met en cache les compilations Triton/Inductor entre redémarrages
     ipc: host
     deploy:
@@ -70,7 +70,7 @@ services:
     ports:
       - "8002:8002"
     volumes:
-      - /home/nicolas/models:/models:ro
+      - ${MODELS_DIR:?MODELS_DIR manquant dans .env}:/models:ro
       - vllm_cache:/root/.cache
     ipc: host
     deploy:
@@ -129,7 +129,7 @@ services:
     container_name: llama-qwen38
     profiles: ["on-demand"]
     volumes:
-      - /home/nicolas/models:/models:ro
+      - ${MODELS_DIR:?MODELS_DIR manquant dans .env}:/models:ro
     deploy:
       resources:
         reservations:
@@ -156,7 +156,7 @@ services:
     container_name: llama-gemma4
     profiles: ["on-demand"]
     volumes:
-      - /home/nicolas/models:/models:ro
+      - ${MODELS_DIR:?MODELS_DIR manquant dans .env}:/models:ro
     deploy:
       resources:
         reservations:
@@ -183,7 +183,7 @@ services:
     container_name: llama-vision
     profiles: ["on-demand"]
     volumes:
-      - /home/nicolas/models:/models:ro
+      - ${MODELS_DIR:?MODELS_DIR manquant dans .env}:/models:ro
     deploy:
       resources:
         reservations:
