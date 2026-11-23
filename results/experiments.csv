@@ -17,3 +17,4 @@ id,name,status,git_commit,git_dirty,duration_s,started_at
 16,exp11_exclude_drafts,done,6010c9734b15f721e8aca196d15b4f5aa1c77fd1,f,268,2026-11-23 10:44:08.772637+00
 17,exp12_prompt_versions,done,ec9f7b97009b40f0e28c6b4ab045de8626bdf647,f,271,2026-11-23 10:57:23.764857+00
 18,exp13_top10,done,5c423218bfee525fc0cc37ba6cf972de03a286c1,f,393,2026-11-23 11:11:51.096355+00
+19,exp14_passages_by_date,done,546b59ed37216e731c96bdaa2d63a7e602cbcd9a,f,407,2026-11-23 12:33:51.570166+00
