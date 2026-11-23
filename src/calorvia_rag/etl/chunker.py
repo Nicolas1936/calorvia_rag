@@ -159,6 +159,19 @@ def iter_chunks(chunker):
         else:                                            # transcription du VLM (cache)
             yield from chunk_transcription(row, chunker, context_line, vlm_client)
 
+def documents_without_export():
+    """Les documents que iter_chunks lirait dans un export Docling absent : conversion en échec ou pas encore faite.
+    Suit les mêmes règles que iter_chunks : un classeur lu par openpyxl n'a pas besoin d'export."""
+    chunking_cfg = runner_settings['chunking']
+    corpus_cfg = runner_settings.get('corpus', {})
+    excel_by_openpyxl = chunking_cfg.get('excel_reader', 'docling') == 'openpyxl'
+    rows = [row for row in list_documents_to_chunk() if not (row['format'] == 'xlsx' and excel_by_openpyxl)]
+    if corpus_cfg.get('scan_reader', 'vlm') == 'docling':
+        ocr_hashes = {sha256 for _, sha256 in list_scans_to_convert()}
+        rows += [row for row in list_documents_to_transcribe()
+                 if row['source_type'] in vision_source_types() and row['sha256'] in ocr_hashes]
+    return [row['path'] for row in rows if not (settings.processed_documents_folder / f"{row['sha256']}.json").exists()]
+
 def document_metadata(row):
     """Les métadonnées du registre, communes à tous les chunks d'un document."""
     return {

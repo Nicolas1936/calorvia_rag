@@ -2,12 +2,13 @@ import numpy as np
 
 from calorvia_rag.config import runner_settings
 from calorvia_rag.etl.convert import convert_corpus, convert_scans
-from calorvia_rag.etl.chunker import iter_chunks, get_chunker
+from calorvia_rag.etl.chunker import iter_chunks, get_chunker, documents_without_export
 from calorvia_rag.embedding import get_embedder, get_sparse_options, embed, embed_sparse, get_stemmer
-from calorvia_rag.qdrant import get_qdrant_client, get_collection_name
+from calorvia_rag.qdrant import get_qdrant_client, get_current_collection_name
 
 from qdrant_client import models
 
+import sys
 import uuid
 from itertools import batched
 
@@ -76,28 +77,24 @@ def index_corpus():
     embedder = get_embedder()
     chunker = get_chunker(chunking_cfg['type'], embedder_cfg['model'], chunking_cfg['max_tokens'])
     qdrant_client = get_qdrant_client()
+    collection_name = get_current_collection_name()
 
-    collection_name = get_collection_name(
-        embedder_name = embedder_cfg['model'],
-        chunk_type = chunking_cfg['type'],
-        chunk_size = chunking_cfg['max_tokens'],
-        sparse_vector = index_cfg.get('sparse_vector'),
-        context_line = chunking_cfg['context_line'],
-        sparse_language = index_cfg.get('sparse_language'),
-        excel_reader = chunking_cfg.get('excel_reader'),
-        include_images = runner_settings.get('corpus', {}).get('include_images'),
-        include_scans = runner_settings.get('corpus', {}).get('include_scanned_pdfs'),
-        scan_reader = runner_settings.get('corpus', {}).get('scan_reader'),
-        include_pdf_images = runner_settings.get('corpus', {}).get('include_pdf_images'),
-    )
-
-    init_collection(qdrant_client, collection_name, embedder_cfg['vector_size'])
-
+    # 1. La conversion d'abord : en cas d'échec, la collection existante n'est pas touchée
     convert_corpus()
-
     if runner_settings.get('corpus', {}).get('scan_reader') == 'docling':
-        convert_scans()          # les 26 documents sont déjà convertis : ils seront sautés
+        convert_scans()          # les 26 documents numérisés, lus par l'OCR de Docling
 
+    missing = documents_without_export()
+    if missing:
+        sys.exit(
+            f"{len(missing)} document(s) sans export Docling (conversion en échec, le plus souvent faute de mémoire GPU) :\n"
+            + '\n'.join(f'  {path}' for path in missing)
+            + "\nLibère le GPU (curl -s http://localhost:8000/unload) ou mets OCR_DEVICE=cpu dans .env, puis relance : "
+              f"seuls ces documents seront reconvertis. La collection {collection_name} n'a pas été modifiée."
+        )
+
+    # 2. Puis la collection, reconstruite de zéro
+    init_collection(qdrant_client, collection_name, embedder_cfg['vector_size'])
 
     sparse_embedder_options = get_sparse_options(index_cfg)
     sparse_embedder_options['avg_len'] = probe_avg_len(chunker)
