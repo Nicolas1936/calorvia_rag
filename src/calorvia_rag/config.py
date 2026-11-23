@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     corpus_language: str = 'french'
 
     # Run Config
-    runner_config_path: Path = Path('./experiments/exp10_pdf_charts.toml')
+    runner_config_path: Path = Path('./experiments/exp14_passages_by_date.toml')
 
 def load_runner_settings(config_path):
     with open(config_path, 'rb') as f:
