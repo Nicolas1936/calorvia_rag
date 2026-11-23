@@ -72,8 +72,16 @@ def search_chunks(query, qdrant_client, embedder, query_filter = None, translati
 
 _search_lock = threading.Lock()
 
+def status_filter():
+    """Filtre must_not sur le statut du registre (projets de PV, projet de tarif), selon le TOML ; None sinon."""
+    excluded = runner_settings['search'].get('exclude_status')
+    if not excluded:
+        return None
+    return models.Filter(must_not = [models.FieldCondition(key = 'status', match = models.MatchAny(any = excluded))])
+
 def search_and_filter_chunks(query, qdrant_client, embedder, query_filter = None, translations = None):
     with _search_lock:
+        query_filter = query_filter or status_filter()
         points = search_chunks(query, qdrant_client, embedder, query_filter, translations)
         if not points and query_filter:
             points = search_chunks(query, qdrant_client, embedder, translations=translations)
