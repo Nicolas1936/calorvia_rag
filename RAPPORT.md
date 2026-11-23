@@ -41,6 +41,7 @@ Un passage compte comme preuve s'il vient du document attendu et contient tous l
 | 13 | `exp09_scans_docling_ocr` | `b90f2e8` | Abandonnée (`failed`) : lancée avec `git_dirty = true`, arrêtée au démarrage (0 réponse en 11 s), relancée en n° 14 | – | – | – | – | – | – | – | – |
 | 14 | `exp09_scans_docling_ocr` | `1d0d1da` | n° 12, mais les 26 documents numérisés (scans, factures, bons de livraison) sont lus par l'OCR de Docling au lieu du VLM (index `_ocr`, non retenue) | 0,918 | 0,818 | 0,898 | 0,814 | 4,1 % | 0,73 | 0/17 | 248 s |
 | 15 | `exp10_pdf_charts` | `33e9482` | n° 12 + graphiques des PDF texte transcrits par le VLM (index `_pdfimg`, retenue) | 0,943 | 0,847 | 0,918 | 0,839 | 3,3 % | 0,78 | 0/17 | 266 s |
+| 16 | `exp11_exclude_drafts` | `6010c97` | n° 15 + filtre `must_not` sur le statut `projet` (projets de PV du CA, projet de tarif), registre corrigé (retenue) | 0,943 | 0,855 | 0,918 | 0,845 | 3,3 % | 0,78 | 0/17 (1 cas limite : Q023) | 268 s |
 
 - La durée est celle du run complet (127 questions).
 - Le modèle a refusé toutes les questions `out_of_corpus` (5/5), dans toutes les expériences.
@@ -1066,7 +1067,145 @@ Le n° 15 devient la meilleure configuration : hit@5 de 0,943, 4 refus à tort s
 Reste à faire : le tableau mal construit du graphique RSE.
 
 ## Section 7 : le temps et les versions (`v0.6-versions`)
-_À compléter : taux de pièges avant (section 3 : 1/17) et après._
+
+Le corpus contient souvent plusieurs versions d'une même information, et la bonne réponse est la plus récente ou la seule officielle. On y trouve :
+- un projet de PV et sa version signée ;
+- un PV corrigé à la séance suivante ;
+- un budget en v1, en v2, puis approuvé ;
+- une décision prise, suivie, puis levée.
+
+Les 17 questions avec piège listent les passages qui donnent une valeur périmée ou non officielle.
+
+**Le point de départ est le n° 15**, la meilleure configuration de la section 6 :
+
+| Type (questions du jeu de développement) | hit@5 | MRR | correctness (2 jugées) | Piège dans le top 5 |
+|---|---|---|---|---|
+| `decision_current` (14) | 0,86 | 0,70 | 0,60 | 1/10 |
+| `decision_history` (6) | 1,00 | 0,92 | 0,75 | – |
+| `board_resolution` (6) | 1,00 | 0,83 | 1,00 | 3/3 |
+| `version_trap` (4) | 1,00 | 0,67 | 0,65 | 3/3 |
+| `action_tracking` (11) | 1,00 | 1,00 | 0,55 | – |
+
+**Le taux de pièges avant la section 7** :
+- `trap_hit` = **7/17** : un passage piège est dans le top 5 pour Q023, Q026, Q027, Q043, Q048, Q089 et Q153.
+- Après relecture, **0/17** réponse reprend la valeur piège. C'était 1/17 à la section 3 (Q023), avant que le PV correctif scanné du 16/12 soit indexé à la section 6.
+
+La recherche trouve donc presque toujours la bonne preuve, mais le mauvais passage arrive avec elle. Le juge ne note que 2 questions par type : à chaque étape, les réponses aux questions avec piège sont relues.
+
+La section teste les pistes du TODO une par une, de la moins chère à la plus chère, à partir du n° 15 :
+
+1. un filtre `must_not` sur le statut du registre (n° 16, retenu) ;
+2. des consignes de lecture dans le prompt (à venir).
+
+### Étape 1 : écarter les projets avec un filtre `must_not` sur `status` (n° 16)
+
+#### Le changement testé
+
+Le registre donne à chaque document un statut, tiré de son nom et de son dossier (`version_status`, section 1) : `projet`, `valide`, `archive`, `copie`, `modele` ou rien. Ce statut est recopié dans le payload de chaque chunk, et Qdrant l'indexe déjà.
+
+La recherche reçoit un filtre `must_not` sur `status ∈ ['projet']`, réglé dans le TOML (`[search] exclude_status`). Il s'applique avant le reranking. La recherche hybride renvoie toujours 30 candidats.
+
+Les 4 documents écartés sont :
+- les 3 projets de PV du CA (18/11/2025, 17/02/2026 v1, 19/05/2026) ;
+- le projet de tarif 2026 v1.
+
+Les autres statuts ne sont pas filtrés :
+- **les archives** : la preuve de Q092 (`decision_history`, la limite de vitesse d'avant l'accident) est un PV de CODIR de 2024 rangé dans `99_Archives` ;
+- **les copies** : elles sont déjà exclues de l'index par l'inventaire (`duplicate_content`) ;
+- **les modèles** : le registre n'en contient aucun.
+
+Aucune preuve du jeu de développement n'est dans un document `projet`.
+
+#### Une correction du registre
+
+En préparant le filtre, j'ai comparé le statut enregistré dans le registre à la règle actuelle de `version_status`, pour les 393 documents. Un seul diffère : `Le projet Atlas en 10 questions.html`, une FAQ de l'intranet, était enregistré `projet` alors que la règle lui donne `None`. Le filtre l'aurait écartée à tort.
+
+Le registre a été corrigé par un `UPDATE`, puis l'index reconstruit. Le filtre ne joue qu'à la recherche, donc la collection garde le nom de celle du n° 15. Pour le n° 15, rien ne change : sans filtre, le statut ne sert pas.
+
+#### Vérification avant le run
+
+- Sur l'index du n° 15, la recherche hybride renvoie 30 candidats avec le filtre, dont 0 projet. Sans le filtre, elle en renvoyait 3 à 5 pour Q023, Q026, Q027 et Q089.
+- L'index reconstruit compte 1 698 points, dont 32 chunks `projet` (les 4 documents). La FAQ Atlas n'a plus de statut.
+
+#### Comparabilité
+
+Entre les commits `33e9482` (n° 15) et `6010c97` (n° 16), seuls ont changé :
+- le filtre dans `search.py` ;
+- le TOML ;
+- le statut de la FAQ dans le registre.
+
+Le chunking, le reranker, la génération et le prompt sont les mêmes. Le top 5 change pour 26 questions, dont les 20 qui avaient un chunk `projet` dans leur top 5 au n° 15 (21 chunks au total). 101 réponses sur 127 sont identiques.
+
+#### Résultats (n° 15 → n° 16)
+
+| | n° 15 | n° 16 |
+|---|---|---|
+| hit@5 | 0,943 | 0,943 |
+| MRR | 0,847 | **0,855** |
+| recall@5 | 0,918 | 0,918 |
+| nDCG@5 | 0,839 | **0,845** |
+| Refus à tort | 4/122 (3,3 %) | 4/122 (3,3 %) |
+| correctness (31) | 0,784 | 0,777 |
+| faithfulness (31) | 0,968 | 0,919 |
+| **`trap_hit`** | **7/17** | **4/17** |
+| `trap_avoided` selon le juge | 15/17 (0,88) | 15/17 (0,88) |
+| Réponses qui reprennent le piège, après relecture | 0/17 | 0/17, et 1 cas limite (Q023) |
+| Chunks `projet` dans les top 5 | 21 | 0 |
+| Tokens envoyés au LLM par question (moyenne) | 1 806 | 1 807 |
+| Temps de réponse moyen / médian / 90e centile | 6,19 s / 5,48 s / 9,8 s | 6,24 s / 5,61 s / 9,3 s |
+| Durée du run | 266 s | 268 s |
+
+#### Les pièges
+
+**Le piège sort du top 5 pour Q026, Q027 et Q089**, comme prévu. Les trois réponses restent justes :
+- Q026 : un loyer de 23,50 €/m² ;
+- Q027 : une prise de fonctions le 15 juin 2026 ;
+- Q089 : 18 110 €.
+
+Pour Q023 et Q049, la preuve passe du 2e au 1er rang, puisque le projet de PV qui la précédait a disparu. C'est le gain de MRR.
+
+**Le cas limite de Q023.** Le projet de PV est écarté, mais le **PV signé** du 18/11 (statut `valide`) contient lui aussi « investissement de 1,2 M€ ». La réponse change d'ordre :
+- au n° 15 : « … un montant de 1 250 000 € …, une correction apportée lors de la séance du 16 décembre 2025 par rapport aux 1,2 M€ initialement mentionnés » ;
+- au n° 16 : « … a approuvé un investissement de 1,2 M€ … lors de la réunion du 18 novembre 2025. Toutefois, lors de la séance du 16 décembre 2025, le procès-verbal a été approuvé avec une correction précisant que l'enveloppe approuvée est de 1 250 000 € ».
+
+La valeur finale est juste, mais la réponse commence par la valeur piège. Le juge note `trap_avoided` à 1 et baisse la faithfulness à 0,5. Je ne la compte pas comme un piège repris, mais comme un cas limite. C'est ce que vise la consigne « un PV corrigé est remplacé par celui qui le corrige » de l'étape suivante.
+
+**Les 4 pièges restants sont hors de portée d'un filtre sur le statut :**
+
+| Question | Document du piège | Statut |
+|---|---|---|
+| Q023 | PV CA 2025-11-18 signé (1,2 M€, corrigé le 16/12) | `valide` |
+| Q043 | Budget 2026 v1 et v2 (la bonne réponse est le budget approuvé) | aucun |
+| Q048 | Politique télétravail v2 (2023), remplacée par la v3 (2026) | aucun |
+| Q153 | Plan stratégique 2026-2028 v1 (190 M€ au lieu de 185 M€) | aucun |
+
+Écarter aussi les versions remplacées serait risqué. Les questions `decision_history` ont besoin des épisodes anciens :
+- Q066 demande le montant d'abord soumis au conseil (1 400 000 €, revu ensuite) ;
+- Q092 demande la limite d'avant l'accident, tirée d'un PV archivé.
+
+Choisir entre les versions est donc laissé au modèle (étapes suivantes).
+
+#### Les autres changements
+
+Parmi les 20 questions qui avaient un chunk `projet`, les réponses qui changent restent équivalentes. Certaines sont un peu plus précises (Q002, Q013, Q151).
+
+Les variations de correctness suivent des réponses reformulées, et restent dans le bruit habituel :
+
+| Question | correctness |
+|---|---|
+| Q002, Q013 | +0,1 |
+| Q018, Q024 | −0,1 |
+| Q158 | −0,2 |
+
+Q116 (`out_of_corpus`) perd sa note de faithfulness (de 1 à 0) pour une réponse identique au n° 15. C'est le bruit du juge, déjà vu au n° 14.
+
+#### Coût
+
+Aucun : le filtre ne change ni les tokens ni le temps de réponse.
+
+#### Décision : le filtre sur le statut est conservé
+
+Il ôte 3 pièges sur 7 du top 5, fait avancer deux preuves au 1er rang, ne perd aucune preuve et ne coûte rien. Le taux de pièges passe de 7/17 à 4/17 pour `trap_hit`, et reste à 0/17 réponse qui reprend le piège, avec un cas limite.
 
 ## Évaluation finale sur la réserve de test (`v1.0`)
 _À compléter : réserve de test (31 questions) comparée au jeu de développement._
