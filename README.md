@@ -92,6 +92,7 @@ uv run python -m calorvia_rag.evaluation.export          # results/experiments.c
   - Le mode `test` refuse de démarrer si le code n'est pas commité, ou si la réserve a déjà été évaluée.
   - Le juge note alors les 31 questions, au lieu de 2 par type.
 - **Pour poser une question** : `uv run python -m calorvia_rag.rag.ask`.
+- **Reproductibilité** : un clone propre tiré de GitHub, avec sa propre base et son propre Qdrant, reproduit les métriques de recherche de `v1.0` à 0,001 près, sans reprendre aucun piège. Le test et les cinq problèmes qu'il a permis de corriger sont décrits à la fin de [RAPPORT.md](RAPPORT.md).
 
 ## Configuration
 

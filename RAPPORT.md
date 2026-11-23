@@ -1699,3 +1699,62 @@ Les premiers rangs vont aux documents en français sur l'accident : les deux ver
 **L'étape de l'échec : la recherche.** La question ne nomme pas le fournisseur : il faut d'abord le trouver dans le rapport, puis chercher ses factures. Une recherche unique ne peut pas faire ces deux étapes. La lecture n'est pas en cause : sur le jeu de développement, Q038 (« l'IBAN de la facture TM-2026-0042 ») trouve la facture au 1er rang.
 
 **Piste de correction : une recherche itérative.** Quand la réponse signale une information manquante, on relance une recherche avec l'entité trouvée dans les premiers passages (« IBAN Tôlerie Mosane »), puis on régénère avec les deux listes de passages. Le cas de Q020 relève de la même piste.
+
+## Reproductibilité : le test d'un clone propre
+
+### Le test
+
+- **Un clone de la branche `feat/readme`**, tiré de GitHub dans un dossier vide. Seuls le corpus et le jeu d'évaluation y ont été copiés : ni les exports Docling, ni les transcriptions du VLM.
+- **Isolé du projet.** Le clone utilise une base PostgreSQL à part (`calorvia_clone`) et un deuxième Qdrant (port 6335). Le LLM, l'embedder et le reranker sont partagés, car ils ne servent qu'en lecture.
+- **Les commandes du README, dans l'ordre** : `uv sync --locked`, l'inventaire, le VLM, l'index, puis le runner sur le jeu de développement, sans le juge.
+
+### Ce qui se reproduit tel quel
+
+- **`uv sync --locked`** installe les 224 paquets exactement depuis `uv.lock`.
+- **L'inventaire** retrouve les 393 fichiers, avec les mêmes exclusions et les mêmes langues.
+- **Les 66 transcriptions du VLM** sont identiques à l'octet près, en 8,6 min contre 8,4.
+- **La collection** compte 1 698 points, avec les mêmes identifiants.
+
+### Cinq problèmes révélés, et corrigés
+
+Dans le projet, les caches étaient remplis depuis longtemps, et les étapes du README n'avaient jamais été enchaînées d'un bout à l'autre.
+
+| Problème | Correction |
+|---|---|
+| Après `etl.vision`, le VLM reste chargé dans llama-swap. Le modèle de mise en page de Docling manque alors de mémoire GPU, et 31 PDF échouent à la conversion | le README ajoute `curl -s http://localhost:8000/unload` avant `etl.index`, et la solution de secours `OCR_DEVICE=cpu` |
+| `etl.index` vidait la collection avant de convertir, puis plantait sur le premier export manquant | la conversion passe d'abord. S'il manque des exports, l'index s'arrête sans toucher la collection et liste les documents en échec. Une nouvelle exécution ne reconvertit que ceux-là |
+| Le runner démarrait sur une collection vide | il refuse de démarrer avant de créer l'expérience |
+| Le reranker renvoyait une erreur 400 sur une liste de candidats vide | `call_reranker` renvoie une liste vide |
+| Qwen tournait avec 3 slots qui partagent 16 384 tokens de cache. Avec 10 passages, une requête monte à 9 612 tokens (Q117), et trois requêtes longues simultanées dépassaient le contexte. Les n° 18 à 20 étaient allés au bout par chance : quand le cache déborde, le run s'arrête, il ne produit pas de réponses dégradées | `-c 32768` dans `docker-compose.yml` |
+
+### Un écart de registre
+
+Le registre du clone différait de celui du projet pour 88 documents sur 393 :
+- 58 dates en plus, tirées du contenu, par exemple « Plan strategique 2026-2028 du 16 décembre 2025 » ;
+- 41 types de document plus précis qu'`autre` ;
+- 67 lignes de contexte différentes.
+
+Du coup, 312 chunks sur 1 698 avaient un texte différent. **La cause** : l'inventaire du projet avait été lancé le 17/11 à 21 h 51, 15 minutes avant le commit de `metadata.py` (22 h 07), et il n'avait jamais été relancé. C'était aussi la vraie cause du statut `projet` de la FAQ Atlas, corrigé à la main à la section 7.
+
+Les runs n° 1 à 20 ont donc tous tourné sur un registre produit par une version intermédiaire, non commitée, de `metadata.py`.
+
+### Résultats du clone face au n° 19
+
+| | n° 19 (projet) | Clone (`0ce0cd2`, `git_dirty = false`) |
+|---|---|---|
+| hit@5 / MRR / recall@5 / nDCG@5 | 0,943 / 0,855 / 0,918 / 0,845 | **identiques** |
+| hit@10 / MRR / recall@10 / nDCG@10 | 0,951 / 0,856 / 0,934 / 0,854 | 0,951 / 0,855 / 0,934 / 0,853 |
+| Mêmes 10 passages | – | 98 questions sur 127, dont 68 dans le même ordre |
+| Réponses identiques mot pour mot | – | 84 sur 127 |
+| Réponses qui reprennent le piège, après relecture | 0/17 | **0/17**, et les 6 réponses `decision_history` restent justes |
+| Refus à tort | 3/122 | 5/122 : Q024 et Q147 reprennent la phrase de refus, comme au n° 18, pour une information qu'elles n'avaient déjà pas |
+| Temps de réponse moyen / médian | 9,53 s / 8,59 s | 10,0 s / 8,65 s |
+| Durée du run | 407 s | 427 s |
+
+**L'écart de registre ne change pas les résultats.** Seul le MRR de Q089 bouge (de 0,33 à 0,25), et les réponses qui diffèrent changent surtout de formulation. Les dates ajoutées apparaissent parfois dans les réponses : Q153 cite « le plan stratégique définitif du 16 décembre 2025 ». Le contexte de 32 k coûte environ 5 % de temps de réponse.
+
+### L'alignement du projet
+
+Après le test, l'inventaire et l'index ont été relancés dans le projet. Son registre et sa collection sont maintenant identiques à ceux du clone : 0 document différent, et 1 698 chunks sur 1 698 identiques, texte et payload. La démonstration et les runs futurs tournent donc sur ce que produit le code commité.
+
+Les runs publiés, du n° 1 au n° 20, gardent leur registre d'origine. On ne peut plus les rejouer à l'identique, mais le clone montre que cet écart ne change pas les métriques de recherche.
