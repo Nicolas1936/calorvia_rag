@@ -38,6 +38,8 @@ Un passage compte comme preuve s'il vient du document attendu et contient tous l
 | 10 | `exp07_excel_openpyxl` | `3b024a1` | n° 9 + classeurs lus par openpyxl, une phrase par ligne de tableau (index `_xlsx`, retenue) | 0,787 | 0,706 | 0,758 | 0,694 | 14,8 % | 0,61 | 1/17 | 247 s |
 | 11 | `exp08_images_vlm` | `4546dab` | Abandonnée (`superseded`) : juge interrompu après 10 notes sur 31, relancée en n° 12 | – | – | – | – | – | – | – | – |
 | 12 | `exp08_images_vlm` | `4546dab` | n° 10 + images et scans transcrits par le VLM (index `_img_scan`, retenue) | 0,934 | 0,839 | 0,910 | 0,831 | 4,1 % | 0,75 | 0/17 | 267 s |
+| 13 | `exp09_scans_docling_ocr` | `b90f2e8` | Abandonnée (`failed`) : lancée avec `git_dirty = true`, arrêtée au démarrage (0 réponse en 11 s), relancée en n° 14 | – | – | – | – | – | – | – | – |
+| 14 | `exp09_scans_docling_ocr` | `1d0d1da` | n° 12, mais les 26 documents numérisés (scans, factures, bons de livraison) sont lus par l'OCR de Docling au lieu du VLM (index `_ocr`, non retenue) | 0,918 | 0,818 | 0,898 | 0,814 | 4,1 % | 0,73 | 0/17 | 248 s |
 
 - La durée est celle du run complet (127 questions).
 - Le modèle a refusé toutes les questions `out_of_corpus` (5/5), dans toutes les expériences.
@@ -610,7 +612,7 @@ Les 2 questions `image_in_document` ont leur preuve dans un graphique d'un PDF t
 La section teste trois changements, ajoutés à `v0.4-excel` (n° 10) :
 
 1. transcrire les images et les scans avec le VLM (n° 12, retenu) ;
-2. sur les scans, comparer le VLM et l'OCR de Docling (à venir) ;
+2. sur les documents numérisés, comparer le VLM et l'OCR de Docling (n° 14, non retenu) ;
 3. lire les graphiques des PDF texte (à venir).
 
 ### Étape 1 : transcrire les images et les scans avec le VLM (n° 12)
@@ -816,8 +818,137 @@ Restent :
 - les graphiques des PDF texte (Q144) ;
 - les pièges des scans, qui ne remontent pas encore mais sont maintenant dans l'index, pour la section 7.
 
-### Étape 2 : comparer le VLM et l'OCR de Docling sur les scans
-_À compléter._
+### Étape 2 : comparer le VLM et l'OCR de Docling sur les documents numérisés (n° 14)
+
+#### Le changement testé
+
+Les documents numérisés sont lus par l'OCR de Docling au lieu du VLM. Les 36 autres images restent transcrites par le VLM : organigrammes, graphiques, plans, schémas, photos d'équipement. Un OCR ne sait pas les décrire. Le n° 14 ne diffère donc du n° 12 que par la lecture des documents numérisés.
+
+**Le périmètre.** Les 8 PDF scannés ne suffisent pas : seules 2 des 6 questions `scan_ocr` du jeu de développement (Q057, Q157) y ont leur preuve. Les 4 autres l'ont dans des photos JPG de factures ou de bons de livraison :
+- Q038 : facture Tôlerie Mosane TM-2026-0042 ;
+- Q042 : BL Kompra ;
+- Q064 : BL Elcora ;
+- Q119 : BL Valtek.
+
+Le périmètre comprend donc 26 documents, soit 27 pages :
+- les 8 PDF scannés ;
+- les 12 factures et les 6 bons de livraison (`doc_type` `facture` et `bon_de_livraison` dans le registre).
+
+**La conversion** (`etl/convert.py`, commande `scans`) :
+- Docling avec `do_ocr = True` et le moteur RapidOCR, le seul installé (modèles PP-OCRv6 dans `models/docling/RapidOcr`) ;
+- `force_full_page_ocr = True`, puisqu'un scan n'a pas de couche de texte. Sans OCR, Docling ne trouve aucun texte dans un scan : 3 emplacements d'image vides pour le PV du 18/11 ;
+- les photos passent par le même pipeline (`InputFormat.IMAGE`) ;
+- le modèle de mise en page tourne sur le GPU. RapidOCR tourne sur le CPU, car le paquet `onnxruntime` installé n'a pas de support CUDA ;
+- le temps de chaque fichier est enregistré dans la table `document`, comme pour toutes les conversions.
+
+**Le chunking.** Les exports passent par le chunker de Docling (`chunk_document`), comme les autres PDF. Le réglage s'active dans le TOML (`[corpus] scan_reader = 'docling'`, absent = VLM). Il ajoute le suffixe `_ocr` au nom de la collection. Si les documents ne sont pas encore convertis, l'indexation lance la conversion.
+
+#### Comparaison des deux lectures avant l'indexation
+
+| | OCR Docling | VLM |
+|---|---|---|
+| Temps de lecture : 8 PDF scannés (9 pages) | 21,5 s | 98,9 s |
+| Temps de lecture : 18 photos de factures et de BL | 43,8 s | 142,7 s |
+| Temps de lecture : total (26 documents) | **65,3 s** | 241,6 s |
+| Chunks | 56 | 31 |
+| Preuves et pièges du jeu de développement contenus dans un chunk | 13/15 | 15/15 |
+
+Les temps de l'OCR comprennent environ 6 s de chargement des modèles au premier fichier de chaque lancement (8,0 et 7,7 s, contre 1,3 à 3,1 s pour les autres).
+
+**Les PDF scannés imprimés (PV, courriers, avenant, attestation) : les deux lectures se valent.**
+- Les mêmes nombres sont lus, et les 10 preuves et pièges sont trouvés par les deux.
+- L'OCR fait quelques fautes sans conséquence (« 14 100 ke » pour « k€ », « DSl » pour « DSI »). Il écrit en revanche « Aéris » correctement, là où le VLM écrit « Aérís ».
+- Il perd le pied de page, les signatures et la description, rien d'utile pour répondre.
+- Il garde les titres de section, que le chunker de Docling utilise : 7 chunks par PV au lieu de 2, chacun précédé de son titre.
+
+**Les photos de factures et de bons de livraison : le VLM lit mieux.** L'OCR a quatre défauts.
+
+1. **Les lignes de bas de page disparaissent.** Docling classe la ligne de paiement en pied de page, que ni l'export Markdown ni le chunker ne gardent. L'OCR lit 8 des 9 IBAN des factures (celui d'Elcora devient « Bet g 2. »), mais aucun n'arrive dans un chunk. C'est le cas de la preuve de Q038.
+2. **Certains en-têtes disparaissent aussi.** Le nom du fournisseur est parfois rangé avec le logo dans une zone traitée comme une image. « Kompra GmbH », « Pakmatic NV » et deux fois « Linetech Automation BV » ne sont dans aucun chunk.
+3. **La structure est abîmée.**
+   - Les blocs « libellé : valeur » sont défaits : `Date KG-DN-26-0388`, puis `03/03/2026` deux lignes plus bas.
+   - Les cellules fusionnées sont dupliquées. La facture TM-2025-0391 donne ainsi 348 mots et 3 chunks, contre 190 mots et 1 chunk avec le VLM.
+4. **Il y a des fautes de lecture.**
+   - Un chiffre faux : quantité « 6 » au lieu de 9 sur TM-2025-0391 (9 × 2 760 = 24 840).
+   - « 1ot » au lieu de « lot ».
+   - « abimés » au lieu de « abîmés » dans la note manuscrite de Q064. L'extrait attendu ne correspond plus exactement.
+
+   Les notes manuscrites sont lues, noms compris (« R. Dethier », « F. Collin »).
+
+Le VLM n'est pas parfait non plus. La comparaison a fait apparaître deux erreurs de nom hors des dix transcriptions vérifiées à l'étape 1 : « Linotech » et « Linetechn » au lieu de « Linetech », vérifiées sur les images.
+
+#### Comparabilité
+
+Entre les commits `4546dab` (n° 12) et `1d0d1da` (n° 14), en dehors du rapport et de l'export CSV, ont changé :
+- la conversion (option OCR, images acceptées) ;
+- la liste des documents numérisés dans `db.py` ;
+- le choix du lecteur dans le chunker ;
+- l'appel de la conversion dans l'indexation ;
+- le nom de la collection ;
+- le TOML par défaut dans `config.py`, et le nouveau TOML.
+
+La recherche, le reranker, la génération et le prompt sont les mêmes. L'index compte 1 720 points : les 1 695 du n° 12, moins les 31 chunks VLM des 26 documents, plus les 56 chunks OCR. Le top 5 change pour 39 questions, et 89 réponses sur 127 sont identiques.
+
+#### Résultats (VLM → OCR Docling)
+
+| | VLM (n° 12) | OCR Docling (n° 14) |
+|---|---|---|
+| hit@5 | 0,934 | 0,918 |
+| MRR | 0,839 | 0,818 |
+| recall@5 | 0,910 | 0,898 |
+| nDCG@5 | 0,831 | 0,814 |
+| `scan_ocr` (6) : hit@5 / MRR | 1,00 / 1,00 | **0,67 / 0,58** |
+| `scan_ocr` (2 jugées) : correctness | 0,75 | **0,30** |
+| Refus à tort | 5/122 (4,1 %) | 5/122 (4,1 %) |
+| correctness (31) | 0,745 | 0,729 |
+| faithfulness (31) | 0,903 | 0,903 |
+| `trap_hit` | 7/17 | 8/17 |
+| `trap_avoided` selon le juge | 15/17 (0,88) | 15/17 (0,88) |
+| Réponses qui reprennent le piège, après relecture | 0/17 | 0/17 |
+| Tokens envoyés au LLM par question (moyenne) | 1 808 | 1 714 |
+| Temps de réponse moyen / médian / 90e centile | 6,20 s / 5,58 s / 10,0 s | 5,76 s / 5,28 s / 9,6 s |
+| Temps de lecture des images et des scans | 8,0 min | **5,0 min** (VLM 236,8 s + OCR 65,3 s) |
+| Durée du run | 267 s | 248 s |
+
+hit@5 ne change que pour deux questions, Q038 et Q064, toutes deux `scan_ocr`. `image_only`, `multi_doc`, `board_resolution` et `decision_history` gardent le même hit@5.
+
+#### Les questions `scan_ocr`, relues
+
+| Question | VLM (n° 12) | OCR Docling (n° 14) |
+|---|---|---|
+| **Q038** (IBAN de la facture TM-2026-0042) | juste | **fausse** : la facture arrive 4e, mais sans sa ligne de paiement. La réponse dit que les passages « ne mentionnent pas l'IBAN légitime » et cite **l'IBAN frauduleux** du rapport d'incident (correctness de 0,8 à 0). |
+| Q064 (note du réceptionnaire Elcora) | juste | juste, sans le nom de R. Dethier. hit@5 passe à 0 à cause de « abimés » : l'extrait attendu ne correspond plus exactement. |
+| Q042 (palettes manquantes chez Kompra) | juste | juste (0,7 → 0,6 selon le juge, pour une réponse équivalente) |
+| Q119 (réception du lot V-2544) | juste | juste (le bon de livraison passe du 1er au 2e rang) |
+| Q057, Q157 (PDF scannés) | justes | réponses identiques |
+
+Après relecture, le VLM a 6 réponses justes sur 6, et l'OCR 5 sur 6. La seule erreur est grave : à une question sur un IBAN, la réponse donne celui de l'escroquerie.
+
+#### Les autres changements
+
+- **Pièges** : le piège de Q096 (« geler les recrutements », PV scanné du 16/12) entre dans le top 5. Le chunk OCR, plus court et précédé de son titre de section, remonte mieux. La réponse reste juste et ne reprend pas le piège.
+- **Rangs** : avec des chunks de PV plus courts, plusieurs preuves se déplacent d'un rang, sans sortir du top 5.
+  - Q003 et Q086 montent.
+  - Q023, Q096, Q119 et Q134 descendent.
+  - Q101 retrouve ses deux preuves (recall@5 de 0,5 à 1).
+- **Juge** :
+  - Q116 (`out_of_corpus`) perd sa note de faithfulness (de 1 à 0), pour une réponse identique au n° 12. C'est le bruit du juge.
+  - Q002, Q013 et Q158 changent de note, mais leur réponse a changé : c'est le bruit de la génération.
+
+#### Coût
+
+- **À la lecture** : l'OCR lit les 26 documents en 65 s au lieu de 242 s. Le temps de lecture des images et des scans passe de 8,0 à 5,0 min, une seule fois.
+- **À chaque question** : sans description, les chunks sont plus courts. Le prompt perd 5 % de tokens, et chaque réponse 0,4 s.
+
+#### Décision : le VLM reste le lecteur des documents numérisés
+
+1. **Sur les photos de documents, le VLM lit mieux.** Il garde les pieds et les en-têtes de page, les paires « libellé : valeur » et tous les chiffres. L'OCR perd les IBAN et les noms de fournisseurs, et lit un chiffre de travers.
+2. **La perte se voit dans les réponses** : `scan_ocr` passe de 6 à 5 réponses justes sur 6. Et la réponse fausse est dangereuse, puisqu'elle cite l'IBAN frauduleux.
+3. **Le gain de l'OCR est faible** : 3 minutes une seule fois, et 0,4 s par question.
+
+Garder l'OCR seulement pour les 8 PDF scannés, où il vaut le VLM, ferait gagner environ 80 s une seule fois, pour une chaîne plus compliquée. Je ne l'ai pas fait.
+
+Une piste n'a pas été testée : faire garder par le chunker les pieds de page de Docling. Elle rendrait les IBAN, mais ni les en-têtes perdus, ni la structure, ni le chiffre faux.
 
 ### Étape 3 : les graphiques des PDF texte
 _À compléter._
