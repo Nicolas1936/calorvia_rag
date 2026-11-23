@@ -36,6 +36,8 @@ Un passage compte comme preuve s'il vient du document attendu et contient tous l
 | 8 | `exp06_prompt_french` | `1ed0698` | Abandonnée (`superseded`) : lancée avec `git_dirty = true` (prompt et TOML pas encore commités), puis relancée en n° 9 | – | – | – | – | – | – | – | – |
 | **9** | **`exp06_prompt_french`** | **`530973a`** | **n° 4 + prompt « réponds en français même si le passage est en néerlandais ou en anglais »** (retenue, `v0.3-langues`) | **0,787** | **0,708** | **0,762** | **0,697** | **14,8 %** | **0,62** | **1/17** | 272 s |
 | 10 | `exp07_excel_openpyxl` | `3b024a1` | n° 9 + classeurs lus par openpyxl, une phrase par ligne de tableau (index `_xlsx`, retenue) | 0,787 | 0,706 | 0,758 | 0,694 | 14,8 % | 0,61 | 1/17 | 247 s |
+| 11 | `exp08_images_vlm` | `4546dab` | Abandonnée (`superseded`) : juge interrompu après 10 notes sur 31, relancée en n° 12 | – | – | – | – | – | – | – | – |
+| 12 | `exp08_images_vlm` | `4546dab` | n° 10 + images et scans transcrits par le VLM (index `_img_scan`, retenue) | 0,934 | 0,839 | 0,910 | 0,831 | 4,1 % | 0,75 | 0/17 | 267 s |
 
 - La durée est celle du run complet (127 questions).
 - Le modèle a refusé toutes les questions `out_of_corpus` (5/5), dans toutes les expériences.
@@ -485,7 +487,7 @@ Le corpus contient 55 classeurs. L'inventaire en exclut 6 (3 doublons, 2 fichier
 Dans le jeu de développement, 21 questions ont une preuve dans un classeur : les 13 `excel_lookup`, les 5 `excel_reasoning`, les pièges du budget (Q043) et du tarif (Q089), et Q081. La section teste deux changements, ajoutés à `v0.3-langues` (n° 9) :
 
 1. lire les classeurs avec openpyxl, une phrase par ligne de tableau (n° 10, retenu) ;
-2. pour `excel_reasoning`, des fonctions de calcul que le LLM choisit (à venir).
+2. pour `excel_reasoning`, des fonctions de calcul que le LLM choisit (non réalisée).
 
 ### Étape 1 : lire les classeurs avec openpyxl (n° 10)
 
@@ -591,10 +593,234 @@ Les chunks sont plus courts : le prompt envoyé au LLM perd 12 % de tokens, et l
 Elle n'améliore pas les métriques. Les questions Excel du jeu de développement étaient déjà bien traitées par Docling (hit@5 de 0,92 et 1,00), parce que leurs extraits de preuve ne contiennent ni pourcentage ni date mise en forme. Les 5 questions `excel_reasoning` reçoivent déjà une réponse juste du RAG seul : l'étape 2 a donc peu de marge sur ce jeu.
 
 ### Étape 2 : des fonctions de calcul pour `excel_reasoning`
-_À compléter._
+
+Non réalisée. Les 5 questions `excel_reasoning` du jeu de développement reçoivent déjà une réponse juste du RAG seul (étape 1), et la marge de l'étape était donc faible. Le temps est allé à la section 6 : 32 questions du jeu de développement ont une preuve dans une image ou un scan, que l'index ne contenait pas.
 
 ## Section 6 : les images et les scans (`v0.5-images`)
-_À compléter : temps total de lecture, taux d'erreur mesuré sur dix transcriptions._
+
+Le corpus contient 54 images et 9 PDF scannés, sans couche de texte. L'inventaire exclut un scan (`99_Archives/Divers/scan0001.pdf`, classé comme bruit) : il reste 8 scans, soit 9 pages. Jusqu'ici, la conversion et le chunking les écartaient tous (`source_type NOT IN ('image', 'scan')`).
+
+Dans le jeu de développement, 32 questions ont une preuve dans l'un de ces documents :
+- les 13 `image_only` ;
+- les 6 `scan_ocr` ;
+- 13 questions d'autres types (`decision_current`, `decision_history`, `decision_reason`, `board_resolution`, `multi_doc`…), dont la preuve est souvent un PV signé scanné.
+
+Les 2 questions `image_in_document` ont leur preuve dans un graphique d'un PDF texte : Q045, qui est dans la réserve de test, et Q144. Elles relèvent d'une étape à part.
+
+La section teste trois changements, ajoutés à `v0.4-excel` (n° 10) :
+
+1. transcrire les images et les scans avec le VLM (n° 12, retenu) ;
+2. sur les scans, comparer le VLM et l'OCR de Docling (à venir) ;
+3. lire les graphiques des PDF texte (à venir).
+
+### Étape 1 : transcrire les images et les scans avec le VLM (n° 12)
+
+#### La transcription
+
+`etl/vision.py` envoie chaque image au service `llama-vision`, avec une température de 0. Le service fait tourner Qwen3.8-27B avec son projecteur d'images (`mmproj-F16`), 1 slot, un contexte de 8 192 tokens et le décodage spéculatif MTP. llama-swap le charge à la demande sur le port 8000, à la place de Qwen texte : le port 8003 de l'énoncé n'est pas utilisé.
+
+- **Les images** sont réduites à 1 600 px de côté au plus et envoyées en JPEG.
+- **Les pages des scans** sont rendues à 150 dpi avec PyMuPDF.
+- **Le prompt** demande deux choses :
+  - recopier tout le texte visible, exactement comme il est écrit (nombres, codes, dates, unités, annotations manuscrites), avec les tableaux en Markdown ;
+  - puis, sous le titre « Description », décrire en trois phrases au plus le type d'image et ce qui n'est pas écrit : rattachements d'un organigramme, valeur la plus haute d'un graphique, position des éléments d'un plan.
+
+  Un élément illisible doit être noté `[illisible]`.
+- **La réponse** est limitée à 2 500 tokens. Une transcription coupée par cette limite reçoit la mention `[transcription tronquée]`. Aucune ne l'a reçue.
+
+Chaque transcription est calculée une seule fois et gardée dans `data/vision/`, un fichier JSON par image ou par page. La clé combine l'empreinte SHA-256 du fichier, la page, le modèle et le prompt :
+- un fichier renommé n'est pas relu ;
+- un changement de prompt fait tout relire.
+
+Le JSON garde aussi le temps de transcription, le modèle et le prompt. Comme les exports Docling, le cache n'est pas commité (`data/` est dans le `.gitignore`). Le README donne la commande qui le reconstruit.
+
+#### Temps de lecture
+
+| Documents | Transcriptions | Temps par transcription |
+|---|---|---|
+| Photos d'équipement | 10 | 4,5 à 5,8 s |
+| Graphiques, tableaux de bord, schémas, plannings, plans | 19 | 4,7 à 9,4 s |
+| Factures et bons de livraison | 18 | 6,2 à 10,5 s |
+| Organigrammes | 4 | 8,1 à 10,3 s |
+| Photos de tableaux blancs, affiche | 3 | 5,5 à 6,5 s |
+| Scans d'une page (courriers, avenant, attestation) | 4 | 7,2 à 8,5 s |
+| Pages de PV du conseil scannées | 5 | 15,3 à 16,6 s (5,2 s pour la page des signatures) |
+| **Total** | **63** | **8,0 min** |
+
+Une page de PV est longue : chaque première page donne plus de 512 tokens de transcription, d'où le temps plus long.
+
+#### Vérification de dix transcriptions
+
+J'ai comparé dix transcriptions à leur image, en prenant un type de document différent à chaque fois :
+
+| # | Document | Type | Nombres, dates, codes | Noms |
+|---|---|---|---|---|
+| 1 | Organigramme direction 2026-04 | organigramme | justes | « Detthier » au lieu de « Dethier » |
+| 2 | Facture Tôlerie Mosane TM-2025-0391 | facture | justes | « Aérís » au lieu de « Aéris » |
+| 3 | PV CA 2025-11-18 signé, page 1 | scan | justes (montants, scores, absent excusé) | justes |
+| 4 | Photo Heftruck nr 7 | photo d'une plaque | 7/7 | justes |
+| 5 | Photo du tableau SWOT | tableau blanc manuscrit | justes (92 %, +20 %, 26/08/2025) | « Aérís » au lieu de « Aéris » |
+| 6 | Plan de l'entrepôt de Gand | plan | justes (12 allées, 6 et 10 km/u, 14 chariots) | justes |
+| 7 | Taux de réclamations 2025-2026 | graphique en courbe | 10/10 (9 points et l'objectif) | justes |
+| 8 | Tableau de bord commercial 2026-03 | indicateurs et barres | 8/8 | justes |
+| 9 | Bon de livraison Elcora | bon et note manuscrite | justes | justes (« R. Dethier » manuscrit bien lu) |
+| 10 | Planning Atlas v2 | diagramme de Gantt | 17/17 (16 dates et le go-live) | justes |
+
+**3 erreurs sur 10 transcriptions, toutes sur des noms propres.** Aucun des plus de 80 nombres, dates et codes vérifiés n'est faux. Chaque erreur porte sur un seul caractère :
+- une lettre en trop : « Detthier » ;
+- l'accent sur le mauvais « i » : « Aérís ».
+
+Dans l'ensemble du cache, le nom de la gamme est écrit « Aérís » dans 3 des 9 transcriptions où il apparaît.
+
+L'effet sur la recherche est faible :
+- le BM25 plie les accents, donc « Aérís » et « Aéris » donnent le même terme ;
+- seule l'erreur « Detthier » peut faire rater une recherche par mot-clé ;
+- aucun extrait de preuve n'est touché (voir plus bas).
+
+Les descriptions ont aussi des défauts, sans nombre ni nom faux :
+- le tableau SWOT, une photo de tableau blanc, y devient une « diapositive » ;
+- le bon Elcora y devient une « facture de livraison » ;
+- le plan de Gand est forcé dans un tableau Markdown, qui ne rend les positions qu'en partie.
+
+Corriger « Aéris » avec une liste de noms propres reviendrait à ajuster la chaîne au jeu d'évaluation. Je ne l'ai pas fait.
+
+#### Les chunks
+
+Le chunker (`chunk_transcription`) relit les transcriptions dans le cache et n'appelle pas le VLM. Chaque chunk contient trois éléments :
+- la ligne de contexte du document ;
+- une ligne d'en-tête : « Transcription de l'image « … » », ou « Transcription du scan « … », page 2 sur 2 » ;
+- la transcription.
+
+Une page qui tient dans 512 tokens forme un seul chunk. Sinon, les paragraphes sont regroupés jusqu'à 512 tokens. Un tableau Markdown n'est jamais coupé, et les lignes de séparation du VLM (`***`, `---`) sont retirées.
+
+Le payload reçoit en plus `image_path` et `page` (à partir de 0, ou `None` pour une image), pour pouvoir afficher l'image sous la réponse. La langue est détectée sur chaque chunk.
+
+Le réglage s'active dans le TOML (`[corpus] include_images` et `include_scanned_pdfs`). Il ajoute les suffixes `_img` et `_scan` au nom de la collection, ce qui conserve l'index du n° 10.
+
+#### Vérification avant l'indexation
+
+| | n° 10 | n° 12 |
+|---|---|---|
+| Points dans l'index | 1 624 | 1 695 (+71) |
+| Chunks d'images et de scans (62 documents) | – | 71 |
+| Tokens par chunk de transcription (moyenne / max) | – | 321 / 512 |
+| Preuves contenues dans un chunk de transcription | – | 36/36 |
+
+8 documents sont découpés en 2 ou 3 chunks : les 4 PV scannés et les 4 organigrammes. Pour un organigramme, le premier chunk contient le tableau entier, avec tous les noms, et le second ne contient que la description.
+
+Les 36 preuves des 32 questions sont chacune dans un chunk de leur document, y compris celles qui citent un nom mal transcrit ailleurs.
+
+Les scans font aussi entrer des pièges. Quatre questions du jeu de développement ont leur passage piège dans une transcription :
+- Q023, Q081 et Q096, dans les PV du conseil scannés du 18/11 et du 16/12 ;
+- Q056, dans l'organigramme de septembre 2025.
+
+#### Comparabilité
+
+Entre les commits `3b024a1` (n° 10) et `4546dab` (n° 12), en dehors du rapport, de l'export CSV et du notebook, ont changé :
+- `etl/vision.py`, qui est nouveau ;
+- la configuration (`vision_model`, `vision_folder`) ;
+- la liste des documents à transcrire dans `db.py` ;
+- le chunking des transcriptions ;
+- le nom de la collection dans l'indexation et la recherche ;
+- le TOML et le README.
+
+La génération, le reranker et le prompt sont les mêmes. Le top 5 change pour 51 questions.
+
+Le n° 11 tourne sur le même commit. Son juge s'est arrêté après 10 notes, mais ses 127 réponses sont complètes : 110 sont identiques à celles du n° 12. C'est l'ordre de grandeur du bruit de la génération, à code égal.
+
+#### Résultats (n° 10 → n° 12)
+
+| | n° 10 | n° 12 |
+|---|---|---|
+| hit@5 | 0,787 | **0,934** |
+| MRR | 0,706 | **0,839** |
+| recall@5 | 0,758 | **0,910** |
+| nDCG@5 | 0,694 | **0,831** |
+| Refus à tort | 18/122 (14,8 %) | **5/122 (4,1 %)** |
+| correctness (31) | 0,610 | **0,745** |
+| faithfulness (31) | 0,839 | 0,903 |
+| `trap_hit` | 7/17 | 7/17 |
+| `trap_avoided` selon le juge | 15/17 (0,88) | 15/17 (0,88) |
+| Réponses qui reprennent le piège, après relecture | 1/17 (Q023) | **0/17** |
+| Tokens envoyés au LLM par question (moyenne) | 1 688 | 1 808 |
+| Temps de réponse moyen / médian / 90e centile | 5,75 s / 5,08 s / 9,9 s | 6,20 s / 5,58 s / 10,0 s |
+| Durée du run | 247 s | 267 s |
+
+| Type (questions) | hit@5 | MRR | Refus | correctness (2 jugées) |
+|---|---|---|---|---|
+| `image_only` (13) | 0 → **0,85** | 0 → **0,85** | 69 % → **8 %** | 0 → **0,80** |
+| `scan_ocr` (6) | 0,17 → **1,00** | 0,17 → **1,00** | 67 % → **0 %** | 0,35 → **0,75** |
+| `board_resolution` (6) | 0,83 → **1,00** | 0,71 → 0,83 | 0 % → 0 % | 0,60 → **1,00** |
+| `multi_doc` (5) | 1,00 → 1,00 | 0,90 → 0,90 | 20 % → **0 %** | 0,50 → **1,00** |
+| `decision_current` (14) | 0,79 → 0,86 | 0,67 → 0,70 | 0 % → 0 % | 0,60 → 0,60 |
+| `image_in_document` (1) | 0 → 0 | 0 → 0 | 100 % → 100 % | 0 → 0 |
+
+Aucune question ne perd sa preuve. **18 questions la trouvent maintenant** :
+- 11 `image_only` ;
+- les 5 `scan_ocr` qui la manquaient ;
+- Q049 (`board_resolution`) et Q133 (`decision_current`), qui ont une preuve dans un PV signé scanné ou un organigramme.
+
+#### Les questions gagnées
+
+Quelques exemples :
+
+- **Q098** (« Quel a été le taux de réclamations clients en décembre 2025 ? ») : le refus devient « 1,9 % », lu sur le graphique.
+- **Q107** (première cause de non-conformité en 2025) : la réponse fausse du n° 10, tirée d'une fiche de non-conformité, devient « le fournisseur, avec 19 fiches », lu sur le Pareto.
+- **Q038** (IBAN de la facture TM-2026-0042) : le n° 10 citait l'IBAN frauduleux de l'incident de paiement. Le n° 12 lit le bon IBAN sur la facture (BE47 0689 4412 7380).
+- **Q117** (`multi_doc`, niveau sonore de l'Aéris 9) : le refus devient la bonne réponse. Les 58 dB(A) viennent du courrier scanné d'Habitat Confort, les 52 dB(A) de la fiche technique.
+- **Q023** (montant approuvé pour la phase 1 de la ligne L4) : le n° 10 reprenait le piège (1,2 M€). Le scan du PV du 16 décembre 2025 contient la correction (« 1 250 000 et non de 1,2 »), et la réponse devient juste : 1 250 000 €, en signalant la correction.
+
+#### Les deux échecs `image_only` : les organigrammes
+
+Q056 (« À qui le service des achats est-il rattaché depuis avril 2026 ? ») et Q147 (« Qui est responsable du service après-vente ? ») ont leur preuve dans les organigrammes. J'ai relancé la recherche sur ces deux questions : **le chunk qui contient le tableau n'entre jamais dans les 30 candidats**, pour aucun des 4 organigrammes. Seuls les chunks de description remontent.
+
+- Pour Q147, aucun chunk d'organigramme n'est candidat, et la réponse est un refus.
+- Pour Q056, la description de l'organigramme d'avril 2026 arrive 3e : « la CEO, Hélène Marchal, supervise directement six directions ». Le LLM répond donc « Hélène Marchal », alors que la bonne réponse est Thomas Lambert. Ce n'est pas la valeur du piège (Laurent Dewit).
+
+Dans le tableau, les services d'un directeur sont rangés dans sa colonne, et chaque ligne mélange six directions (`Achats<br>Céline Moreau` est sous `Thomas Lambert`, quatre lignes plus bas). Le chunk de 495 tokens est trop long et trop dilué pour la recherche dense, le BM25 et le reranker.
+
+Piste, dans l'esprit de la lecture des classeurs en section 5 : une phrase par service, par exemple « Achats : Céline Moreau, rattachée à Thomas Lambert, directeur des opérations ». On peut l'obtenir de deux façons :
+- avec un prompt propre aux organigrammes (4 images à relire) ;
+- avec du code qui relit le tableau colonne par colonne.
+
+#### Les autres changements
+
+- **Les chunks d'images et de scans s'invitent dans d'autres questions.** 19 questions sans preuve dans une image ou un scan en ont au moins un dans leur top 5 (78 places sur 635 au total). Pour trois questions, la preuve recule d'un rang ou plus, sans sortir du top 5 :
+  - Q003 : 4 PV scannés dans le top 5 ; la réponse reste juste ;
+  - Q052 : le planning L4 au 1er rang ;
+  - Q086 : la note de crédit Valtek au 3e rang.
+
+  Les 5 questions `out_of_corpus` restent refusées, même les 3 qui reçoivent un chunk de transcription.
+- **Refus** : il reste 5 refus à tort, qui l'étaient déjà au n° 10 : Q024, Q093, Q154, Q144 (le graphique d'un PDF texte) et Q147 (l'organigramme ci-dessus).
+- **correctness** : 9 notes sur 31 changent.
+  - Hausses : Q023 (0,2 → 1), Q038 (0 → 0,8), Q098 (0 → 0,7), Q107 (0 → 0,9), Q117 (0 → 1), Q058 (0,8 → 1) et Q052 (0,6 → 0,7).
+  - Baisses : Q013 (1 → 0,9), dont le top 5 reçoit le PV scanné du 18/11, et Q158 (0,6 → 0,4), dont la réponse change avec le même top 5. C'est le niveau habituel du bruit de génération.
+- **Pièges** : `trap_hit` reste à 7/17.
+  - Q023 était déjà touchée par le projet de PV en docx.
+  - Pour Q056, Q081 et Q096, le chunk piège du scan n'entre pas dans le top 5.
+  - Aucune réponse ne reprend la valeur piège. Q008 reste incomplète, comme avant, sans donner la valeur piège. Q056 est fausse pour une autre raison.
+
+#### Coût
+
+- **À l'indexation** : 8,0 min de transcription, une seule fois, puis 71 points de plus dans l'index.
+- **À chaque question** : 7 % de tokens en plus dans le prompt (1 688 → 1 808), et 0,45 s de plus en moyenne (5,75 → 6,20 s). Le 90e centile ne bouge presque pas.
+
+#### Décision : la transcription par le VLM est retenue
+
+1. **C'est le plus gros gain du projet** : hit@5 de 0,787 à 0,934, refus à tort de 14,8 % à 4,1 %, correctness de 0,61 à 0,75. Aucune question ne perd sa preuve.
+2. **Les transcriptions sont fiables sur les nombres** : aucun nombre faux sur les dix vérifiées, et 3 erreurs d'un caractère sur des noms.
+3. **Le coût est faible** : 8 minutes une seule fois, et moins d'une demi-seconde par question.
+
+Restent :
+- les organigrammes, que la forme de leur tableau rend introuvables (Q056, Q147) ;
+- les graphiques des PDF texte (Q144) ;
+- les pièges des scans, qui ne remontent pas encore mais sont maintenant dans l'index, pour la section 7.
+
+### Étape 2 : comparer le VLM et l'OCR de Docling sur les scans
+_À compléter._
+
+### Étape 3 : les graphiques des PDF texte
+_À compléter._
 
 ## Section 7 : le temps et les versions (`v0.6-versions`)
 _À compléter : taux de pièges avant (section 3 : 1/17) et après._
