@@ -73,7 +73,8 @@ docker compose --profile on-demand create    # conteneurs des LLM, démarrés pa
 
 ```bash
 uv run python -m calorvia_rag.etl.inventory              # registre des documents et métadonnées
-uv run python -m calorvia_rag.etl.vision                 # images, scans et graphiques lus par le VLM (≈ 8,4 min la première fois)
+uv run python -m calorvia_rag.etl.vision                 # images, scans et graphiques lus par le VLM (≈ 8,5 min la première fois)
+curl -s http://localhost:8000/unload                     # décharge le VLM : la conversion Docling a besoin du GPU
 uv run python -m calorvia_rag.etl.index                  # conversion Docling, chunks et collection Qdrant de la configuration
 uv run python -m calorvia_rag.evaluation.runner          # les 127 questions du jeu de développement
 uv run python -m calorvia_rag.evaluation.runner judge <id>
@@ -81,7 +82,12 @@ uv run python -m calorvia_rag.evaluation.export          # results/experiments.c
 ```
 
 - **Les tables PostgreSQL** sont créées au premier lancement (`sql_queries/schema.sql`).
-- **La conversion et les transcriptions sont mises en cache.** Les exports Docling vont dans `data/calorvia_export/`, les transcriptions dans `data/vision/`. Une nouvelle exécution ne traite que les fichiers nouveaux ou modifiés.
+- **La conversion Docling utilise le GPU.**
+  - Après `etl.vision`, le VLM reste chargé : llama-swap ne décharge pas un modèle de lui-même. Il ne laisse alors pas assez de mémoire au modèle de mise en page de Docling, et des PDF échouent faute de mémoire. `curl -s http://localhost:8000/unload` libère le GPU, et llama-swap rechargera le générateur à la demande pour le runner.
+  - Si le GPU reste trop occupé, par exemple par le bureau, mets `OCR_DEVICE=cpu` dans `.env`. La conversion est plus lente, mais elle n'utilise plus le GPU.
+- **En cas d'échec de conversion**, `etl.index` s'arrête avant de toucher la collection Qdrant et liste les documents concernés. Une nouvelle exécution ne reconvertit que ceux-là.
+- **La conversion et les transcriptions sont mises en cache.** Les exports Docling vont dans `data/calorvia_export/`, les transcriptions dans `data/vision/`. Une nouvelle exécution ne traite que les fichiers nouveaux, modifiés ou en échec.
+- **Le runner refuse de démarrer** si la collection de la configuration est absente ou vide.
 - **La réserve de test** se lance avec `uv run python -m calorvia_rag.evaluation.runner test`, **une seule fois**, sur la configuration finale.
   - Le mode `test` refuse de démarrer si le code n'est pas commité, ou si la réserve a déjà été évaluée.
   - Le juge note alors les 31 questions, au lieu de 2 par type.
