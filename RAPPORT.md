@@ -2,7 +2,7 @@
 
 ## Méthode
 
-- **Jeu de développement** : 127 questions, dont 122 avec une réponse dans le corpus et 5 hors corpus (`out_of_corpus`). La réserve de test (31 questions, `id % 5 == 0`) n'a pas été utilisée.
+- **Jeu de développement** : 127 questions, dont 122 avec une réponse dans le corpus et 5 hors corpus (`out_of_corpus`). La réserve de test (31 questions, `id % 5 == 0`) n'a servi qu'une fois, pour l'évaluation finale de la configuration retenue (n° 20).
 - **Un changement à la fois** : chaque expérience modifie un seul réglage par rapport à la référence et tourne sur un code commité (`git_dirty = false`).
 - **Numérotation** : le « # » du tableau est l'identifiant de l'expérience dans la base, dans l'ordre de lancement. Le nom (`exp01_…`, `exp02_…`) est celui de son fichier de configuration dans `experiments/`.
 
@@ -45,9 +45,10 @@ Un passage compte comme preuve s'il vient du document attendu et contient tous l
 | 17 | `exp12_prompt_versions` | `ec9f7b9` | n° 16 + consignes sur les versions dans le prompt : projet, PV corrigé, date passée (retenue) | 0,943 | 0,855 | 0,918 | 0,845 | 3,3 % | 0,77 | 0/17 | 271 s |
 | 18 | `exp13_top10` | `5c42321` | n° 17 + 10 passages au LLM au lieu de 5 (`[reranker] top_k = 10`, retenue ; métriques @5 recalculées sur les 5 premiers passages) | 0,943 | 0,855 | 0,918 | 0,845 | 4,1 % | 0,78 | 0/17 | 393 s |
 | **19** | **`exp14_passages_by_date`** | **`546b59e`** | **n° 18 + passages triés par date dans le prompt, chacun avec sa date** (retenue, `v0.6-versions` ; métriques @5 recalculées sur les 5 premiers passages ; 2 refus de moins par la seule formulation) | **0,943** | **0,855** | **0,918** | **0,845** | **2,5 %** | **0,82** | **0/17** | 407 s |
+| 20 | `exp14_passages_by_date_test` | `c8c5e75` | **Réserve de test** : la configuration du n° 19 sur les 31 questions de la réserve, lancée une seule fois (`runner test`, `v1.0` ; métriques @5 recalculées sur les 5 premiers passages, refus sur 30 questions, pièges sur 4) | 0,800 | 0,658 | 0,783 | 0,669 | 6,7 % | 0,77 | 0/4 | 100 s |
 
-- La durée est celle du run complet (127 questions).
-- Le modèle a refusé toutes les questions `out_of_corpus` (5/5), dans toutes les expériences.
+- La durée est celle du run complet : 127 questions, ou 31 pour le n° 20.
+- Le modèle a refusé toutes les questions `out_of_corpus`, dans toutes les expériences : 5/5 sur le jeu de développement, et 1/1 sur la réserve de test.
 
 ## Section 3 : version de référence (`v0.2-baseline`)
 
@@ -1539,7 +1540,162 @@ La baisse de faithfulness vient entièrement de trois notes :
 **Une limite de la mesure.** Le 30e candidat de la fusion RRF est souvent à égalité avec le suivant. D'un appel à l'autre, un passage entre ou sort des candidats : c'est arrivé pour 7 questions entre les n° 18 et 19, sans aucun changement de la recherche. Avant d'attribuer à un changement une variation de passages, il faut vérifier qu'elle ne vient pas de là.
 
 ## Évaluation finale sur la réserve de test (`v1.0`)
-_À compléter : réserve de test (31 questions) comparée au jeu de développement._
+
+### Le choix de la configuration
+
+La configuration finale est choisie sur le jeu de développement, selon trois critères : la qualité, le temps de réponse et le coût de l'indexation.
+
+| Configuration (jeu de développement) | hit@5 / MRR | correctness (31) | Piège dans le top 5 / repris | Temps de réponse moyen / 90e centile | Lecture des images et des scans |
+|---|---|---|---|---|---|
+| n° 14 : documents numérisés lus par l'OCR de Docling | 0,918 / 0,818 | 0,73 | 8/17 / 0/17 | 5,76 s / 9,7 s | 5,0 min |
+| n° 15 : `v0.5-images` | 0,943 / 0,847 | 0,78 | 7/17 / 0/17 | 6,19 s / 9,8 s | 8,4 min |
+| n° 17 : + filtre `must_not` + consignes sur les versions | 0,943 / 0,855 | 0,77 | 4/17 / 0/17 | 6,29 s / 10,2 s | 8,4 min |
+| **n° 19 : + 10 passages + tri par date (`v0.6-versions`)** | **0,943 / 0,855** | **0,82** | **4/17 / 0/17** | **9,53 s / 16,4 s** | **8,4 min** |
+
+- **Le coût de l'indexation ne départage pas les candidats.** Du n° 15 au n° 19, l'index est le même : 8,0 min de transcription par le VLM, plus 23 s pour les graphiques des PDF, une seule fois. L'OCR de Docling (n° 14) lit plus vite, mais il perd des preuves et les descriptions des images (section 6, étape 2).
+- **Le choix se fait entre qualité et temps de réponse.** Le n° 17 répond en 6,3 s, le n° 19 en 9,5 s. Mais le n° 19 est le seul qui corrige des réponses fausses (Q152, Q127, Q101), et il ne fait reprendre aucun piège alors que plus de passages pièges arrivent au LLM.
+
+**La configuration finale est le n° 19** (`exp14_passages_by_date.toml`, la configuration par défaut de `config.py`). Les 3 s de plus par réponse restent acceptables pour un assistant documentaire interne.
+
+### Le run sur la réserve de test (n° 20)
+
+Le runner a reçu un mode `test` (commit `c8c5e75`) :
+- **`load_questions(path, split = 'test')`** charge les 31 questions de la réserve ;
+- **le nom de l'expérience est suffixé `_test`**, et le config enregistré porte `'split': 'test'` ;
+- **deux garde-fous** : le mode `test` refuse de démarrer si le code n'est pas commité, ou si une expérience `test` est déjà terminée ;
+- **le juge note les 31 questions de la réserve**, au lieu de 2 par type. Avec l'échantillon, il n'en aurait noté que 25 : quatre types n'ont qu'une question dans la réserve, et `meeting_detail` n'en a aucune. La taille reste celle de l'échantillon de développement (31 questions).
+
+Avant le commit, le mode `test` a été vérifié sans appeler le LLM :
+- il charge 31 questions, et le jeu de développement en garde 127, dans le même ordre ;
+- l'échantillon du juge sur le jeu de développement est inchangé ;
+- sur un arbre modifié, la commande s'arrête sans créer d'expérience.
+
+Le run a été lancé une seule fois, sur le commit `c8c5e75` (`git_dirty = false`), avec la configuration du n° 19. Entre les deux, l'index n'a pas été reconstruit. Une seule note du juge est restée vide, à cause d'un JSON invalide (`trap_avoided` de Q095). Elle a été rejugée : 1.
+
+### Résultats : jeu de développement (n° 19) → réserve de test (n° 20)
+
+| | Développement (n° 19) | Réserve de test (n° 20) |
+|---|---|---|
+| Questions (avec une preuve) | 127 (122) | 31 (30) |
+| hit@5 / MRR / recall@5 / nDCG@5 (5 premiers passages) | 0,943 / 0,855 / 0,918 / 0,845 | **0,800 / 0,658 / 0,783 / 0,669** |
+| hit@10 / MRR / recall@10 / nDCG@10 (10 passages lus) | 0,951 / 0,856 / 0,934 / 0,854 | 0,933 / 0,680 / 0,900 / 0,720 |
+| Refus à tort | 3/122 (2,5 %) | 2/30 (6,7 %) |
+| `out_of_corpus` refusées | 5/5 | 1/1 |
+| correctness | 0,823 (31 questions, 2 par type) | 0,771 (les 31 questions) ; 0,752 sur les 25 questions de l'échantillon à 2 par type |
+| faithfulness | 0,887 | 0,927 |
+| Piège dans les 5 premiers / dans les 10 passages | 4/17 / 9/17 | 2/4 / 3/4 |
+| **Réponses qui reprennent le piège, après relecture** | **0/17** | **0/4** |
+| Tokens envoyés au LLM par question (moyenne) | 3 302 | 3 002 |
+| Temps de réponse moyen / médian / 90e centile | 9,53 s / 8,59 s / 16,4 s | 9,45 s / 8,58 s / 17,2 s |
+
+Par type, la réserve ne compte qu'une à quatre questions : chaque type n'y pèse que quelques réponses.
+
+| Type | Questions de la réserve | hit@5 dév. → test | hit@10 dév. → test | MRR dév. → test | correctness dév. (2) → test (toutes) |
+|---|---|---|---|---|---|
+| `action_tracking` | 1 | 1,00 → 1,00 | 1,00 → 1,00 | 1,00 → 1,00 | 0,85 → 0,70 |
+| `board_resolution` | 2 | 1,00 → 1,00 | 1,00 → 1,00 | 1,00 → 1,00 | 1,00 → 0,80 |
+| `decision_current` | 1 | 0,86 → 1,00 | 0,93 → 1,00 | 0,71 → 0,25 | 0,80 → 0,70 |
+| `decision_history` | 4 | 1,00 → 0,75 | 1,00 → 1,00 | 0,92 → 0,79 | 0,75 → 0,80 |
+| `decision_reason` | 3 | 1,00 → 0,67 | 1,00 → 0,67 | 0,90 → 0,44 | 0,95 → 1,00 |
+| `excel_lookup` | 3 | 0,92 → 0,67 | 0,92 → 1,00 | 0,88 → 0,50 | 0,55 → 0,87 |
+| `excel_reasoning` | 1 | 1,00 → 0,00 | 1,00 → 0,00 | 0,62 → 0,00 | 0,85 → 0,00 |
+| `factual` | 2 | 0,94 → 1,00 | 0,94 → 1,00 | 0,91 → 1,00 | 0,80 → 0,80 |
+| `image_in_document` | 1 | 1,00 → 1,00 | 1,00 → 1,00 | 1,00 → 1,00 | 1,00 → 0,60 |
+| `image_only` | 2 | 0,85 → 1,00 | 0,85 → 1,00 | 0,85 → 1,00 | 0,80 → 0,85 |
+| `multi_doc` | 3 | 1,00 → 0,67 | 1,00 → 1,00 | 0,90 → 0,55 | 1,00 → 0,50 |
+| `multilingual` | 3 | 0,86 → 0,67 | 0,86 → 1,00 | 0,68 → 0,50 | 0,70 → 1,00 |
+| `out_of_corpus` | 1 | – | – | – | 1,00 → 1,00 |
+| `scan_ocr` | 2 | 1,00 → 1,00 | 1,00 → 1,00 | 1,00 → 0,75 | 0,75 → 0,85 |
+| `version_trap` | 2 | 1,00 → 1,00 | 1,00 → 1,00 | 0,67 → 0,75 | 0,60 → 0,50 |
+
+#### La génération tient
+
+- **La correctness est proche** de celle du jeu de développement : 0,77 contre 0,82, soit 0,75 contre 0,82 avec la même règle d'échantillonnage. Les notes basses portent surtout sur des réponses justes mais moins complètes que la réponse attendue : Q080 (0,4) donne le bon nom, Q100 (0,5) la bonne date, et il manque un détail secondaire à Q045, Q095 et Q140 (0,6). Seules trois réponses sont vraiment ratées (section suivante).
+- **La faithfulness** est de 0,93. Deux notes de 0 portent sur des réponses justes :
+  - Q090, un refus `out_of_corpus`, comme Q082 et Q116 sur le jeu de développement ;
+  - Q130 : le juge conteste l'action A-26-006, que la réponse attendue compte bien parmi les actions en retard.
+- **Le temps de réponse** est le même : 9,45 s en moyenne.
+
+#### Les pièges : 0/4, et un mécanisme différent de la section 7 pour chacun
+
+| Question | Le piège | Pourquoi il n'est pas repris |
+|---|---|---|
+| Q095 (`excel_lookup`) | le projet de tarif 2026 v1 (Aéris 9 à 8 790 €) | il est exclu par le filtre `must_not` sur `projet` (étape 1) et n'arrive jamais au LLM |
+| Q025 (`decision_current`) | le CODIR du 1er décembre (mise en production « fixée au 1er avril 2026 »), au 1er rang | la consigne 3 fait donner la plus récente : 1er juin 2026, et 15 juin pour Gand |
+| Q100 (`decision_history`) | le report au 1er juin (CODIR du 9 février), au 8e rang | l'exception de la consigne 3 fait donner la valeur de décembre : le 1er avril 2026 |
+| Q140 (`version_trap`) | la première version du PV du CODIR du 17/11 (« le jeudi 13 novembre »), au 1er rang | la réponse donne la version corrigée : le mercredi 12 novembre 2025 |
+
+#### La recherche classe les preuves plus bas sur des questions nouvelles
+
+Le hit@5 passe de 0,943 à 0,800, et le MRR de 0,86 à 0,68.
+
+- **Le mélange des types n'explique pas l'écart.** En repondérant le jeu de développement selon les types de la réserve, on obtient un hit@5 de 0,959 et un MRR de 0,864. Les preuves sont donc vraiment moins bien classées sur des questions que la configuration n'a jamais vues : la configuration a été choisie sur le jeu de développement.
+- **Les 10 passages comblent presque tout l'écart** (hit@10 de 0,933 contre 0,951). Quatre questions de la réserve n'ont leur preuve qu'entre le 6e et le 10e rang. Trois d'entre elles ont une réponse juste, tirée de ces passages :
+  - Q075 : le passage 9 et le 6 ;
+  - Q095 : le passage 6 ;
+  - Q115 : le passage 6.
+
+  C'est la confirmation, sur des questions jamais vues, du choix de `top_k = 10` (section 7, étape 3).
+- **Une partie de l'écart vient de la métrique.** Pour Q015 (`decision_reason`), aucune des deux preuves listées n'est parmi les 30 candidats. La réponse est pourtant juste (correctness 1,0). Elle s'appuie sur deux passages qui ne figurent pas parmi les preuves listées :
+- le PV du CODIR du 15 juin : « Les deux anomalies de l'interface WMS ont été corrigées le 10 juin » ;
+- la décision de go/no-go du CODIR du 18 mai. Le hit@k ne compte que les preuves listées dans le jeu d'évaluation.
+
+### Décision : `v1.0`
+
+La configuration du n° 19 est la version `v1.0`. Sur la réserve de test :
+- la génération se comporte comme sur le jeu de développement ;
+- aucun piège n'est repris ;
+- le temps de réponse est le même.
+
+L'écart porte sur le classement des preuves : il faut s'attendre à un hit@5 d'environ 0,80 sur des questions nouvelles, et 0,93 avec les 10 passages lus.
 
 ## Trois questions ratées par la meilleure configuration
-_À compléter : étape où se situe l'échec (inventaire, conversion, chunking, recherche, reranking, génération) et piste de correction._
+
+Ces trois questions viennent de la réserve de test (n° 20), sur laquelle la configuration n'a pas été réglée. Ce sont les trois seules réponses fausses ou incomplètes de la réserve. Pour chacune, j'ai relancé la recherche et le reranking sur les 30 candidats pour situer la preuve.
+
+### Q020 (`multi_doc`) : un refus, faute du document néerlandais (reranking)
+
+**La question** : « Quelle est la capacité nominale du chariot impliqué dans l'accident de Gand, et de quelle année date-t-il ? »
+- **La réponse attendue** : le chariot n° 9 (Lyftec LE-20), d'une capacité nominale de 2 000 kg, construit en 2016.
+- **La réponse** : « Les passages fournis ne permettent pas d'identifier avec certitude le numéro ou le modèle spécifique du chariot élévateur impliqué … bien que deux chariots (n° 7 et n° 9) soient documentés par des photos. Je ne dispose pas de cette information. »
+
+**Où est la preuve.** Il en faut deux :
+- **la photo de la plaque du chariot n° 9** (2 000 kg, 2016) est bien au 7e rang ;
+- **le rapport d'incident en néerlandais**, qui dit que le chariot impliqué est le « nr. 9 (Lyftec LE-20) », est 29e parmi les 30 candidats, puis 26e après le reranking.
+
+Les premiers rangs vont aux documents en français sur l'accident : les deux versions du PV du CODIR du 17/11, Calorvia Info, l'audit de circulation et la demande de capex. Aucun ne relie l'accident au chariot n° 9. Sans le rapport, le modèle ne peut pas faire ce lien, et il refuse à juste titre.
+
+**L'étape de l'échec : le reranking**, avec la question en français et le passage en néerlandais. C'est le document qui manquait déjà à Q062 (section 4). Q115 trouve ce rapport au 6e rang, mais elle ne demande que le chariot (« Quel chariot élévateur était impliqué … ? »).
+
+**Piste de correction : décomposer la question en deux recherches.** La première demande quel chariot était impliqué, ce que Q115 réussit. La seconde cherche la fiche du chariot n° 9. Reranker avec la question traduite en néerlandais a déjà été essayé à la section 4 (étape 3) : cela a fait perdre d'autres preuves.
+
+### Q125 (`excel_reasoning`) : une valeur fausse, parce que la série des 12 mois est coupée (recherche et chunking)
+
+**La question** : « Quel mois a le chiffre d'affaires budgété le plus élevé dans le budget 2026 approuvé ? »
+- **La réponse attendue** : décembre, avec 17 685 k€.
+- **La réponse** : « octobre, avec un montant de 14 842 k€ ».
+
+**Où est la preuve.** Le classeur `Budget 2026 - version approuvee CA 16-12-2025.xlsx` est lu par openpyxl, une phrase par ligne (section 5) : une ligne par mois, par exemple « Mois : Octobre ; Chiffre d'affaires : 14842 ; EBITDA : 1410 ; … ».
+- **Les 10 passages transmis au LLM sont les lignes de janvier à octobre.** Leurs scores de reranking sont presque égaux, de 0,966 à 0,973, car la question ne nomme aucun mois.
+- **Novembre et décembre manquent.** La ligne de décembre (chunk 16) n'est même pas parmi les 30 candidats.
+- **Le modèle a bien comparé ce qu'il a reçu** : sur les dix mois, octobre (14 842 k€) devance janvier (14 632 k€).
+
+**L'étape de l'échec : la recherche, à cause de la forme des chunks.** Il faut les 12 lignes pour répondre, et le LLM n'en reçoit que 10. Rien ne distingue la ligne de décembre des autres. Le chunking « une phrase par ligne » répartit la série en 12 chunks, alors que la question porte sur la colonne entière. La génération n'est pas en cause : sur les mois reçus, le maximum est juste.
+
+**Piste de correction :**
+- les fonctions de calcul de la section 5 (étape 2, non faite) : le LLM appelle une fonction qui lit la colonne dans le classeur et renvoie le maximum ;
+- plus simple, un chunk de synthèse par colonne numérique à l'indexation (maximum, minimum, total, avec le mois correspondant).
+
+### Q060 (`multi_doc`) : une réponse à moitié, faute d'une deuxième recherche (recherche)
+
+**La question** : « Lors de la tentative de fraude du 13 janvier 2026, quel IBAN l'attaquant voulait-il imposer et quel est l'IBAN légitime du fournisseur ? »
+- **La réponse attendue** : l'IBAN lituanien LT62 3250 0219 7745 1180 ; l'IBAN légitime de Tôlerie Mosane est BE47 0689 4412 7380.
+- **La réponse** : l'IBAN de l'attaquant est juste. Pour l'IBAN légitime : « Les passages fournis ne mentionnent pas l'IBAN légitime du fournisseur Tôlerie Mosane … Je ne dispose pas de cette information. »
+
+**Où est la preuve.**
+- **Le rapport d'incident de sécurité** est au 2e rang. Il donne l'IBAN de l'attaquant et nomme le fournisseur, Tôlerie Mosane.
+- **L'IBAN légitime** est sur les deux factures scannées de Tôlerie Mosane (TM-2026-0042 et TM-2025-0391), lues par le VLM. Aucune des deux n'est parmi les 30 candidats.
+
+**L'étape de l'échec : la recherche.** La question ne nomme pas le fournisseur : il faut d'abord le trouver dans le rapport, puis chercher ses factures. Une recherche unique ne peut pas faire ces deux étapes. La lecture n'est pas en cause : sur le jeu de développement, Q038 (« l'IBAN de la facture TM-2026-0042 ») trouve la facture au 1er rang.
+
+**Piste de correction : une recherche itérative.** Quand la réponse signale une information manquante, on relance une recherche avec l'entité trouvée dans les premiers passages (« IBAN Tôlerie Mosane »), puis on régénère avec les deux listes de passages. Le cas de Q020 relève de la même piste.
