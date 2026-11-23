@@ -149,15 +149,6 @@ def list_documents_to_transcribe():
         ).fetchall()
 
 def list_scans_to_convert():
-    """PDF scannés à lire par l'OCR de Docling (section 6, étape 2), pour les comparer au VLM."""
-    with get_connection() as conn:
-        return conn.execute(
-            '''SELECT path, sha256 FROM documents
-               WHERE excluded_reason IS NULL AND source_type = 'scan'
-               ORDER BY path'''
-        ).fetchall()
-
-def list_scans_to_convert():
     """Documents numérisés à lire par l'OCR de Docling (section 6, étape 2), pour les comparer au VLM :
     les PDF scannés, et les photos de factures et de bons de livraison (les preuves des questions scan_ocr)."""
     with get_connection() as conn:

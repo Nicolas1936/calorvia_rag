@@ -286,13 +286,16 @@ wheels = [
 
 [[package]]
 name = "calorvia-rag"
-version = "0.1.0"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "deepeval" },
     { name = "docling" },
     { name = "ipykernel" },
+    { name = "numpy" },
     { name = "openai" },
+    { name = "openpyxl" },
+    { name = "pillow" },
     { name = "polars" },
     { name = "psycopg", extra = ["binary"] },
     { name = "py3langid" },
@@ -300,6 +303,7 @@ dependencies = [
     { name = "pymupdf" },
     { name = "qdrant-client" },
     { name = "ranx" },
+    { name = "requests" },
     { name = "transformers" },
 ]
 
@@ -308,7 +312,10 @@ requires-dist = [
     { name = "deepeval", specifier = ">=4.3.4" },
     { name = "docling", specifier = ">=2.150.1" },
     { name = "ipykernel", specifier = ">=7.4.0" },
+    { name = "numpy", specifier = ">=2.5.5" },
     { name = "openai", specifier = ">=3.51.0" },
+    { name = "openpyxl", specifier = ">=3.1.5" },
+    { name = "pillow", specifier = ">=13.0.0" },
     { name = "polars", specifier = ">=2.1.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.9" },
     { name = "py3langid", specifier = ">=0.4.0" },
@@ -316,6 +323,7 @@ requires-dist = [
     { name = "pymupdf", specifier = ">=2.1" },
     { name = "qdrant-client", specifier = ">=1.20.0" },
     { name = "ranx", specifier = ">=0.3.21" },
+    { name = "requests", specifier = ">=2.34.2" },
     { name = "transformers", specifier = ">=5.17.0" },
 ]
 
