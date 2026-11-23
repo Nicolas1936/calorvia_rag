@@ -40,6 +40,7 @@ Un passage compte comme preuve s'il vient du document attendu et contient tous l
 | 12 | `exp08_images_vlm` | `4546dab` | n° 10 + images et scans transcrits par le VLM (index `_img_scan`, retenue) | 0,934 | 0,839 | 0,910 | 0,831 | 4,1 % | 0,75 | 0/17 | 267 s |
 | 13 | `exp09_scans_docling_ocr` | `b90f2e8` | Abandonnée (`failed`) : lancée avec `git_dirty = true`, arrêtée au démarrage (0 réponse en 11 s), relancée en n° 14 | – | – | – | – | – | – | – | – |
 | 14 | `exp09_scans_docling_ocr` | `1d0d1da` | n° 12, mais les 26 documents numérisés (scans, factures, bons de livraison) sont lus par l'OCR de Docling au lieu du VLM (index `_ocr`, non retenue) | 0,918 | 0,818 | 0,898 | 0,814 | 4,1 % | 0,73 | 0/17 | 248 s |
+| 15 | `exp10_pdf_charts` | `33e9482` | n° 12 + graphiques des PDF texte transcrits par le VLM (index `_pdfimg`, retenue) | 0,943 | 0,847 | 0,918 | 0,839 | 3,3 % | 0,78 | 0/17 | 266 s |
 
 - La durée est celle du run complet (127 questions).
 - Le modèle a refusé toutes les questions `out_of_corpus` (5/5), dans toutes les expériences.
@@ -613,7 +614,7 @@ La section teste trois changements, ajoutés à `v0.4-excel` (n° 10) :
 
 1. transcrire les images et les scans avec le VLM (n° 12, retenu) ;
 2. sur les documents numérisés, comparer le VLM et l'OCR de Docling (n° 14, non retenu) ;
-3. lire les graphiques des PDF texte (à venir).
+3. lire les graphiques des PDF texte (n° 15, retenu).
 
 ### Étape 1 : transcrire les images et les scans avec le VLM (n° 12)
 
@@ -889,6 +890,12 @@ Entre les commits `4546dab` (n° 12) et `1d0d1da` (n° 14), en dehors du rapport
 
 La recherche, le reranker, la génération et le prompt sont les mêmes. L'index compte 1 720 points : les 1 695 du n° 12, moins les 31 chunks VLM des 26 documents, plus les 56 chunks OCR. Le top 5 change pour 39 questions, et 89 réponses sur 127 sont identiques.
 
+**Un défaut découvert après le run, à l'étape 3.** Le commit `b90f2e8` avait laissé l'ancienne ligne de la boucle des images devant le nouveau choix entre OCR et VLM : chaque image passait deux fois par le chunker. Le contenu de l'index n'en souffre pas. Les doublons ont le même identifiant, et Qdrant garde le dernier point : les chunks OCR, produits après ceux du VLM et au moins aussi nombreux pour chacun des 26 documents, les ont tous remplacés.
+
+En revanche, la longueur moyenne des chunks utilisée par le BM25 (`avg_len`) est calculée sur tout ce que produit le chunker, doublons compris. Elle valait 62 mots au lieu de 58. La normalisation du BM25 du n° 14 diffère donc un peu de celle qu'il aurait dû avoir.
+
+Ce défaut ne touche pas les deux échecs `scan_ocr`, qui viennent du contenu des chunks : l'IBAN absent, et « abimés » au lieu de « abîmés ». Il peut en revanche expliquer une partie des petits déplacements de rang décrits plus bas. Le n° 14 n'a pas été relancé, parce que la décision n'en dépend pas. Le défaut est corrigé dans `cb648e0`, avant le n° 15.
+
 #### Résultats (VLM → OCR Docling)
 
 | | VLM (n° 12) | OCR Docling (n° 14) |
@@ -950,8 +957,113 @@ Garder l'OCR seulement pour les 8 PDF scannés, où il vaut le VLM, ferait gagne
 
 Une piste n'a pas été testée : faire garder par le chunker les pieds de page de Docling. Elle rendrait les IBAN, mais ni les en-têtes perdus, ni la structure, ni le chiffre faux.
 
-### Étape 3 : les graphiques des PDF texte
-_À compléter._
+### Étape 3 : les graphiques des PDF texte (n° 15)
+
+#### Le changement testé
+
+Les PDF texte peuvent contenir des graphiques dont les valeurs ne sont pas dans le texte. Seule la légende y est : « Figure : déchets industriels 2025 par filière ». Sur les 75 PDF texte indexés, PyMuPDF ne trouve que 3 images, et ce sont 3 graphiques de 1 320 × 715 px. Les exports Docling en comptent autant.
+
+| Document | Graphique | Question |
+|---|---|---|
+| `Rapport RSE 2025.pdf` | déchets industriels 2025 par filière | Q144 (jeu de développement) : « 612 tonnes » |
+| `2026-04-13 Annexe - Resultats enquete teletravail.pdf` | jour de présence commun souhaité | Q045 (réserve de test) : « mardi, 46 % » |
+| idem | satisfaction, nombre de réponses par note | – |
+
+`etl/vision.py` extrait ces images avec PyMuPDF (`page.get_images()`, en ne gardant que celles d'au moins 200 px de côté) et les transcrit avec le même VLM, le même prompt et le même cache. La clé du cache inclut en plus le numéro de l'image sur la page, puisque l'annexe en a deux sur la même page. Les clés existantes ne changent pas, et les 63 transcriptions déjà faites restent valables.
+
+Chaque graphique donne un chunk, qui contient trois éléments :
+- la ligne de contexte du document ;
+- une ligne d'en-tête : « Graphique du document « Rapport RSE 2025 », page 1 » ;
+- la transcription.
+
+Ces chunks sont numérotés après les chunks Docling du même PDF. L'identifiant d'un point est calculé à partir du document et du numéro de chunk : repartir de 0 aurait écrasé des chunks du texte. Le payload garde `image_path` et `page`, pour pouvoir afficher la page sous la réponse.
+
+Le réglage s'active dans le TOML (`[corpus] include_pdf_images = true`). Il ajoute le suffixe `_pdfimg` au nom de la collection.
+
+#### Vérification des trois transcriptions
+
+| Graphique | Valeurs | Structure |
+|---|---|---|
+| Jour de présence | 5/5 justes (mardi 46 %, jeudi 31 %…) | tableau jour → % juste |
+| Satisfaction | 7/7 justes (note 8 : 32 réponses…), et « 84 réponses » | tableau note → nombre juste |
+| Déchets par filière (RSE) | 5/5 nombres justes (612, 288, 74, 31, 156 t) | **tableau faux** |
+
+Les deux graphiques de l'annexe concordent aussi avec le texte du PDF : 100 % pour les jours, 84 réponses, et une moyenne recalculée de 8,1.
+
+Pour le graphique RSE, le VLM a recopié l'axe vertical au lieu d'associer chaque valeur à sa filière : « 612 t » est sur la ligne « 600 », « 74 t | 156 t » sur la ligne « 100 ». Seule la description donne deux paires : « Métaux » avec 612 tonnes, et « DEEE » avec 31. Ça suffit pour Q144. Mais une question sur les cartons ou les plastiques serait risquée.
+
+Je n'ai pas relancé ce graphique avec un prompt propre aux graphiques : une seule question du jeu de développement en dépend. Les graphiques en images seules (taux de réclamations, tableaux de bord) avaient pourtant été bien transcrits à l'étape 1.
+
+Les 3 transcriptions ont pris 23,2 s, dont sans doute environ 7 s de chargement du VLM par llama-swap au premier appel. Le temps total de lecture des images, des scans et des graphiques passe à **8,4 min**.
+
+#### Un défaut du chunker, corrigé avant l'indexation
+
+En vérifiant le chunker, j'ai trouvé le défaut décrit à l'étape 2 : chaque image passait deux fois par le chunker. Avec la config du n° 12, il produisait 1 766 chunks pour 1 695 points, et le BM25 aurait utilisé une longueur moyenne de 64 mots au lieu de 60. Sans correction, le n° 15 aurait donc mélangé deux changements.
+
+Après la correction (`cb648e0`), le chunker produit pour exp08 exactement 1 695 chunks, sans doublon, avec un `avg_len` de 60 : c'est l'état du n° 12. La correction écarte aussi les scans quand `include_scanned_pdfs` vaut `false`, ce que l'ancienne version ne faisait pas.
+
+#### Vérification avant l'indexation
+
+| | n° 12 | n° 15 |
+|---|---|---|
+| Points dans l'index | 1 695 | 1 698 (+3) |
+| Chunks produits / doublons | 1 695 / 0 | 1 698 / 0 |
+| `avg_len` du BM25 | 60 | 60 |
+| Tokens par chunk de graphique | – | 239 à 265 |
+| Preuve de Q144 (« Métaux », « 612 ») dans un chunk | non | oui |
+| Preuve de Q045 (« Mardi », « 46 ») dans un chunk | non | oui |
+
+#### Comparabilité
+
+Entre les commits `4546dab` (n° 12) et `33e9482` (n° 15), ont changé :
+- le code de l'étape 2 (l'OCR, inactif dans cette config) ;
+- l'extraction des images des PDF et la clé du cache dans `vision.py` ;
+- le chunk des graphiques et la correction des doublons dans le chunker ;
+- le nom de la collection ;
+- le TOML.
+
+La recherche, le reranker, la génération et le prompt sont les mêmes. Le top 5 change pour 4 questions : Q144, et Q033, Q047 et Q117, où seul l'ordre change, sans effet sur aucune métrique. Les 3 chunks de plus modifient légèrement l'IDF du BM25. 109 réponses sur 127 sont identiques.
+
+#### Résultats (n° 12 → n° 15)
+
+| | n° 12 | n° 15 |
+|---|---|---|
+| hit@5 | 0,934 | **0,943** |
+| MRR | 0,839 | 0,847 |
+| recall@5 | 0,910 | 0,918 |
+| nDCG@5 | 0,831 | 0,839 |
+| `image_in_document` (Q144) : hit@5 / refus | 0 / 1 | **1 / 0** |
+| Refus à tort | 5/122 (4,1 %) | **4/122 (3,3 %)** |
+| correctness (31) | 0,745 | **0,784** |
+| faithfulness (31) | 0,903 | 0,968 |
+| `trap_hit` | 7/17 | 7/17 |
+| `trap_avoided` selon le juge | 15/17 (0,88) | 15/17 (0,88) |
+| Réponses qui reprennent le piège, après relecture | 0/17 | 0/17 |
+| Tokens envoyés au LLM par question (moyenne) | 1 808 | 1 806 |
+| Temps de réponse moyen / médian / 90e centile | 6,20 s / 5,58 s / 10,0 s | 6,19 s / 5,48 s / 9,8 s |
+| Durée du run | 267 s | 266 s |
+
+- **Q144** : le refus devient « Calorvia a produit 612 tonnes de déchets métalliques en 2025 ». Le chunk du graphique arrive 1er. Le juge note 1 en correctness comme en faithfulness.
+- **Aucun effet de bord** : le chunk d'un graphique n'entre dans le top 5 d'aucune autre question.
+- **Le juge** :
+  - Q158 passe de 0,4 à 0,6 en correctness, avec une réponse qui a changé (bruit de génération).
+  - Gemma a de nouveau renvoyé un JSON invalide pour la faithfulness de Q002. La note, rejugée seule, vaut 1. La réponse a changé (« … jusqu'à l'arrivée d'un nouveau directeur financier »), et la note de Q002 alterne entre 0 et 1 d'un run à l'autre depuis la section 4.
+
+  Sans Q002, l'effet propre de l'étape sur la faithfulness est d'environ +0,03, soit Q144 seule.
+
+#### Coût
+
+- **À l'indexation** : 3 transcriptions (23 s, une seule fois) et 3 points de plus dans l'index.
+- **À chaque question** : rien ne change, ni les tokens ni le temps de réponse.
+
+#### Décision : la lecture des graphiques des PDF est retenue
+
+1. **Elle résout la seule question `image_in_document` du jeu de développement**, sans effet sur les autres questions. Elle prépare aussi Q045 pour l'évaluation finale.
+2. **Elle ne coûte presque rien** : 23 s une seule fois, et rien par question.
+
+Le n° 15 devient la meilleure configuration : hit@5 de 0,943, 4 refus à tort sur 122, correctness de 0,78.
+
+Reste à faire : le tableau mal construit du graphique RSE.
 
 ## Section 7 : le temps et les versions (`v0.6-versions`)
 _À compléter : taux de pièges avant (section 3 : 1/17) et après._
