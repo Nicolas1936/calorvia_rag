@@ -1,0 +1,50 @@
+name = 'exp14_passages_by_date'
+tag = 'v0.6-versions'
+
+[corpus]
+include_formats = ['docx', 'pdf', 'html', 'pptx', 'md', 'csv', 'xlsx']
+include_scanned_pdfs = true    # pages transcrites par le VLM (etl/vision.py)
+include_images = true          # images transcrites par le VLM (etl/vision.py)
+include_pdf_images = true      # graphiques insérés dans les PDF texte, transcrits par le VLM (etl/vision.py)
+
+[chunking]
+type = 'hybrid'
+max_tokens = 512
+overlap = 0
+context_line = true           # Active la ligne [Type · Date · Dossier]
+excel_reader = 'openpyxl'     # classeurs lus par etl/excel.py ; absent = Docling
+
+[embedder]
+model = 'bge-m3'
+vector_size = 1024
+embedding_batch_size = 2048
+query_instruction = ''
+
+[index]
+sparse_vector = 'bm25'
+sparse_embedder_ascii_folding = true
+sparse_language = 'per_chunk'   # stemmer BM25 selon la langue du chunk ; absent = langue du corpus
+
+[search]
+method = 'hybrid'
+candidates = 30
+exclude_status = ['projet']    # must_not sur le statut du registre : projets de PV, projet de tarif
+
+[reranker]
+model = 'bge-reranker-v2-m3'
+top_k = 10                     # 10 passages au LLM (n° 18)
+
+[generation]
+model = 'qwen3.8-27b'
+system_prompt = 'prompts/detailed_fr_versions.txt'   # + consignes sur les versions : projet, PV corrigé, date passée
+passage_order = 'date'         # passages sans date d'abord, puis du plus ancien au plus récent, chacun avec sa date ; absent = ordre du reranker
+temperature = 0.0
+top_p = 1.0
+top_k = 40
+max_tokens = 4096
+reasoning = false
+
+[judge]
+model = 'gemma-4-26b'
+samples_per_type = 2
+seed = 42

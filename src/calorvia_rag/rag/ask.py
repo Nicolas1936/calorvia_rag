@@ -16,10 +16,22 @@ def get_llm_client():
         api_key = settings.llm_server_api_key
     )
 
+def ordered_passages(chunks):
+    """Les passages numérotés par rang du reranker, dans l'ordre où le prompt les présente.
+    Avec `passage_order = 'date'` (TOML) : les passages sans date d'abord, puis du plus ancien au plus récent ;
+    à date égale, l'ordre du reranker. Le numéro reste le rang : une citation [n] renvoie au n-ième chunk enregistré."""
+    numbered = list(enumerate(chunks, start = 1))
+    if runner_settings['generation'].get('passage_order') != 'date':
+        return numbered
+    return sorted(numbered, key = lambda item: item[1][0].payload.get('doc_date') or '')
+
 def build_prompt(query, chunks):
+    by_date = runner_settings['generation'].get('passage_order') == 'date'
     prompt = ''
-    for i, (chunk, score) in enumerate(chunks, start = 1):
-        prompt += f'<passage id="{i}">\n{chunk.payload["text"]}\n</passage>\n'
+    for i, (chunk, score) in ordered_passages(chunks):
+        date = chunk.payload.get('doc_date')
+        attributes = f' date="{date}"' if by_date and date else ''
+        prompt += f'<passage id="{i}"{attributes}>\n{chunk.payload["text"]}\n</passage>\n'
     return prompt + f'\nQuestion: {query}'
 
 async def get_response(query, chunks, llm_client):

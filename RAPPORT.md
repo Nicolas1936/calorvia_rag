@@ -43,6 +43,7 @@ Un passage compte comme preuve s'il vient du document attendu et contient tous l
 | 15 | `exp10_pdf_charts` | `33e9482` | n° 12 + graphiques des PDF texte transcrits par le VLM (index `_pdfimg`, retenue) | 0,943 | 0,847 | 0,918 | 0,839 | 3,3 % | 0,78 | 0/17 | 266 s |
 | 16 | `exp11_exclude_drafts` | `6010c97` | n° 15 + filtre `must_not` sur le statut `projet` (projets de PV du CA, projet de tarif), registre corrigé (retenue) | 0,943 | 0,855 | 0,918 | 0,845 | 3,3 % | 0,78 | 0/17 (1 cas limite : Q023) | 268 s |
 | 17 | `exp12_prompt_versions` | `ec9f7b9` | n° 16 + consignes sur les versions dans le prompt : projet, PV corrigé, date passée (retenue) | 0,943 | 0,855 | 0,918 | 0,845 | 3,3 % | 0,77 | 0/17 | 271 s |
+| 18 | `exp13_top10` | `5c42321` | n° 17 + 10 passages au LLM au lieu de 5 (`[reranker] top_k = 10`, retenue ; métriques @5 recalculées sur les 5 premiers passages) | 0,943 | 0,855 | 0,918 | 0,845 | 4,1 % | 0,78 | 0/17 | 393 s |
 
 - La durée est celle du run complet (127 questions).
 - Le modèle a refusé toutes les questions `out_of_corpus` (5/5), dans toutes les expériences.
@@ -1097,7 +1098,8 @@ La section teste les pistes du TODO une par une, de la moins chère à la plus c
 
 1. un filtre `must_not` sur le statut du registre (n° 16, retenu) ;
 2. des consignes de lecture dans le prompt (n° 17, retenu) ;
-3. plus de passages après le reranking, à la place de « plus de candidats avant le reranking » (à venir).
+3. plus de passages après le reranking, à la place de « plus de candidats avant le reranking » (n° 18, retenu) ;
+4. les passages triés par date dans le prompt, chacun avec sa date (à venir).
 
 ### Étape 1 : écarter les projets avec un filtre `must_not` sur `status` (n° 16)
 
@@ -1292,6 +1294,105 @@ J'ai relancé la recherche de ces trois questions avec 30, 60 et 100 candidats :
 Le gain est modeste parce que les réponses aux questions avec piège étaient déjà presque toutes justes. Le taux de pièges est de 4/17 pour `trap_hit`, et de 0/17 réponse qui reprend le piège.
 
 La suite vise le classement : faire lire plus de passages au LLM (`top_k` de 5 à 10), pour Q008 et Q152.
+
+### Étape 3 : dix passages pour le LLM au lieu de cinq (n° 18)
+
+#### Le changement testé
+
+Le TOML `exp13_top10.toml` passe `[reranker] top_k` de 5 à 10. La recherche (30 candidats, filtre `must_not`), le reranker et le prompt du n° 17 ne changent pas : le LLM reçoit en plus les passages classés du 6e au 10e rang.
+
+L'étape 2 a montré que les preuves manquantes sont déjà parmi les 30 candidats, mais classées après le 5e rang :
+- Q008 au 9e rang ;
+- Q152 au 8e rang ;
+- Q081 aux 16e et 17e rangs.
+
+Le pronostic était donc un gain pour Q152 et Q008, et aucun pour Q081. Cette étape remplace la piste 5 du TODO (plus de candidats avant le reranking), qui ne change rien.
+
+#### Mesurer à 5 et à 10 passages
+
+Les métriques de recherche du runner suivent `top_k`. Le n° 18 enregistre donc hit@10, recall@10, nDCG@10, et un MRR calculé sur 10 passages. Pour le comparer au n° 17, j'ai recalculé les métriques @5 et `trap_hit` sur les 5 premiers passages enregistrés, avec les fonctions du runner (`retrieval_scores`, `trap_hit`). Le tableau comparatif donne ces valeurs @5.
+
+#### Comparabilité
+
+Entre les commits `ec9f7b9` (n° 17) et `5c42321` (n° 18), en dehors du rapport et de l'export CSV, seul le TOML a changé. L'index n'a pas été reconstruit.
+
+Les 5 premiers passages sont les mêmes pour 125 questions sur 127 :
+- **Q121** : deux passages aux scores de reranking presque égaux (0,96789 et 0,96787) échangent leur place, comme à l'étape 2 ;
+- **Q034** : un passage du PV du CA du 16/06/2026 est à égalité au 30e rang de la fusion RRF. Il entre ou non parmi les candidats selon l'appel : il est entré une fois sur trois quand j'ai relancé la recherche. Au n° 18, il est entré, et le reranker l'a placé au 2e rang. La réponse reste juste.
+
+59 réponses sur 127 sont identiques.
+
+#### Résultats (n° 17 → n° 18)
+
+| | n° 17 | n° 18 |
+|---|---|---|
+| hit@5 / MRR / recall@5 / nDCG@5 (5 premiers passages) | 0,943 / 0,855 / 0,918 / 0,845 | identiques |
+| hit@10 / MRR / recall@10 / nDCG@10 | – | 0,951 / 0,856 / 0,934 / 0,854 |
+| Refus à tort | 4/122 (3,3 %) | 5/122 (4,1 %) |
+| correctness (31) | 0,771 | 0,777 |
+| faithfulness (31) | 0,892 | 0,892 |
+| `trap_hit` dans les 5 premiers passages | 4/17 | 4/17 |
+| **`trap_hit` dans les passages transmis au LLM** | 4/17 (5 passages) | **10/17** (10 passages) |
+| `trap_avoided` selon le juge | 15/17 (0,88) | 16/17 (0,94) |
+| **Réponses qui reprennent le piège, après relecture** | 0/17 | **0/17** |
+| Tokens envoyés au LLM par question (moyenne) | 1 934 | 3 212 |
+| Temps de réponse moyen / médian / 90e centile | 6,29 s / 5,59 s / 10,2 s | 9,20 s / 8,31 s / 15,7 s |
+| Durée du run | 271 s | 393 s |
+
+Les passages de rang 6 à 10 complètent la preuve de quatre questions : Q008 (hit de 0 à 1), Q101, Q127 et Q152 (recall de 0,5 à 1). Parmi les questions notées par le juge, `action_tracking` passe de 0,40 à 0,70 en correctness, grâce à Q152.
+
+#### Les pièges
+
+**Les consignes de l'étape 2 tiennent avec un contexte deux fois plus long.** Six questions `decision_current` reçoivent maintenant un passage piège entre le 6e et le 10e rang : Q054, Q063, Q091, Q096, Q099 et Q108. Leurs réponses restent justes. Q043 cite même les versions v1 et v2 (300 k€) comme des versions remplacées : « le budget approuvé … est de 280 k€. Cette enveloppe a été réduite par rapport aux versions précédentes qui prévoyaient 300 k€ ».
+
+Les 6 réponses `decision_history` restent justes. Q138 donne toujours « 168 sur 214 » au 26 janvier 2026.
+
+Selon le juge, Q008 passe de 0 à 1 en `trap_avoided` : la réponse ne décrit plus une campagne en cours, mais sa clôture. Q056 reste à 0, à cause de l'organigramme (section 6).
+
+#### Les réponses gagnées
+
+| Question | Rang de la preuve ajoutée | n° 17 | n° 18 |
+|---|---|---|---|
+| Q152 (`action_tracking`) | 8 | « la réponse de Valtek est toujours attendue, ce qui place l'action en retard » | l'accord de Valtek pour 65 % du coût, et la clôture de l'action (correctness de 0 à 0,6) |
+| Q008 (`decision_current`) | 9 | la description du défaut et du lancement de la campagne, sans son état | la clôture au 31 mars 2026. Les 211 unités réparées sur 214 manquent toujours (preuve au 14e rang), ainsi que la part de Valtek |
+| Q101 (`multi_doc`) | 6 | 65 %, mais « aucune information concernant le plafond » | 65 %, « inférieur au plafond de responsabilité de 250 000 € par événement » |
+| Q127 (`multi_doc`) | 8 | « Non » (1 230 unités contre 2 400 par an) : faux | « Oui, … en ligne avec son engagement » : juste, sans citer le plan de compte |
+
+Trois autres réponses sont plus précises :
+- Q104 donne les 18 % de fiches articles incomplètes ;
+- Q087 donne le détail des scopes (38 600 t pour le scope 3) ;
+- Q048 retrouve « selon la version 3 de la politique », perdue à l'étape 2.
+
+#### Ce qui se dégrade
+
+- **Q062 (`multilingual`) devient fausse.** La preuve, le rapport d'incident en néerlandais, n'est dans les 10 premiers passages d'aucun des deux runs.
+  - Au n° 17, la réponse était tirée du PV du CODIR du 17/11, et elle était juste : pas de passage piéton, visibilité réduite, vitesse d'environ 11 km/h.
+  - Au n° 18, le 6e passage est « Rapport incident securite 2026-01-13 · Causes », sur l'hameçonnage de janvier. Il reprend les mots de la question (« rapport d'incident », « causes »), et le modèle répond avec les causes de l'hameçonnage.
+
+  C'est le risque d'un contexte plus long : un passage hors sujet, mais proche de la question par les mots, détourne le modèle.
+- **Q077 (`factual`) devient un refus.** La preuve, les conditions générales de vente, n'est dans les 10 premiers passages d'aucun des deux runs. Au n° 17, la réponse était fausse : elle donnait les conditions de paiement des fournisseurs. Au n° 18, le modèle refuse. C'est plus honnête, mais c'est le refus à tort supplémentaire du tableau.
+- **Quelques détails disparaissent**, sans valeur fausse : les lunettes de protection pour Q011, la charge de 1,3 kg pour Q032, « imputable à l'intégrateur » pour Q013, « chez Linetech » pour Q058.
+  - Le juge baisse Q013 et Q058 de 0,1.
+  - Il baisse aussi Q023 de 1 à 0,8 : la réponse donne toujours 1 250 000 € en premier, mais ne cite plus la séance du 16 décembre.
+- **Q081 ne change pas**, comme prévu : ses preuves restent aux 16e et 17e rangs.
+
+#### Coût
+
+- Le LLM lit 66 % de tokens en plus (de 1 934 à 3 212 par question).
+- Le temps de réponse moyen passe de 6,29 à 9,20 s (+46 %), et le 90e centile de 10,2 à 15,7 s.
+- La réponse ne s'allonge pas (45 tokens générés en moyenne, contre 44). C'est le prompt plus long qui coûte : sa lecture passe de 1,8 à 3,1 s, et la génération ralentit avec la longueur du contexte.
+
+#### Décision : dix passages sont retenus
+
+1. C'est le seul changement de la section qui corrige des réponses fausses : Q152, Q127, Q101 et, en partie, Q008.
+2. Les consignes de l'étape 2 écartent les pièges, alors que 10 questions sur 17 ont maintenant un passage piège dans leur contexte.
+3. Le prix est de 46 % de temps de réponse en plus, et d'une régression (Q062). Q077 était déjà fausse.
+
+Un `top_k` de 8 aurait gardé Q101, Q127 et Q152, mais perdu Q008, dont la preuve est au 9e rang.
+
+Le taux de pièges est de 4/17 dans les 5 premiers passages et de 10/17 dans les 10 passages lus, avec 0/17 réponse qui reprend le piège.
+
+Avec 10 passages, le LLM reçoit plus d'épisodes de chaque fil de décision. La piste suivante les lui présente dans l'ordre chronologique, chacun avec sa date (piste 3 du TODO).
 
 ## Évaluation finale sur la réserve de test (`v1.0`)
 _À compléter : réserve de test (31 questions) comparée au jeu de développement._
