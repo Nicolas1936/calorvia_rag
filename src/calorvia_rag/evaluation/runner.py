@@ -1,5 +1,6 @@
 from calorvia_rag.config import settings, runner_settings
-from calorvia_rag.db import start_experiment, end_experiment, insert_answer, insert_scores, get_answers
+from calorvia_rag.db import (start_experiment, end_experiment, insert_answer, insert_scores, get_answers,
+                             get_experiment_split, list_test_experiments)
 from calorvia_rag.qdrant import get_qdrant_client
 from calorvia_rag.embedding import get_embedder
 from calorvia_rag.rag.ask import generate_response, get_llm_client
@@ -19,15 +20,24 @@ def is_test_question(question):
     """Réserve de test : les questions dont le numéro est un multiple de 5 (Q005, Q010… Q155)."""
     return int(question['id'][1:]) % 5 == 0
 
-def load_questions(path):
-    """Le jeu de développement : les 127 questions hors réserve de test."""
+def load_questions(path, split = 'dev'):
+    """Le jeu de développement (127 questions, split = 'dev') ou la réserve de test (31 questions, split = 'test')."""
     with open(path, encoding = 'utf-8') as f:
-        return [question for question in json.load(f) if not is_test_question(question)]
+        return [question for question in json.load(f) if is_test_question(question) == (split == 'test')]
 
-def get_experiment_config():
+def get_experiment_config(split = 'dev'):
     generation_cfg = runner_settings['generation']
     system_prompt = Path(generation_cfg['system_prompt']).read_text(encoding = 'utf-8')
-    return {**runner_settings, 'generation': {**generation_cfg, 'system_prompt_text': system_prompt}}
+    return {**runner_settings, 'split': split, 'generation': {**generation_cfg, 'system_prompt_text': system_prompt}}
+
+def check_test_run(git_dirty):
+    """La réserve de test ne s'évalue qu'une fois, sur du code commité : sinon, le run s'arrête avant de commencer."""
+    if git_dirty:
+        sys.exit('Mode test refusé : modifications non commitées (git_dirty = true).')
+    done = list_test_experiments()
+    if done:
+        experiment_id, name = done[0]
+        sys.exit(f'Mode test refusé : la réserve a déjà été évaluée (expérience {experiment_id}, {name}).')
 
 def evaluate_question(question, answer, chunks):
     k = runner_settings['reranker']['top_k']
@@ -60,15 +70,18 @@ async def answer_questions(experiment_id, questions):
         for question in questions
     ])
 
-def run_experiment():
-    questions = load_questions(settings.eval_dataset_path)
+def run_experiment(split = 'dev'):
+    questions = load_questions(settings.eval_dataset_path, split)
 
     git_commit, git_dirty = git_state()
-    if git_dirty:
+    if split == 'test':
+        check_test_run(git_dirty)
+    elif git_dirty:
         print('⚠️  Modifications non commitées : le commit enregistré ne reproduit pas exactement cette expérience.')
 
-    experiment_id = start_experiment(runner_settings['name'], get_experiment_config(), git_commit, git_dirty)
-    print('Experiment', experiment_id)
+    name = runner_settings['name'] if split == 'dev' else f"{runner_settings['name']}_test"
+    experiment_id = start_experiment(name, get_experiment_config(split), git_commit, git_dirty)
+    print('Experiment', experiment_id, f'({name}, {len(questions)} questions)')
     start = perf_counter()
     status = 'failed'
 
@@ -87,10 +100,12 @@ def judge_experiment(experiment_id):
     if judge_model not in get_served_models():
         raise ValueError(f'The judge model {judge_model} is not served by the LLM server')
 
-    questions = load_questions(settings.eval_dataset_path)
+    split = get_experiment_split(experiment_id)
+    questions = load_questions(settings.eval_dataset_path, split)
     answers = get_answers(experiment_id)
     judge_metrics = get_judge_metrics()
-    judge_sample = get_judge_sample(questions)
+    # Réserve de test : ses 31 questions sont toutes jugées. Jeu de développement : l'échantillon de N questions par type.
+    judge_sample = [question['id'] for question in questions] if split == 'test' else get_judge_sample(questions)
 
     for question in questions:
         names = []
@@ -112,5 +127,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'judge':
         for experiment_id in sys.argv[2:]:
             judge_experiment(int(experiment_id))
+    elif len(sys.argv) > 1 and sys.argv[1] == 'test':
+        run_experiment('test')                  # la réserve de test : une seule fois, avec la configuration finale
     else:
         run_experiment()

@@ -96,6 +96,21 @@ def list_documents_to_chunk():
                ORDER BY path'''
         ).fetchall()
 
+def get_experiment_split(experiment_id):
+    """Le jeu de questions d'une expérience : 'test' pour la réserve, 'dev' sinon (les expériences d'avant le mode test n'ont pas de split)."""
+    with get_connection() as conn:
+        row = conn.execute("SELECT config->>'split' FROM experiments WHERE id = %s", (experiment_id,)).fetchone()
+    if row is None:
+        raise ValueError(f'Experiment {experiment_id} not found')
+    return row[0] or 'dev'
+
+def list_test_experiments():
+    """Les expériences terminées sur la réserve de test : elle ne doit être évaluée qu'une fois."""
+    with get_connection() as conn:
+        return conn.execute(
+            "SELECT id, name FROM experiments WHERE config->>'split' = 'test' AND status = 'done' ORDER BY id"
+        ).fetchall()
+
 def end_experiment(experiment_id, duration_s, status):
     with get_connection() as conn:
         conn.execute(
