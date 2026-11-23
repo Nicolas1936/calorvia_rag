@@ -1,5 +1,5 @@
 from calorvia_rag.config import settings, runner_settings
-from calorvia_rag.db import list_documents_to_chunk, list_documents_to_transcribe
+from calorvia_rag.db import list_documents_to_chunk, list_documents_to_transcribe, list_scans_to_convert
 from calorvia_rag.etl.inventory import detect_language
 from calorvia_rag.etl.excel import workbook_texts
 from calorvia_rag.etl.vision import get_vlm_client, document_pages, transcribe_cached
@@ -122,9 +122,15 @@ def iter_chunks(chunker):
 
     source_types = vision_source_types()
     if source_types:
+        scan_reader = runner_settings.get('corpus', {}).get('scan_reader', 'vlm')
+        ocr_hashes = {sha256 for _, sha256 in list_scans_to_convert()} if scan_reader == 'docling' else set()
         vlm_client = get_vlm_client()
         for row in list_documents_to_transcribe():
             if row['source_type'] in source_types:
+                yield from chunk_transcription(row, chunker, context_line, vlm_client)
+            if row['sha256'] in ocr_hashes:                  # document numérisé : export Docling avec OCR
+                yield from chunk_document(row, chunker, context_line)
+            else:                                            # autres images : transcription du VLM (cache)
                 yield from chunk_transcription(row, chunker, context_line, vlm_client)
 
 def document_metadata(row):

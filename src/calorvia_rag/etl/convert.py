@@ -1,9 +1,13 @@
 from calorvia_rag.config import settings
 from calorvia_rag.db import start_run, end_run, insert_log, is_file_processed, list_files_to_convert
 
-from docling.document_converter import DocumentConverter, PdfFormatOption
+from docling.document_converter import DocumentConverter, PdfFormatOption, ImageFormatOption
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions, AcceleratorOptions
+
+from calorvia_rag.db import start_run, end_run, insert_log, is_file_processed, list_files_to_convert, list_scans_to_convert
+from docling.datamodel.pipeline_options import PdfPipelineOptions, AcceleratorOptions, RapidOcrOptions
+import sys
 
 from time import perf_counter
 
@@ -11,26 +15,28 @@ import hashlib
 
 ALLOWED_INPUT_FORMAT = [
     InputFormat.PDF, InputFormat.DOCX, InputFormat.HTML, InputFormat.PPTX,
-    InputFormat.MD, InputFormat.CSV, InputFormat.XLSX,
+    InputFormat.MD, InputFormat.CSV, InputFormat.XLSX, InputFormat.IMAGE
 ]
 
 TRUNCATE_EXPORT_FOLDER = False
 
-def get_converter(models_folder, device, num_threads):
+def get_converter(models_folder, device, num_threads, do_ocr = False):
     options = PdfPipelineOptions(
         artifacts_path = (models_folder / 'docling'),
         accelerator_options = AcceleratorOptions(
             device = device,
             num_threads = num_threads
         ),
-        do_ocr = False,   # les scans sont écartés : pas besoin d'OCR
+        do_ocr = do_ocr,   # True seulement pour les PDF scannés
+        ocr_options = RapidOcrOptions(force_full_page_ocr = True),
         generate_page_images = True
     )
 
     converter = DocumentConverter(
         allowed_formats = ALLOWED_INPUT_FORMAT,
         format_options= {
-            InputFormat.PDF: PdfFormatOption(pipeline_options=options)
+            InputFormat.PDF: PdfFormatOption(pipeline_options=options),
+            InputFormat.IMAGE: ImageFormatOption(pipeline_options=options),   # photos de factures et de BL (OCR)
         }
     )
 
@@ -76,24 +82,25 @@ def convert_file(file_path, converter, export_folder, file_hash):
 
     return log
 
-def convert_corpus():
+def convert_corpus(files = None, do_ocr = False):
     converter = get_converter(
         settings.models_folder,
         settings.ocr_device,
         settings.ocr_num_threads,
+        do_ocr,
     )
 
     conversion_parameters = {
         'device': settings.ocr_device,
         'threads': settings.ocr_num_threads,
         'allowed_formats': ','.join(f.value for f in ALLOWED_INPUT_FORMAT),
-        'do_ocr': False
-
+        'do_ocr': False,
+        'ocr_engine': 'rapidocr' if do_ocr else None,
     }
 
     run_id = start_run(conversion_parameters)
 
-    files = list_files_to_convert()
+    files = list_files_to_convert() if files is None else files
 
     settings.processed_documents_folder.mkdir(exist_ok = True)
 
@@ -109,6 +116,8 @@ def convert_corpus():
                 doc_processed += 1
 
                 insert_log(run_id, log)
+                print(f"{log['process_time']:6.1f} s  {log['status_']}  {relative_path}")
+
 
                 run_logs.append(log)
 
@@ -119,5 +128,12 @@ def convert_corpus():
     finally:
         end_run(run_id, doc_processed, doc_ignored, doc_failed)
 
+def convert_scans():
+    """Les PDF scannés lus par l'OCR de Docling (RapidOCR), pour les comparer au VLM (section 6, étape 2)."""
+    convert_corpus(list_scans_to_convert(), do_ocr = True)
+
 if __name__ == '__main__':
-    convert_corpus()
+    if sys.argv[1:] == ['scans']:
+        convert_scans()
+    else:
+        convert_corpus()

@@ -1,7 +1,7 @@
 import numpy as np
 
 from calorvia_rag.config import runner_settings
-from calorvia_rag.etl.convert import convert_corpus
+from calorvia_rag.etl.convert import convert_corpus, convert_scans
 from calorvia_rag.etl.chunker import iter_chunks, get_chunker
 from calorvia_rag.embedding import get_embedder, get_sparse_options, embed, embed_sparse, get_stemmer
 from calorvia_rag.qdrant import get_qdrant_client, get_collection_name
@@ -87,11 +87,16 @@ def index_corpus():
         excel_reader = chunking_cfg.get('excel_reader'),
         include_images = runner_settings.get('corpus', {}).get('include_images'),
         include_scans = runner_settings.get('corpus', {}).get('include_scanned_pdfs'),
+        scan_reader = runner_settings.get('corpus', {}).get('scan_reader'),
     )
 
     init_collection(qdrant_client, collection_name, embedder_cfg['vector_size'])
 
     convert_corpus()
+
+    if runner_settings.get('corpus', {}).get('scan_reader') == 'docling':
+        convert_scans()          # les 26 documents sont déjà convertis : ils seront sautés
+
 
     sparse_embedder_options = get_sparse_options(index_cfg)
     sparse_embedder_options['avg_len'] = probe_avg_len(chunker)

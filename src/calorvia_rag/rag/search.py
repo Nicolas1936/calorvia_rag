@@ -46,6 +46,7 @@ def search_chunks(query, qdrant_client, embedder, query_filter = None, translati
         excel_reader = chunking_cfg.get('excel_reader'),
         include_images = runner_settings.get('corpus', {}).get('include_images'),
         include_scans = runner_settings.get('corpus', {}).get('include_scanned_pdfs'),
+        scan_reader = runner_settings.get('corpus', {}).get('scan_reader'),
     )
     limit = search_cfg['candidates']
 
