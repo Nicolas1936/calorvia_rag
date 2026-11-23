@@ -42,6 +42,7 @@ Un passage compte comme preuve s'il vient du document attendu et contient tous l
 | 14 | `exp09_scans_docling_ocr` | `1d0d1da` | n° 12, mais les 26 documents numérisés (scans, factures, bons de livraison) sont lus par l'OCR de Docling au lieu du VLM (index `_ocr`, non retenue) | 0,918 | 0,818 | 0,898 | 0,814 | 4,1 % | 0,73 | 0/17 | 248 s |
 | 15 | `exp10_pdf_charts` | `33e9482` | n° 12 + graphiques des PDF texte transcrits par le VLM (index `_pdfimg`, retenue) | 0,943 | 0,847 | 0,918 | 0,839 | 3,3 % | 0,78 | 0/17 | 266 s |
 | 16 | `exp11_exclude_drafts` | `6010c97` | n° 15 + filtre `must_not` sur le statut `projet` (projets de PV du CA, projet de tarif), registre corrigé (retenue) | 0,943 | 0,855 | 0,918 | 0,845 | 3,3 % | 0,78 | 0/17 (1 cas limite : Q023) | 268 s |
+| 17 | `exp12_prompt_versions` | `ec9f7b9` | n° 16 + consignes sur les versions dans le prompt : projet, PV corrigé, date passée (retenue) | 0,943 | 0,855 | 0,918 | 0,845 | 3,3 % | 0,77 | 0/17 | 271 s |
 
 - La durée est celle du run complet (127 questions).
 - Le modèle a refusé toutes les questions `out_of_corpus` (5/5), dans toutes les expériences.
@@ -1095,7 +1096,8 @@ La recherche trouve donc presque toujours la bonne preuve, mais le mauvais passa
 La section teste les pistes du TODO une par une, de la moins chère à la plus chère, à partir du n° 15 :
 
 1. un filtre `must_not` sur le statut du registre (n° 16, retenu) ;
-2. des consignes de lecture dans le prompt (à venir).
+2. des consignes de lecture dans le prompt (n° 17, retenu) ;
+3. plus de passages après le reranking, à la place de « plus de candidats avant le reranking » (à venir).
 
 ### Étape 1 : écarter les projets avec un filtre `must_not` sur `status` (n° 16)
 
@@ -1206,6 +1208,90 @@ Aucun : le filtre ne change ni les tokens ni le temps de réponse.
 #### Décision : le filtre sur le statut est conservé
 
 Il ôte 3 pièges sur 7 du top 5, fait avancer deux preuves au 1er rang, ne perd aucune preuve et ne coûte rien. Le taux de pièges passe de 7/17 à 4/17 pour `trap_hit`, et reste à 0/17 réponse qui reprend le piège, avec un cas limite.
+
+### Étape 2 : des consignes de lecture dans le prompt (n° 17)
+
+#### Le changement testé
+
+Le nouveau prompt, `prompts/detailed_fr_versions.txt`, part de `detailed_fr.txt` (section 4). Les autres consignes sont identiques, simplement renumérotées. La consigne 3 est précisée, et deux consignes sont ajoutées :
+
+> 3. Lorsqu'une information a changé au fil du temps, donne la plus récente selon les dates des documents. **Si la question porte sur une date ou une période passée, ou sur ce qui avait d'abord été décidé, donne la valeur de ce moment-là.**
+> 4. **Un projet de document ou une version de travail (v1, v2…) ne fait pas foi : préfère la version signée, approuvée ou définitive.**
+> 5. **Lorsqu'un procès-verbal est corrigé lors de son approbation à une séance suivante, la correction remplace la valeur d'origine : donne la valeur corrigée comme réponse, et ne présente jamais la valeur d'origine comme la décision prise.**
+
+Ce sont les trois règles du TODO : la décision la plus récente prime, un projet ne fait pas foi, un PV corrigé est remplacé.
+- **La consigne 3** existait déjà en partie. L'exception ajoutée protège les questions `decision_history`, qui demandent une valeur ancienne.
+- **La consigne 4** vise Q043, Q048 et Q153. Les lignes de contexte donnent déjà la version : `[Budget 2026 (v1) · …]`, `[Plan strategique 2026-2028 v1 · …]`.
+- **La consigne 5** vise le cas limite de Q023.
+
+#### Comparabilité
+
+Entre les commits `6010c97` (n° 16) et `ec9f7b9` (n° 17), en dehors du rapport et de l'export CSV, seuls ont changé le prompt et le TOML. L'index n'a pas été reconstruit.
+
+Le top 5 ne change que pour Q033 et Q121, où deux passages aux scores de reranking presque égaux (0,7773 et 0,7771) échangent leur place. C'est un arrondi du reranker. 89 réponses sur 127 sont identiques.
+
+#### Résultats (n° 16 → n° 17)
+
+| | n° 16 | n° 17 |
+|---|---|---|
+| hit@5 / MRR / recall@5 / nDCG@5 | 0,943 / 0,855 / 0,918 / 0,845 | identiques |
+| Refus à tort | 4/122 (3,3 %) | 4/122 (3,3 %) |
+| correctness (31) | 0,777 | 0,771 |
+| faithfulness (31) | 0,919 | 0,892 |
+| `trap_hit` | 4/17 | 4/17 |
+| `trap_avoided` selon le juge | 15/17 (0,88) | 15/17 (0,88) |
+| **Réponses qui reprennent le piège, après relecture** | 0/17, et 1 cas limite (Q023) | **0/17, sans cas limite** |
+| Tokens envoyés au LLM par question (moyenne) | 1 807 | 1 934 |
+| Temps de réponse moyen / médian / 90e centile | 6,24 s / 5,61 s / 9,3 s | 6,29 s / 5,59 s / 10,2 s |
+| Durée du run | 268 s | 271 s |
+
+Le changement ne touche que la génération, et le juge ne note que 2 questions par type. J'ai donc relu les réponses aux 17 questions avec piège et aux 6 questions `decision_history`.
+
+- **Q023 est réglée.** La réponse commence maintenant par la bonne valeur : « … un montant de 1 250 000 € pour la phase 1 de la ligne L4, une valeur corrigée lors de l'approbation du procès-verbal du 16 décembre 2025 ». La faithfulness passe de 0,5 à 1.
+- **L'exception de la consigne 3 tient** : les 6 réponses `decision_history` restent justes. Le meilleur test est Q138 (« combien d'interventions du rappel avaient été réalisées **au 26 janvier 2026** ? »). La réponse donne toujours « 168 sur 214 », c'est-à-dire la valeur piège de Q008, qui porte sur l'état actuel. La consigne 3 n'a pas poussé le modèle vers la valeur la plus récente.
+- **Les autres questions avec piège restent justes** (Q026, Q027, Q043, Q048, Q089, Q091, Q096, Q099, Q108, Q133, Q153…).
+  - Q008 reste incomplète.
+  - Q056 reste fausse, à cause du tableau de l'organigramme (section 6).
+- **Un effet secondaire : trois réponses perdent leur justification.**
+  - Q048 ne précise plus « selon la version 3 de la politique ».
+  - Q133 ne parle plus de la succession.
+  - Q153 ne dit plus « selon le plan stratégique le plus récent ».
+
+  Elles restent justes. Le 0,7 → 0,6 de Q153 en correctness vient de là.
+- **Le reste du recul des moyennes est du bruit du juge** :
+  - Q082 (`out_of_corpus`) : la faithfulness passe de 1 à 0, pour un refus identique ;
+  - Q152 : la correctness passe de 0,2 à 0, pour une réponse de même contenu ;
+  - Q158 : la faithfulness passe de 1 à 0,67.
+
+#### Coût
+
+Le prompt plus long ajoute 127 tokens par question (+7 %). Le temps de réponse moyen ne bouge presque pas : +0,05 s.
+
+#### Ce qui reste faux ne vient plus de la lecture
+
+Trois questions sur des fils de décision restent fausses, parce que le dernier épisode du fil n'arrive pas au LLM :
+- **Q008** : la clôture du rappel au 31 mars 2026 manque ;
+- **Q152** : l'accord de Valtek (65 % du coût) manque, et la réponse donne l'action « en retard » ;
+- **Q081** : la réponse est juste (725 k€), mais elle est tirée des PV de COPIL, sans la preuve de grade 2.
+
+J'ai relancé la recherche de ces trois questions avec 30, 60 et 100 candidats :
+
+| Question | Rangs des preuves dans la recherche (30 candidats) | Rangs après reranking (30 candidats) | Avec 60 ou 100 candidats |
+|---|---|---|---|
+| Q008 | 14, 20 | 9, 14 | 10, 11, 17 |
+| Q152 | 3, 5, 11 | 1, 8, 16 | 1, 8, 17 |
+| Q081 | 18, 30 | 16, 17 | 16, 17 |
+
+**Les preuves sont déjà parmi les 30 candidats.** C'est le reranker qui les classe après le 5e rang. Prendre 60 ou 100 candidats, comme le proposait l'étape 5 du TODO, ne change rien. Trier les passages par date (étape 3) ou les filtrer par date (étape 4) non plus : ces pistes n'agissent que sur les passages déjà transmis au LLM, et les 6 questions `decision_history` sont déjà justes.
+
+#### Décision : les consignes sont conservées
+
+1. Elles règlent le seul cas limite (Q023), sans régression sur les questions d'historique.
+2. Elles coûtent 7 % de tokens, sans effet sur le temps de réponse.
+
+Le gain est modeste parce que les réponses aux questions avec piège étaient déjà presque toutes justes. Le taux de pièges est de 4/17 pour `trap_hit`, et de 0/17 réponse qui reprend le piège.
+
+La suite vise le classement : faire lire plus de passages au LLM (`top_k` de 5 à 10), pour Q008 et Q152.
 
 ## Évaluation finale sur la réserve de test (`v1.0`)
 _À compléter : réserve de test (31 questions) comparée au jeu de développement._
