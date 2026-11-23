@@ -11,3 +11,5 @@ id,name,status,git_commit,git_dirty,duration_s,started_at
 10,exp07_excel_openpyxl,done,3b024a15795a433d9068eea19c78400b503bc64c,f,247,2026-11-20 14:13:07.394061+00
 11,exp08_images_vlm,superseded,4546dabbd80138bb716c275d081c54e010b65baf,f,259,2026-11-21 09:53:20.529089+00
 12,exp08_images_vlm,done,4546dabbd80138bb716c275d081c54e010b65baf,f,267,2026-11-23 07:53:21.721183+00
+13,exp09_scans_docling_ocr,failed,b90f2e88ca4c8aa74691005f450ba19857b97e3d,t,11,2026-11-23 09:17:28.183458+00
+14,exp09_scans_docling_ocr,done,1d0d1daaf180d516b3ac2a1b23cd7083f38e0cb0,f,248,2026-11-23 09:18:36.589154+00
