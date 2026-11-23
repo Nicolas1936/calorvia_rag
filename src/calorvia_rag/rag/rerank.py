@@ -3,6 +3,8 @@ from calorvia_rag.config import settings, runner_settings
 import requests as rq
 
 def call_reranker(query, chunks, top_n):
+    if not chunks:              # recherche vide (collection vide) : le reranker refuserait une liste vide (400)
+        return []
     payload = {
         'model': runner_settings['reranker']['model'],
         'query': query,

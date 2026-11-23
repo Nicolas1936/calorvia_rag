@@ -1,6 +1,6 @@
 from calorvia_rag.config import runner_settings
 from calorvia_rag.embedding import get_embedder, get_sparse_options, get_query_text, embed, embed_sparse
-from calorvia_rag.qdrant import get_qdrant_client, get_collection_name
+from calorvia_rag.qdrant import get_qdrant_client, get_current_collection_name
 
 from qdrant_client import models
 import threading
@@ -32,23 +32,10 @@ def hybrid_search(dense_vectors, sparse_queries, collection_name, qdrant_client,
 
 def search_chunks(query, qdrant_client, embedder, query_filter = None, translations = None):
     embedder_cfg = runner_settings['embedder']
-    chunking_cfg = runner_settings['chunking']
     index_cfg = runner_settings['index']
     search_cfg = runner_settings['search']
 
-    collection_name = get_collection_name(
-        embedder_name = embedder_cfg['model'],
-        chunk_type = chunking_cfg['type'],
-        chunk_size = chunking_cfg['max_tokens'],
-        sparse_vector = index_cfg.get('sparse_vector'),
-        context_line = chunking_cfg['context_line'],
-        sparse_language = index_cfg.get('sparse_language'),
-        excel_reader = chunking_cfg.get('excel_reader'),
-        include_images = runner_settings.get('corpus', {}).get('include_images'),
-        include_scans = runner_settings.get('corpus', {}).get('include_scanned_pdfs'),
-        scan_reader = runner_settings.get('corpus', {}).get('scan_reader'),
-        include_pdf_images = runner_settings.get('corpus', {}).get('include_pdf_images'),
-    )
+    collection_name = get_current_collection_name()
     limit = search_cfg['candidates']
 
     if search_cfg['method'] == 'dense':

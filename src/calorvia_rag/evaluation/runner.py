@@ -1,7 +1,7 @@
 from calorvia_rag.config import settings, runner_settings
 from calorvia_rag.db import (start_experiment, end_experiment, insert_answer, insert_scores, get_answers,
                              get_experiment_split, list_test_experiments)
-from calorvia_rag.qdrant import get_qdrant_client
+from calorvia_rag.qdrant import get_qdrant_client, get_current_collection_name
 from calorvia_rag.embedding import get_embedder
 from calorvia_rag.rag.ask import generate_response, get_llm_client
 from calorvia_rag.evaluation.metrics import retrieval_scores, is_refusal, trap_hit
@@ -29,6 +29,14 @@ def get_experiment_config(split = 'dev'):
     generation_cfg = runner_settings['generation']
     system_prompt = Path(generation_cfg['system_prompt']).read_text(encoding = 'utf-8')
     return {**runner_settings, 'split': split, 'generation': {**generation_cfg, 'system_prompt_text': system_prompt}}
+
+def check_collection():
+    """Le runner ne démarre pas sur une collection absente ou vide : l'expérience ne serait qu'une suite de refus."""
+    qdrant_client = get_qdrant_client()
+    collection_name = get_current_collection_name()
+    if not qdrant_client.collection_exists(collection_name) or qdrant_client.count(collection_name).count == 0:
+        sys.exit(f'Collection Qdrant {collection_name} absente ou vide : lance d\'abord '
+                 'uv run python -m calorvia_rag.etl.index, avec le même RUNNER_CONFIG_PATH.')
 
 def check_test_run(git_dirty):
     """La réserve de test ne s'évalue qu'une fois, sur du code commité : sinon, le run s'arrête avant de commencer."""
@@ -72,6 +80,7 @@ async def answer_questions(experiment_id, questions):
 
 def run_experiment(split = 'dev'):
     questions = load_questions(settings.eval_dataset_path, split)
+    check_collection()
 
     git_commit, git_dirty = git_state()
     if split == 'test':
