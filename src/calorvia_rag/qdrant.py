@@ -9,7 +9,7 @@ def get_qdrant_client():
     )
 
 def get_collection_name(embedder_name, chunk_type, chunk_size, sparse_vector=None, context_line=False, sparse_language=None, excel_reader=None,
-                        include_images=False, include_scans=False, scan_reader=False):
+                        include_images=False, include_scans=False, scan_reader=False, include_pdf_images=False):
     name = f'{embedder_name}_{chunk_type}_{chunk_size}'
     if context_line:
         name += '_ctx'
@@ -25,4 +25,6 @@ def get_collection_name(embedder_name, chunk_type, chunk_size, sparse_vector=Non
         name += '_scan'
     if scan_reader == 'docling':
         name += '_ocr'
+    if include_pdf_images:
+        name += '_pdfimg'
     return name.replace('/', '-')

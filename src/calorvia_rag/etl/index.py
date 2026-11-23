@@ -88,6 +88,7 @@ def index_corpus():
         include_images = runner_settings.get('corpus', {}).get('include_images'),
         include_scans = runner_settings.get('corpus', {}).get('include_scanned_pdfs'),
         scan_reader = runner_settings.get('corpus', {}).get('scan_reader'),
+        include_pdf_images = runner_settings.get('corpus', {}).get('include_pdf_images'),
     )
 
     init_collection(qdrant_client, collection_name, embedder_cfg['vector_size'])

@@ -47,6 +47,7 @@ def search_chunks(query, qdrant_client, embedder, query_filter = None, translati
         include_images = runner_settings.get('corpus', {}).get('include_images'),
         include_scans = runner_settings.get('corpus', {}).get('include_scanned_pdfs'),
         scan_reader = runner_settings.get('corpus', {}).get('scan_reader'),
+        include_pdf_images = runner_settings.get('corpus', {}).get('include_pdf_images'),
     )
     limit = search_cfg['candidates']
 

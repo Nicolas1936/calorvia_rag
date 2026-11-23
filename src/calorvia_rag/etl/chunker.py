@@ -2,7 +2,7 @@ from calorvia_rag.config import settings, runner_settings
 from calorvia_rag.db import list_documents_to_chunk, list_documents_to_transcribe, list_scans_to_convert
 from calorvia_rag.etl.inventory import detect_language
 from calorvia_rag.etl.excel import workbook_texts
-from calorvia_rag.etl.vision import get_vlm_client, document_pages, transcribe_cached
+from calorvia_rag.etl.vision import get_vlm_client, document_pages, transcribe_cached, pdf_images
 
 from transformers import AutoTokenizer
 from docling_core.types.doc import DoclingDocument
@@ -103,6 +103,28 @@ def chunk_transcription(row, chunker, context_line, vlm_client):
             }
             i += 1
 
+def chunk_pdf_images(row, chunker, context_line, vlm_client, first_index):
+    """Les graphiques insérés dans un PDF texte, transcrits par le VLM (cache, etl/vision.py).
+    Numérotés après les chunks Docling du document : l'identifiant d'un point dépend de document et chunk_index."""
+    stem = Path(row['path']).stem
+    i = first_index
+    for page, index, image in pdf_images(settings.corpus_folder / row['path']):
+        text = transcribe_cached(row, page, vlm_client, index = index, image = image)['text']
+        header = f"Graphique du document « {stem} », page {page + 1}"
+        prefix = f"{row['context_line']}\n{header}" if context_line else header
+        for part in pack_paragraphs(text, prefix, chunker.tokenizer, chunker.max_tokens):
+            yield {
+                'document': row['path'],
+                'chunk_index': i,
+                'headings': '',
+                'text': f'{prefix}\n{part}',
+                'language': detect_language(part, default = row['language'] or 'fr'),
+                'image_path': row['path'],
+                'page': page,
+                **document_metadata(row),
+            }
+            i += 1
+
 def vision_source_types():
     """Les types de documents à faire lire par le VLM, selon la section [corpus] du TOML."""
     corpus_cfg = runner_settings.get('corpus', {})
@@ -112,27 +134,30 @@ def vision_source_types():
 def iter_chunks(chunker):
     """Tous les chunks du corpus, document par document, dans l'ordre du registre ; puis les images et les scans."""
     chunking_cfg = runner_settings['chunking']
+    corpus_cfg = runner_settings.get('corpus', {})
     context_line = chunking_cfg['context_line']
     excel_reader = chunking_cfg.get('excel_reader', 'docling')
+    vlm_client = get_vlm_client()             # aucun appel au VLM tant que les transcriptions sont dans le cache
+
     for row in list_documents_to_chunk():
         if row['format'] == 'xlsx' and excel_reader == 'openpyxl':
             yield from chunk_workbook(row, context_line)
-        else:
-            yield from chunk_document(row, chunker, context_line)
+            continue
+        chunks = list(chunk_document(row, chunker, context_line))
+        yield from chunks
+        if row['format'] == 'pdf' and corpus_cfg.get('include_pdf_images'):
+            yield from chunk_pdf_images(row, chunker, context_line, vlm_client, first_index = len(chunks))
 
     source_types = vision_source_types()
-    if source_types:
-        scan_reader = runner_settings.get('corpus', {}).get('scan_reader', 'vlm')
-        ocr_hashes = {sha256 for _, sha256 in list_scans_to_convert()} if scan_reader == 'docling' else set()
-        vlm_client = get_vlm_client()
-        for row in list_documents_to_transcribe():
-            if row['source_type'] not in source_types:       # image ou scan exclu par le TOML : on passe
-                continue
-            if row['sha256'] in ocr_hashes:                  # document numérisé : export Docling avec OCR
-                 # document numérisé : export Docling avec OCR
-                yield from chunk_document(row, chunker, context_line)
-            else:                                            # autres images : transcription du VLM (cache)
-                yield from chunk_transcription(row, chunker, context_line, vlm_client)
+    scan_reader = corpus_cfg.get('scan_reader', 'vlm')
+    ocr_hashes = {sha256 for _, sha256 in list_scans_to_convert()} if scan_reader == 'docling' else set()
+    for row in list_documents_to_transcribe():
+        if row['source_type'] not in source_types:       # image ou scan exclu par le TOML : on passe
+            continue
+        if row['sha256'] in ocr_hashes:                  # document numérisé : export Docling avec OCR
+            yield from chunk_document(row, chunker, context_line)
+        else:                                            # transcription du VLM (cache)
+            yield from chunk_transcription(row, chunker, context_line, vlm_client)
 
 def document_metadata(row):
     """Les métadonnées du registre, communes à tous les chunks d'un document."""
