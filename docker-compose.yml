@@ -139,14 +139,15 @@ services:
               capabilities: [gpu]
     # Pas de -ngl : llama.cpp place automatiquement le max de couches sur le GPU (--fit, défaut)
     #   en gardant 512 Mo de marge (~62/66 couches avec embedder + reranker chargés).
-    # 3 slots + KV unifié 16k = les 3 requêtes parallèles du runner (llm_parallel_requests) :
-    #   32 t/s agrégés contre 23 t/s pour 1 slot + MTP (MTP coûte ~900 Mo de VRAM = 4 couches).
-    #   Si reasoning = true (réponses longues), monter -c à 24576 (≈ 25 t/s).
+    # 3 slots = les 3 requêtes parallèles du runner (llm_parallel_requests) :
+    #   32 t/s agrégés à 16k contre 23 t/s pour 1 slot + MTP (MTP coûte ~900 Mo de VRAM = 4 couches).
+    # KV unifié 32k, partagé par les 3 slots : avec 10 passages, une requête monte à 9,6k tokens (Q117).
+    #   À 16k, trois requêtes longues simultanées dépassaient le contexte (« Context size has been exceeded »).
     command: >
       -m /models/qwen3.8-27b/llama/Qwen3.8-27B-UD-Q4_K_XL.gguf
       -fa on
       --fit-target 512
-      -np 3 -kvu -c 16384
+      -np 3 -kvu -c 32768
       -ctk q8_0 -ctv q8_0
       --host 0.0.0.0 --port 8080
 
